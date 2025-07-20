@@ -20,6 +20,11 @@ public class Users {
     @Column(unique = true)
     private String email;
 
+    @Column
+    private String name;
+    @Column
+    private String birthDay;
+
     @Column(columnDefinition = "TEXT")
     private String password;
 
@@ -36,4 +41,12 @@ public class Users {
     @UpdateTimestamp
     @Column(nullable = false)
     private OffsetDateTime updatedAt;
+
+    @Builder
+    public Users(String email, String password,String name,String birthDay){
+        this.email=email;
+        this.password=password;
+        this.name=name;
+        this.birthDay=birthDay;
+    }
 }

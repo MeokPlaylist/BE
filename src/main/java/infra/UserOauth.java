@@ -37,6 +37,9 @@ public class UserOauth {
     @Column(name = "access_token", columnDefinition = "TEXT")
     private String accessToken;
 
+    @Column(name = "jwt_refresh_token",length = 64)
+    private String JwtRefreshToken;
+
     @Column(name = "refresh_token", columnDefinition = "TEXT")
     private String refreshToken;
 
