@@ -3,6 +3,7 @@ package domain.service;
 import api.dto.AuthSignUpRequest;
 import domain.repository.UsersRepository;
 import infra.Users;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     private final UsersRepository usersRepository;
 
-
+    @Transactional
     public Boolean signUp(AuthSignUpRequest request){
         if(usersRepository.findByEmail(request.getEmail())!=null) {
             return false;
@@ -19,7 +20,7 @@ public class AuthService {
 
         Users users = Users.builder()
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .passwordHash(request.getPassword())
                 .name(request.getName())
                 .birthDay(request.getBirthDay())
                 .build();

@@ -26,7 +26,7 @@ public class Users {
     private String birthDay;
 
     @Column(columnDefinition = "TEXT")
-    private String password;
+    private String passwordHash;
 
     @Column(unique = true ,nullable = false, length = 50)
     private String nickname;
@@ -43,9 +43,9 @@ public class Users {
     private OffsetDateTime updatedAt;
 
     @Builder
-    public Users(String email, String password,String name,String birthDay){
+    public Users(String email, String passwordHash,String name,String birthDay){
         this.email=email;
-        this.password=password;
+        this.passwordHash=passwordHash;
         this.name=name;
         this.birthDay=birthDay;
     }
