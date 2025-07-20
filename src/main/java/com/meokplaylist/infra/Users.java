@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -23,12 +24,12 @@ public class Users {
     @Column
     private String name;
     @Column
-    private String birthDay;
+    private LocalDate birthDay;
 
     @Column(columnDefinition = "TEXT")
     private String passwordHash;
 
-    @Column(unique = true ,nullable = false, length = 50)
+    @Column(unique = true , length = 50)
     private String nickname;
 
     @Column
@@ -43,7 +44,7 @@ public class Users {
     private OffsetDateTime updatedAt;
 
     @Builder
-    public Users(String email, String passwordHash,String name,String birthDay){
+    public Users(String email, String passwordHash,String name,LocalDate birthDay){
         this.email=email;
         this.passwordHash=passwordHash;
         this.name=name;
