@@ -2,7 +2,7 @@ package com.meokplaylist.api.controller;
 
 import com.meokplaylist.api.dto.AuthLoginRequest;
 import com.meokplaylist.api.dto.AuthSocialLoginRequest;
-import com.meokplaylist.domain.service.LoginService;
+import com.meokplaylist.domain.service.AuthService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
-public class LoginController {
+public class AuthController {
 
-    private LoginService loginService;
+    private AuthService loginService;
 
     @GetMapping("/login")
     public void Login(@RequestBody AuthLoginRequest authLoginRequest){

@@ -20,8 +20,13 @@ public class Users {
     @Column(unique = true)
     private String email;
 
+    @Column
+    private String name;
+    @Column
+    private String birthDay;
+
     @Column(columnDefinition = "TEXT")
-    private String password;
+    private String passwordHash;
 
     @Column(unique = true ,nullable = false, length = 50)
     private String nickname;
@@ -36,4 +41,12 @@ public class Users {
     @UpdateTimestamp
     @Column(nullable = false)
     private OffsetDateTime updatedAt;
+
+    @Builder
+    public Users(String email, String passwordHash,String name,String birthDay){
+        this.email=email;
+        this.passwordHash=passwordHash;
+        this.name=name;
+        this.birthDay=birthDay;
+    }
 }
