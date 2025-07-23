@@ -36,6 +36,9 @@ public class Users {
     @Column
     private String profileImgUrl;
 
+    @Column
+    private String introduction;
+
     @CreationTimestamp
     @Column(nullable = false)
     private OffsetDateTime createdAt;

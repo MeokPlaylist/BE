@@ -1,11 +1,11 @@
 package com.meokplaylist.security;
 
-import com.auth0.jwt.interfaces.DecodedJWT;          // 검증이 끝난 JWT 객체
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.meokplaylist.domain.service.JwtTokenService;  // 토큰 검증 서비스
 
-import jakarta.servlet.*;                            // 서블릿 API
+import jakarta.servlet.*;
 import jakarta.servlet.http.*;
-import lombok.RequiredArgsConstructor;               // final 필드용 생성자 자동 생성
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,10 +41,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             // 토큰이 있으면 무결성, 만료 검증
             if (token != null) {
                 DecodedJWT jwt = jwtTokenService.verify(token);
-
+                Long userId = Long.parseLong(jwt.getSubject());
                 Authentication auth =
                         new UsernamePasswordAuthenticationToken(
-                                jwt.getSubject(), //유저 고유 id
+                                userId, //유저 고유 id
                                 null,
                                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))
                         );

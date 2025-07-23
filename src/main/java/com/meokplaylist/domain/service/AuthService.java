@@ -42,20 +42,5 @@ public class AuthService {
         }
     }
 
-    @Transactional
-    public Users findPassword(AuthFindPasswordRequest request) throws IllegalAccessException {
-        Optional<Users> optionalUser = usersRepository.findByNameAndEmailAndBirthDay(request.name(), request.email(), request.birthDay());
-        if(optionalUser.isEmpty()){
-            throw new IllegalAccessException("존재하지 않는 회원입니다.");
-        }
-
-        return optionalUser.get();
-    }
-
-    @Transactional
-    public void newPassword(AuthNewPasswordRequest request,Users user){
-        user.setPasswordHash(passwordEncoder.encode(request.password()));
-    }
-
 
 }

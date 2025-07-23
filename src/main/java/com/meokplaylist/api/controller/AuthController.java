@@ -2,15 +2,18 @@ package com.meokplaylist.api.controller;
 
 import com.meokplaylist.api.dto.*;
 import com.meokplaylist.domain.service.AuthService;
+import com.meokplaylist.domain.service.ImageService;
 import com.meokplaylist.infra.Users;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import lombok.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
 
 @RestController
 @AllArgsConstructor
@@ -41,18 +44,6 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/findPassword")
-    public ResponseEntity<?> emailInspect(@Valid @RequestBody AuthFindPasswordRequest authFindPasswordRequest) throws IllegalAccessException {
-        Users user = authService.findPassword(authFindPasswordRequest);
-        return ResponseEntity.ok(user);
-
-    }
-
-    @PostMapping("/renewalPassword")
-    public ResponseEntity<?> renewalPassword(@Valid @RequestBody AuthNewPasswordRequest authNewPasswordRequest, Users user){
-        authService.newPassword(authNewPasswordRequest,user);
-        return ResponseEntity.ok().build();
-    }
 
 
 }
