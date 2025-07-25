@@ -20,4 +20,5 @@ public class GlobalExceptionHandler {
         Map<String, String> response = Map.of("message", ex.getMessage());
         return ResponseEntity.badRequest().body(response);
     }
+
 }

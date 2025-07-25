@@ -11,12 +11,13 @@ import java.time.OffsetDateTime;
 @Entity
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer userId;
+    private Long userId;
 
     @Column(unique = true)
     private String email;
@@ -34,6 +35,16 @@ public class Users {
 
     @Column
     private String profileImgUrl;
+
+    @Column
+    private String introduction;
+
+
+    @Column
+    private String jwtRefreshToken;
+
+    @Column
+    private String jwtAccessToken;
 
     @CreationTimestamp
     @Column(nullable = false)
