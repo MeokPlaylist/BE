@@ -39,6 +39,13 @@ public class Users {
     @Column
     private String introduction;
 
+
+    @Column
+    private String jwtRefreshToken;
+
+    @Column
+    private String jwtAccessToken;
+
     @CreationTimestamp
     @Column(nullable = false)
     private OffsetDateTime createdAt;

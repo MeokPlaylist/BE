@@ -1,11 +1,8 @@
 package com.meokplaylist.domain.service;
 
-import com.meokplaylist.domain.repository.UsersRepository;
-import com.meokplaylist.infra.Users;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -33,7 +30,7 @@ public class ImageService {
         if (file.isEmpty() || !file.getContentType().startsWith("image/"))
             throw new IllegalArgumentException("이미지 파일만 업로드 가능합니다.");
 
-        String ext = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf(".")); //
+        String ext = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf(".")); //원본 파일 마지막 이름 뽑아내기
         String key = "profiles/user_" + userId + "_" + UUID.randomUUID() + ext;
 
         PutObjectRequest request = PutObjectRequest.builder()
@@ -51,6 +48,8 @@ public class ImageService {
             System.out.println(" 업로드 실패! 상태 코드: " + response.sdkHttpResponse().statusCode());
         }
         //디버깅을 위한 코드
+
         return "https://" + bucketName + ".kr.object.ncloudstorage.com/" + key;
+        // "https://kr.object.ncloudstorage.com/" + bucketName + "/" + key; 공식 표기 위에 것이 안되면 해보자,,
     }
 }

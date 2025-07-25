@@ -1,7 +1,7 @@
 package com.meokplaylist.domain.service;
 
-import com.meokplaylist.api.dto.AuthFindPasswordRequest;
-import com.meokplaylist.api.dto.AuthNewPasswordRequest;
+import com.meokplaylist.api.dto.user.UserFindPasswordRequest;
+import com.meokplaylist.api.dto.user.UserNewPasswordRequest;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.infra.Users;
 import jakarta.transaction.Transactional;
@@ -20,7 +20,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public Users findPassword(AuthFindPasswordRequest request) throws IllegalAccessException {
+    public Users findPassword(UserFindPasswordRequest request) throws IllegalAccessException {
         Optional<Users> optionalUser = usersRepository.findByNameAndEmailAndBirthDay(request.name(), request.email(), request.birthDay());
         if(optionalUser.isEmpty()){
             throw new IllegalAccessException("존재하지 않는 회원입니다.");
@@ -30,7 +30,7 @@ public class UserService {
     }
 
     @Transactional
-    public void newPassword(AuthNewPasswordRequest request, Users user){
+    public void newPassword(UserNewPasswordRequest request, Users user){
         user.setPasswordHash(passwordEncoder.encode(request.password()));
     }
 }
