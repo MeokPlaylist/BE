@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface UserOauthRepository extends JpaRepository<UserOauth, UserOauthId> {
-    Optional<UserOauth> findByUserId(Long userId);
 
     @Query("""
        select o
