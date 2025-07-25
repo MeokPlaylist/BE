@@ -24,15 +24,19 @@ public class AuthService {
 
     @Transactional
     public String login(AuthLoginRequest request){
+        Users user = usersRepository.findByEmail(request.email())
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        Users user = usersRepository.findByEmailAndPassword(request.email(),request.password())
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-
-
+        // 여기서 암호 비교
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            throw new BizExceptionHandler(ErrorCode.INVALID_PASSWORD); // 필요 시 새 에러코드 생성
+        }
+        /*
         String newAccess = jwtTokenService.reissueAccessToken(user.getJwtRefreshToken());
         user.setJwtAccessToken(newAccess);
         return user.getJwtAccessToken();
-
+        */
+        return "123";
     }
 
     @Transactional
@@ -59,7 +63,6 @@ public class AuthService {
         if(request.idToken()!=null|| request.provider() !=null){
 
         }
-        throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
     }
 
 

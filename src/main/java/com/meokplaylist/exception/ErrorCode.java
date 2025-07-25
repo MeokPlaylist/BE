@@ -13,7 +13,7 @@ public enum ErrorCode {
     USER_NOT_FOUND       (451,          "존재하지 않는 회원"),
     USEROAUTH_NOT_FOUND  (452, "존재하지 않는 Oauth"),
     INVALID_OAUTH_TOKEN  (453,"잘못된 Token"),
-
+    INVALID_PASSWORD      (454,"잘못된 password"),
     // 5xx
     INTERNAL_ERROR       (551, "서버 오류");
 

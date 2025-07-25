@@ -13,3 +13,24 @@ cloud:
 oauth:
   google:
     client-id:614172335108-a6j4nkrudna9k8tpon4anj3jgi6ee0ts.apps.googleusercontent.com
+
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
