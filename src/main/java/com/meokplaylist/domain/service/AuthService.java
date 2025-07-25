@@ -1,5 +1,6 @@
 package com.meokplaylist.domain.service;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.meokplaylist.api.dto.auth.*;
 import com.meokplaylist.domain.repository.UserOauthRepository;
 import com.meokplaylist.domain.repository.UsersRepository;
@@ -22,36 +23,43 @@ public class AuthService {
     private final JwtTokenService jwtTokenService;
 
     @Transactional
-    public LoginResult login(AuthLoginRequest request){
+    public String login(AuthLoginRequest request){
 
-        UserOauth userOauth = userOauthRepository.findOauthWithUser(request.email(), request.providerUid())
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USEROAUTH_NOT_FOUND));
-        Users user = userOauth.getUser();
+        Users user = usersRepository.findByEmailAndPassword(request.email(),request.password())
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        if(user.getNickname()==null){
-            return LoginResult.needSignup(user.getUserId());
-        }
 
         String newAccess = jwtTokenService.reissueAccessToken(user.getJwtRefreshToken());
         user.setJwtAccessToken(newAccess);
-        return LoginResult.success(user.getJwtAccessToken());
+        return user.getJwtAccessToken();
 
     }
 
     @Transactional
-    public LoginResult socialLogin(AuthSocialLoginRequest request){
-        UserOauth userOauth = userOauthRepository.findOauthWithUser(request.email(), request.providerUid())
+    public void socialLogin(AuthSocialLoginRequest request){
+        /*
+        if(request.provider().equals("google")){
+            GoogleIdToken idTokenObj = google
+            if (idTokenObj == null) {
+                throw new BizExceptionHandler(ErrorCode.INVALID_OAUTH_TOKEN); // 직접 예외 처리
+            }
+
+            GoogleIdToken.Payload payload = idTokenObj.getPayload();   // ← 여기서 email·sub 꺼냄
+            String providerUid = payload.getSubject();
+            String email       = payload.getEmail();
+        }
+        UserOauth userOauth = userOauthRepository.findOauthWithUser(request.idToken(), request.providerUid())
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USEROAUTH_NOT_FOUND));
         Users user = userOauth.getUser();
-
-        if(user.getNickname()==null){
-            return LoginResult.needSignup(user.getUserId());
-        }
 
         String newAccess = jwtTokenService.reissueAccessToken(user.getJwtRefreshToken());
         user.setJwtAccessToken(newAccess);
         return LoginResult.success(user.getJwtAccessToken());
+        */
+        if(request.idToken()!=null|| request.provider() !=null){
 
+        }
+        throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
     }
 
 
