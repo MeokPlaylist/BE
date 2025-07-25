@@ -7,6 +7,5 @@ import jakarta.validation.constraints.NotBlank;
 
 public record AuthLoginRequest(
     @NotBlank @Email String email,
-    @NotBlank String password,
-    @Nullable String providerUid
+    @NotBlank String password
 ){}

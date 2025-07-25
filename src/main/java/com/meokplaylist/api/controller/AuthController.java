@@ -11,9 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.meokplaylist.api.dto.auth.LoginResult.Status.NEED_SIGNUP;
-import static com.meokplaylist.api.dto.auth.LoginResult.Status.SUCCESS;
-
 @RestController
 @AllArgsConstructor
 public class AuthController {
@@ -22,34 +19,13 @@ public class AuthController {
 
     @GetMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthLoginRequest authLoginRequest){
-        LoginResult result = authService.login(authLoginRequest);
-
-        switch (result.getStatus()) {
-            case SUCCESS -> {
-                return ResponseEntity.ok().build();
-            }
-            case NEED_SIGNUP -> {
-                /* 428  */
-                return ResponseEntity.status(HttpStatus.PRECONDITION_REQUIRED).build();
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + result.getStatus());
-        }
+        return ResponseEntity.ok(authService.login(authLoginRequest));
     }
 
     @GetMapping("/social/login")
     public ResponseEntity<?> socialLogin(@Valid @RequestBody AuthSocialLoginRequest authSocialLoginRequest){
-        LoginResult result = authService.socialLogin(authSocialLoginRequest);
 
-        switch (result.getStatus()) {
-            case SUCCESS -> {
-                return ResponseEntity.ok().build();
-            }
-            case NEED_SIGNUP -> {
-                /* 428  */
-                return ResponseEntity.status(HttpStatus.PRECONDITION_REQUIRED).build();
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + result.getStatus());
-        }
+       return ResponseEntity.ok().build();
     }
 
     @PostMapping("/signUp")

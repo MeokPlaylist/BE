@@ -9,3 +9,7 @@ cloud:
       secret-key: ncp_iam_BPKMKRCaBvaLBbnEhWbbR56ueQNlOYfWnn
       endpoint: https://kr.object.ncloudstorage.com
       bucket: meokplaylist
+
+oauth:
+  google:
+    client-id:614172335108-a6j4nkrudna9k8tpon4anj3jgi6ee0ts.apps.googleusercontent.com
