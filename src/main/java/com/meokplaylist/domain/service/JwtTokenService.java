@@ -24,7 +24,7 @@ public class JwtTokenService {
     private final RSAPrivateKey privateKey;
     private final RSAPublicKey publicKey;
 
-    public String createToken(Long id, String email, String nickname, String socialTokenId, Duration ttl,String tokenType){
+    public String createToken(Long id, String email, String name, Duration ttl,String tokenType){
         Instant now = Instant.now();
         Instant exp = now.plus(ttl);
 
@@ -33,8 +33,7 @@ public class JwtTokenService {
                 .withJWTId(UUID.randomUUID().toString())       // 토큰 id
                 .withIssuedAt(Date.from(now))        // 발급 시간
                 .withClaim("email",email)
-                .withClaim("nickname",nickname)
-                .withClaim("socialTokenId",socialTokenId)
+                .withClaim("name",name)
                 .withClaim("tokenType",tokenType)
                 .withExpiresAt(Date.from(exp))                 // 토큰 만료 일자
                 .sign(algorithm());
@@ -53,8 +52,7 @@ public class JwtTokenService {
         // 3) 필요 정보 추출
         Long   id       = Long.valueOf(decoded.getSubject());
         String email    = decoded.getClaim("email").asString();
-        String nickname = decoded.getClaim("nickname").asString();
-        String socialId = decoded.getClaim("socialTokenId").asString();
+        String name = decoded.getClaim("name").asString();
         String refreshJti = decoded.getId();          // parent 식별자용
 
         // 4) access 토큰 새로 발급 (parentJti 포함)
@@ -65,8 +63,7 @@ public class JwtTokenService {
                 .withSubject(String.valueOf(id))
                 .withJWTId(UUID.randomUUID().toString())
                 .withClaim("email", email)
-                .withClaim("nickname", nickname)
-                .withClaim("socialTokenId", socialId)
+                .withClaim("name", name)
                 .withClaim("tokenType", "accessToken")
                 .withClaim("parentJti", refreshJti)   // ← 연관성
                 .withIssuedAt(Date.from(now))
@@ -74,9 +71,9 @@ public class JwtTokenService {
                 .sign(algorithm());
     }
 
-    public JwtTokenPair createTokenPair(Long id, String email, String nickname, String socialTokenId){
-        String accessToken = createToken(id,email,nickname,socialTokenId,accessTokenExpMinutes,"accessToken");
-        String refreshToken = createToken(id,email,nickname,socialTokenId,refreshTokenExpMinutes,"refreshToken");
+    public JwtTokenPair createTokenPair(Long id, String email, String name){
+        String accessToken = createToken(id,email,name,accessTokenExpMinutes,"accessToken");
+        String refreshToken = createToken(id,email,name,refreshTokenExpMinutes,"refreshToken");
 
         return JwtTokenPair.of(accessToken,refreshToken);
     }

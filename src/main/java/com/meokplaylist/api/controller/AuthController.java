@@ -4,14 +4,13 @@ import com.meokplaylist.api.dto.auth.*;
 import com.meokplaylist.domain.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.h2.util.json.JSONArray;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.time.Clock;
 import java.util.Map;
 
@@ -23,34 +22,28 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthLoginRequest authLoginRequest){
-        authService.login(authLoginRequest);
-        Map<String, String> response = Map.of("jwt", "asdasdasdasd");
-        return ResponseEntity.ok().body(response);
+        String jwt =authService.login(authLoginRequest);
+        return ResponseEntity.ok().body(jwt);
     }
 
     @PostMapping("/social/login")
-    public ResponseEntity<?> socialLogin(@Valid @RequestBody AuthSocialLoginRequest authSocialLoginRequest){
+    public ResponseEntity<?> socialLogin(@Valid @RequestBody AuthSocialLoginRequest authSocialLoginRequest) throws Exception {
 
-        authService.socialLogin(authSocialLoginRequest);
-        Map<String, String> response = Map.of("jwt", "asdasdasdasd");
-       return ResponseEntity.ok().body(response);
+        String jwt=authService.socialLogin(authSocialLoginRequest);
+       return ResponseEntity.ok().body(jwt);
 
     }
 
     @PostMapping("/signUp")
     public ResponseEntity<?> signUp(@Valid @RequestBody AuthSignUpRequest authSignUpRequest) {
-        authService.signUp(authSignUpRequest);
-        Map<String, String> response = Map.of("jwt", "asdasdasdasd");
-
-        return ResponseEntity.ok().body(response);
+        String jwt = authService.signUp(authSignUpRequest);
+        return ResponseEntity.ok().body(jwt);
     }
 
     @PostMapping("/emailInspect")
     public ResponseEntity<?> emailInspect(@Valid @RequestBody AuthEmailInspectRequest authEmailInspectRequest){
 
-        authService.emailInspect(authEmailInspectRequest);
-
-        Map<String, String> response = Map.of("isAvailable", "true");
+        Boolean response =authService.emailInspect(authEmailInspectRequest);
         return ResponseEntity.ok().body(response);
     }
 

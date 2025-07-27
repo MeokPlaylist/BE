@@ -42,5 +42,12 @@ public class UserOauth {
 
     @Column(name = "token_exp")
     private OffsetDateTime tokenExp;
+
+    public UserOauth(Users user, OauthProviders provider, String providerUid) {
+        this.user = user;
+        this.provider = provider;
+        this.providerUid = providerUid;
+        this.id = new UserOauthId(user.getUserId(), provider.getProviderId());
+    }
 }
 

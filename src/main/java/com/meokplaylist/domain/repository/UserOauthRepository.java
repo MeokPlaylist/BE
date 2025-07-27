@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface UserOauthRepository extends JpaRepository<UserOauth, UserOauthId> {
-
+    /*
     @Query("""
        select o
        from UserOauth o
@@ -16,5 +16,7 @@ public interface UserOauthRepository extends JpaRepository<UserOauth, UserOauthI
        where u.email       = :email
          and o.providerUid = :providerUid
     """)
-    Optional<UserOauth> findOauthWithUser(String email, String providerUid);
+    Optional<UserOauth> findByUser(String email, String providerUid);
+    */
+    Optional<UserOauth> findByProviderUid(String providerUid);
 }

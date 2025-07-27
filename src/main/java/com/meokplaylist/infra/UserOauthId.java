@@ -20,5 +20,5 @@ public class UserOauthId implements Serializable {
     private Long userId;
 
     @Column(name = "provider_id", nullable = false)
-    private Short providerId;
+    private Integer providerId;
 }
