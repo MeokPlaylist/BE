@@ -16,7 +16,9 @@ public interface UsersRepository extends JpaRepository<Users,Long>{
     """)
     Optional<Users> findByEmail(String email);
 
-    Optional<Users> findByNameAndEmailAndBirthDay(String name, String email, LocalDate birthday);
+    Optional<Users> findByUserId(Long userId);
+
+    Optional<Users> findByUserIdAndNameAndEmailAndBirthDay(Long userId,String name, String email, LocalDate birthday);
 
     Optional<Users> findByEmailAndPasswordHash(String email,String password);
 
