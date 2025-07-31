@@ -40,11 +40,11 @@ public class Users {
     private String introduction;
 
 
-    @Column
-    private String jwtRefreshToken;
-
-    @Column
+    @Column(name = "jwt_access_token", length = 2048)
     private String jwtAccessToken;
+
+    @Column(name = "jwt_refresh_token", length = 2048)
+    private String jwtRefreshToken;
 
     @CreationTimestamp
     @Column(nullable = false)

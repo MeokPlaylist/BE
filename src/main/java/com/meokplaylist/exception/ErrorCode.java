@@ -21,7 +21,8 @@ public enum ErrorCode {
 
     NOT_HAVE_REFRESHTOKEN  (490, "refreshToken 존재하지 않는다."),
     // 5xx
-    INTERNAL_ERROR       (551, "서버 오류");
+    INTERNAL_ERROR       (551, "서버 오류"),
+    INVALID_OAUTH_PROVIDER(455,"제공하지 않는 소셜");
 
     private final int status;
     private final String message;

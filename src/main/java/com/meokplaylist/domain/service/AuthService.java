@@ -3,6 +3,7 @@ package com.meokplaylist.domain.service;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.meokplaylist.api.dto.auth.*;
+import com.meokplaylist.domain.repository.OauthProvidersRepository;
 import com.meokplaylist.domain.repository.UserOauthRepository;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
@@ -28,6 +29,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final UserOauthRepository userOauthRepository;
     private final JwtTokenService jwtTokenService;
+    private final OauthProvidersRepository oauthProvidersRepository;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
     private final KakaoIdTokenProvider kakaoIdTokenProvider;
 
@@ -52,70 +54,61 @@ public class AuthService {
         String providerUid=null;
         String name=null;
         String email = null;
-        OauthProviders oauthProviders=null;
 
-        if(request.provider().equals("google")){
+        // ✅ OAuth provider 미리 조회
+        OauthProviders oauthProvider = oauthProvidersRepository.findByName(request.provider())
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.INVALID_OAUTH_PROVIDER));
 
+        if (request.provider().equals("google")) {
             GoogleIdToken googleIdToken = googleIdTokenVerifier.verify(request.idToken());
             if (googleIdToken == null) {
-                throw new BizExceptionHandler(ErrorCode.INVALID_GOOGLEOAUTH_TOKEN); // 직접 예외 처리
+                throw new BizExceptionHandler(ErrorCode.INVALID_GOOGLEOAUTH_TOKEN);
             }
 
-            GoogleIdToken.Payload payload=googleIdToken.getPayload();
-            providerUid =payload.getSubject();
-            name=(String)payload.get("name");
-            email=payload.getEmail();
-            oauthProviders.setProviderId(1);
-            oauthProviders.setName(request.provider());
+            GoogleIdToken.Payload payload = googleIdToken.getPayload();
+            providerUid = payload.getSubject();
+            name = (String) payload.get("name");
+            email = payload.getEmail();
 
-            Users user=new Users(email,null,name,null);
-            usersRepository.save(user);
-
-
-        } else if (request.provider().equals("kakao")) { //kakao는 토큰 검사를 권장하지 않아서 google처럼 처리는 안함
-
-            JWTClaimsSet claim =kakaoIdTokenProvider.getClaims(request.idToken());
-
-            providerUid =claim.getSubject();
-            name=(String)claim.getClaim("nickname");
-            email=(String) claim.getClaim("email");
-            oauthProviders.setProviderId(2);
-            oauthProviders.setName(request.provider());
-
-            Users user=new Users(email,null,name,null);
-            usersRepository.save(user);
+        } else if (request.provider().equals("kakao")) {
+            JWTClaimsSet claim = kakaoIdTokenProvider.getClaims(request.idToken());
+            providerUid = claim.getSubject();
+            name = (String) claim.getClaim("nickname");
+            email = (String) claim.getClaim("email");
 
         } else {
             throw new BizExceptionHandler(ErrorCode.INVALID_OAUTH_TOKEN);
         }
 
-        Optional<UserOauth> OptionalUserOauth=userOauthRepository.findByProviderUid(providerUid);
+        Optional<UserOauth> OptionalUserOauth = userOauthRepository.findByProviderUid(providerUid);
 
-        if(OptionalUserOauth.isPresent()){ //소셜 로그인시 DB에 유저가 저장되어 있다면
-            UserOauth userOauth=OptionalUserOauth.get();
+        if (OptionalUserOauth.isPresent()) {
+            UserOauth userOauth = OptionalUserOauth.get();
 
-            if(!userOauth.getRefreshToken().isEmpty()){ //refresh 토큰이 존재한다면
+            if (!userOauth.getRefreshToken().isEmpty()) {
                 String setAccess = jwtTokenService.reissueAccessToken(userOauth.getUser().getJwtRefreshToken());
                 userOauth.getUser().setJwtAccessToken(setAccess);
                 return userOauth.getUser().getJwtAccessToken();
-            }
-            else{
+            } else {
                 throw new BizExceptionHandler(ErrorCode.NOT_HAVE_REFRESHTOKEN);
             }
-        }
-        else{
-            Users user=usersRepository.findByEmailAndPasswordHash(email,null)
-                    .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-            UserOauth userOauth=new UserOauth(user,oauthProviders,providerUid);
-            JwtTokenPair token=jwtTokenService.createTokenPair(user.getUserId(),user.getEmail(),user.getName());
+        } else {
+            // 새 유저 생성
+            Users user = new Users(email, null, name, null);
+            usersRepository.save(user);
+
+            UserOauth userOauth = new UserOauth(user, oauthProvider, providerUid);
+            JwtTokenPair token = jwtTokenService.createTokenPair(user.getUserId(), user.getEmail(), user.getName());
 
             user.setJwtAccessToken(token.accessToken());
             user.setJwtRefreshToken(token.refreshToken());
+            userOauth.setAccessToken(token.accessToken());
+            userOauth.setRefreshToken(token.refreshToken());
+
+            userOauthRepository.save(userOauth);
             return user.getJwtAccessToken();
         }
-
-
     }
 
 

@@ -1,25 +1,6 @@
 spring:
   application:
     name: MeokPlaylist
-
-cloud:
-  ncp:
-    object-storage:
-      access-key: ncp_iam_BPAMKR3RB01iniV2T75P
-      secret-key: ncp_iam_BPKMKRCaBvaLBbnEhWbbR56ueQNlOYfWnn
-      endpoint: https://kr.object.ncloudstorage.com
-      bucket: meokplaylist
-
-oauth:
-  google:
-    client-id:614172335108-a6j4nkrudna9k8tpon4anj3jgi6ee0ts.apps.googleusercontent.com
-
-  http:
-    encoding:
-      charset: UTF-8
-      enabled: true
-      force: true
-
   h2:
     console:
       enabled: true
@@ -34,3 +15,25 @@ oauth:
   jpa:
     hibernate:
       ddl-auto: update
+  sql:
+    init:
+      mode: always
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+cloud:
+  ncp:
+    object-storage:
+      access-key: ncp_iam_BPAMKR3RB01iniV2T75P
+      secret-key: ncp_iam_BPKMKRCaBvaLBbnEhWbbR56ueQNlOYfWnn
+      endpoint: https://kr.object.ncloudstorage.com
+      bucket: meokplaylist
+
+oauth:
+  google:
+    client-id: 614172335108-a6j4nkrudna9k8tpon4anj3jgi6ee0ts.apps.googleusercontent.com

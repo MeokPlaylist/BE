@@ -9,15 +9,17 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+import org.springframework.stereotype.Component;
 
 import java.net.URL;
 
+@Component
 public class KakaoIdTokenProvider {
 
     private static final String JWK_URL = "https://kauth.kakao.com/.well-known/jwks.json";
     private static final String ISSUER = "https://kauth.kakao.com";
 
-    private static final String CLIENT_ID = "YOUR_KAKAO_REST_API_KEY"; //설정을 구글 처럼 변경할것
+    private static final String CLIENT_ID = "d8fd3cc299e7921ad9cbce305123c7a8"; //설정을 구글 처럼 변경할것
 
     public JWTClaimsSet getClaims(String idToken) throws Exception {
         ConfigurableJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
