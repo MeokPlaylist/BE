@@ -23,27 +23,30 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthLoginRequest authLoginRequest){
         String jwt =authService.login(authLoginRequest);
-        return ResponseEntity.ok().body(jwt);
+        AuthJwtResponse response =new AuthJwtResponse(jwt);
+        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("/social/login")
     public ResponseEntity<?> socialLogin(@Valid @RequestBody AuthSocialLoginRequest authSocialLoginRequest) throws Exception {
 
         String jwt=authService.socialLogin(authSocialLoginRequest);
-       return ResponseEntity.ok().body(jwt);
+        AuthJwtResponse response =new AuthJwtResponse(jwt);
+        return ResponseEntity.ok().body(response);
 
     }
 
     @PostMapping("/signUp")
     public ResponseEntity<?> signUp(@Valid @RequestBody AuthSignUpRequest authSignUpRequest) {
         String jwt = authService.signUp(authSignUpRequest);
-        return ResponseEntity.ok().body(jwt);
+        AuthJwtResponse response =new AuthJwtResponse(jwt);
+        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("/emailInspect")
     public ResponseEntity<?> emailInspect(@Valid @RequestBody AuthEmailInspectRequest authEmailInspectRequest){
 
-        Boolean response =authService.emailInspect(authEmailInspectRequest);
+        AuthBooleanResponse response = new AuthBooleanResponse(authService.emailInspect(authEmailInspectRequest));
         return ResponseEntity.ok().body(response);
     }
 
