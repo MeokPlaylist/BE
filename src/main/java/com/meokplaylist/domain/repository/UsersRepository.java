@@ -9,14 +9,11 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public interface UsersRepository extends JpaRepository<Users,Long>{
-    @Query("""
-       select o
-       from Users o
-       WHERE o.email = :email AND o.passwordHash IS NOT NULL
-    """)
-    Optional<Users> findByEmail(String email);
+
+    Optional<Users> findByEmailAndPasswordHashIsNotNull(String email);
 
     Optional<Users> findByUserId(Long userId);
+    Optional<Users> findByEmail(String Email);
 
     Optional<Users> findByUserIdAndNameAndEmailAndBirthDay(Long userId,String name, String email, LocalDate birthday);
 

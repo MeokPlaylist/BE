@@ -35,7 +35,7 @@ public class AuthService {
 
     @Transactional
     public String login(AuthLoginRequest request){
-        Users user = usersRepository.findByEmailAndPasswordHash(request.email(),request.password())
+        Users user = usersRepository.findByEmail(request.email())
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
         // 여기서 암호 비교
@@ -124,7 +124,7 @@ public class AuthService {
 
         usersRepository.save(users);
 
-        Optional<Users> OptionalUser  =  usersRepository.findByEmail(request.email());
+        Optional<Users> OptionalUser  =  usersRepository.findByEmailAndPasswordHashIsNotNull(request.email());
         Users savedUser =OptionalUser.get();
 
        JwtTokenPair tokens =jwtTokenService.createTokenPair(savedUser.getUserId(),savedUser.getEmail(),savedUser.getName());
@@ -137,7 +137,7 @@ public class AuthService {
 
     @Transactional
     public Boolean emailInspect(AuthEmailInspectRequest request){
-        if(usersRepository.findByEmail(request.email()).isPresent() ) {
+        if(usersRepository.findByEmailAndPasswordHashIsNotNull(request.email()).isPresent() ) {
             return false;
         }
         return true;

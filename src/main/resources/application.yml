@@ -1,23 +1,27 @@
 spring:
   application:
     name: MeokPlaylist
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
 
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
+    url: jdbc:mysql://localhost:3306/noshow2025?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
+    username: noshow2025
+    password: 2025
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-init-sql: SET NAMES utf8mb4
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create  # Entity 기반으로 table 생성
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    defer-datasource-initialization: true #이거 필수띠
   sql:
     init:
       mode: always
+
 
 server:
   servlet:
