@@ -1,8 +1,10 @@
 package com.meokplaylist.api.dto.auth;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-public class AuthLoginResponse {
+@AllArgsConstructor
+public class AuthJwtResponse {
     private String JWTToken;
 }
