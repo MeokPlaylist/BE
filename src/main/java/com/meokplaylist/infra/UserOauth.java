@@ -22,7 +22,7 @@ public class UserOauth {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",
             foreignKey = @ForeignKey(name = "fk_user_oauth_user"))
-    private Users user;                            // ← **올바른 User 엔티티로 import**
+    private Users user;
 
 
     @MapsId("providerId")

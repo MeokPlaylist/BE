@@ -1,5 +1,9 @@
 package com.meokplaylist.api.controller;
 
+import com.meokplaylist.api.dto.BooleanRequest;
+import com.meokplaylist.api.dto.BooleanResponse;
+import com.meokplaylist.api.dto.category.CategorySetUpRequest;
+import com.meokplaylist.api.dto.StringUrlResponse;
 import com.meokplaylist.api.dto.user.UserNewPasswordRequest;
 import com.meokplaylist.api.dto.user.UserProfileSetupRequest;
 import com.meokplaylist.domain.service.ImageService;
@@ -24,13 +28,29 @@ public class UserController {
 
     @PostMapping("/renewalPassword")
     public ResponseEntity<?> renewalPassword(@Valid @RequestBody UserNewPasswordRequest userNewPasswordRequest, @AuthenticationPrincipal Long userId){
-        Boolean response = userService.newPassword(userNewPasswordRequest,userId);
-        return ResponseEntity.ok().body(response);
+        BooleanResponse booleanResponse=new BooleanResponse(userService.newPassword(userNewPasswordRequest,userId));
+        return ResponseEntity.ok().body(booleanResponse);
     }
 
     @PostMapping("/setupProfile")
     public ResponseEntity<?> setupProfile(@AuthenticationPrincipal Long userId, UserProfileSetupRequest userProfileSetupRequest) throws IOException {
-        imageService.uploadProfileImage(userProfileSetupRequest.profileImg(), userId);
+        StringUrlResponse stringUrlResponse=new StringUrlResponse(imageService.uploadProfileImage(userProfileSetupRequest.profileImg(), userId));
+        return ResponseEntity.ok().body(stringUrlResponse);
+    }
+
+    @PostMapping("/consentAgree")
+    public ResponseEntity<?> consentUpload(@Valid @RequestBody BooleanRequest booleanRequest, @AuthenticationPrincipal Long userId){
+        BooleanResponse booleanResponse = new BooleanResponse(userService.consentUpload(booleanRequest,userId));
+        return ResponseEntity.ok().body(booleanResponse);
+    }
+
+    @PostMapping("/categorySet")
+    public ResponseEntity<?> categorySet(@Valid @RequestBody CategorySetUpRequest categorySetUpRequest, @AuthenticationPrincipal Long userId){
+        userService.categorySetUp(categorySetUpRequest,userId);
         return ResponseEntity.ok().build();
     }
+
+
+
+
 }

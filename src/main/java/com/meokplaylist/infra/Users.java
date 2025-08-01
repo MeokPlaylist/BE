@@ -40,6 +40,7 @@ public class Users {
     private String introduction;
 
 
+
     @Column(name = "jwt_access_token", length = 2048)
     private String jwtAccessToken;
 
