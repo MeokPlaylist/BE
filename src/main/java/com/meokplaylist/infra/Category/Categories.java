@@ -22,4 +22,5 @@ public class Categories {
 
     @Column(nullable = false)
     private String name;
+
 }

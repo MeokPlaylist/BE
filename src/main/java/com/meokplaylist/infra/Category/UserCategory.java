@@ -21,4 +21,6 @@ public class UserCategory {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Categories category;
+
+    
 }

@@ -18,7 +18,7 @@ public enum CategoryType {
     KOREAN,           // 한식
     PORKBBQ_SASHIMI,         // 돈까스 / 회
     FASTFOOD,         // 패스트푸드
-    JOKBLA_BOSSAM,       // 족발 / 보쌈
+    JOKBAL_BOSSAM,       // 족발 / 보쌈
     PIZZA,            // 피자
     WESTERN,          // 양식
     MEAT,             // 고기
