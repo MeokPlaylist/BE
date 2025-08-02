@@ -19,8 +19,21 @@ public class UserCategory {
 
     @Id
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Categories category;
+    @JoinColumn(name = "food_category_id", nullable = false)
+    private FoodCategory foodCategory;
 
-    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "local_category_id")
+    private LocalCategory localCategory;
+
+    public UserCategory(Users user, FoodCategory foodCategory) {
+        this.user = user;
+        this.foodCategory = foodCategory;
+    }
+
+    public UserCategory(Users user, LocalCategory localCategory, FoodCategory foodCategory) {
+        this.user = user;
+        this.localCategory = localCategory;
+        this.foodCategory = foodCategory;
+    }
 }
