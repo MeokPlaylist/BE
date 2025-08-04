@@ -6,5 +6,5 @@ import jakarta.validation.constraints.NotBlank;
 
 public record AuthSocialLoginRequest(
         @NotBlank String provider,
-        @NotBlank String idToken
+        @NotBlank String token
 ) {}

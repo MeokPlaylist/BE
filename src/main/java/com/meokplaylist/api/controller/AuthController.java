@@ -5,10 +5,13 @@ import com.meokplaylist.api.dto.auth.*;
 import com.meokplaylist.domain.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.repository.config.RepositoryNameSpaceHandler;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @AllArgsConstructor
@@ -25,11 +28,11 @@ public class AuthController {
 
     @PostMapping("/social/login")
     public ResponseEntity<?> socialLogin(@Valid @RequestBody AuthSocialLoginRequest authSocialLoginRequest) throws Exception {
-
-        String jwt=authService.socialLogin(authSocialLoginRequest);
-        AuthJwtResponse response =new AuthJwtResponse(jwt);
-        return ResponseEntity.ok().body(response);
-
+        return switch (authSocialLoginRequest.provider()){
+            case "kakao" -> ResponseEntity.ok(authService.loginWithKakao(authSocialLoginRequest.token()));
+            case "google" -> ResponseEntity.ok(authService.loginWithGoogle(authSocialLoginRequest.token()));
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown provider");
+        };
     }
 
     @PostMapping("/signUp")
