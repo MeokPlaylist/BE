@@ -5,15 +5,16 @@ import com.meokplaylist.api.dto.category.CategorySetUpRequest;
 import com.meokplaylist.api.dto.user.UserNewPasswordRequest;
 import com.meokplaylist.domain.repository.UserConsentRepository;
 import com.meokplaylist.domain.repository.UsersRepository;
-import com.meokplaylist.domain.repository.category.CategoryRepository;
+import com.meokplaylist.domain.repository.category.FoodCategoryRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
-import com.meokplaylist.domain.repository.category.UserCategoryRepository;
+import com.meokplaylist.domain.repository.category.UserFoodCategoryRepository;
+import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
-import com.meokplaylist.infra.Category.Category;
+import com.meokplaylist.infra.Category.FoodCategory;
 import com.meokplaylist.infra.Category.LocalCategory;
-import com.meokplaylist.infra.Category.UserCategory;
-import com.meokplaylist.infra.Category.UserCategoryId;
+import com.meokplaylist.infra.Category.UserFoodCategory;
+import com.meokplaylist.infra.Category.UserLocalCategory;
 import com.meokplaylist.infra.UserConsent;
 import com.meokplaylist.infra.Users;
 import jakarta.transaction.Transactional;
@@ -31,9 +32,10 @@ public class UserService {
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserConsentRepository userConsentRepository;
-    private  final CategoryRepository categoryRepository;
+    private  final FoodCategoryRepository foodCategoryRepository;
     private final LocalCategoryRepository localCategoryRepository;
-    private final UserCategoryRepository userCategoryRepository;
+    private final UserFoodCategoryRepository userFoodCategoryRepository;
+    private final UserLocalCategoryRepository userLocalCategoryRepository;
     private static String consentFileUrl ="https://kr.object.ncloudstorage.com/meokplaylist/%EB%A8%B9%ED%94%8C%EB%A6%AC%20%EB%8F%99%EC%9D%98%EC%84%9C%20%EB%82%B4%EC%9A%A9.txt";
 
 
@@ -70,21 +72,34 @@ public class UserService {
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
         // 2. 카테고리 이름 목록 가져오기
-        List<String> categoryNames = request.categoryNames();  // ex) ["분위기:로맨틱", "음식:한식"]
+        List<String> categoryFoodNames = request.categoryFoodNames();  // ex) ["분위기:로맨틱", "음식:한식"]
+        List<String> categoryLocalNames = request.categoryLocalNames();
 
         // 3. 이름으로 카테고리 엔티티 조회
-        List<Category> categories = categoryRepository.findAllByNameIn(categoryNames);
+        List<FoodCategory> foodCategories = foodCategoryRepository.findAllByNameIn(categoryFoodNames);
+
+        if (foodCategories.isEmpty()){
+            throw new BizExceptionHandler(ErrorCode.CATEGORY_NOT_FOUND);
+        }
 
         // 4. 매핑 저장
-        for (Category category : categories) {
-            UserCategoryId userCategoryId = new UserCategoryId(user.getUserId(), category.getCategoryId());
+        for (FoodCategory foodCategory : foodCategories) {
 
-            UserCategory userCategory = new UserCategory();
-            userCategory.setId(userCategoryId);
-            userCategory.setUser(user);
-            userCategory.setCategory(category);
-
-            userCategoryRepository.save(userCategory);
+            UserFoodCategory userFoodCategory = new UserFoodCategory(foodCategory,user);
+            userFoodCategoryRepository.save(userFoodCategory);
         }
+
+        if(!categoryLocalNames.isEmpty()){
+
+            List<LocalCategory> localCategories= localCategoryRepository.findAllByNameIn(categoryLocalNames);
+            for (LocalCategory localCategory : localCategories) {
+
+                UserLocalCategory userLocalCategory = new UserLocalCategory(localCategory,user);
+
+                userLocalCategoryRepository.save(userLocalCategory);
+            }
+        }
+
+
     }
 }

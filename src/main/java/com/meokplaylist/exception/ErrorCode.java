@@ -18,7 +18,7 @@ public enum ErrorCode {
     INVALID_GOOGLEOAUTH_TOKEN  (454,"잘못된 GoogleToken"),
 
     INVALID_PASSWORD      (454,"잘못된 password"),
-
+    CATEGORY_NOT_FOUND    (470, "caregory not found"),
     NOT_HAVE_REFRESHTOKEN  (490, "refreshToken 존재하지 않는다."),
     // 5xx
     INTERNAL_ERROR       (551, "서버 오류"),
