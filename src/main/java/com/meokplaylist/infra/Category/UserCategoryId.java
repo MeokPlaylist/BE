@@ -1,5 +1,6 @@
 package com.meokplaylist.infra.Category;
 
+import jakarta.persistence.Embeddable;
 import lombok.*;
 
 import java.io.Serializable;
@@ -9,22 +10,23 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Embeddable
 public class UserCategoryId implements Serializable {
 
-    private Long user;
-    private Long category;
+    private Long userId;
+    private Long categoryId;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof UserCategoryId)) return false;
         UserCategoryId that = (UserCategoryId) o;
-        return Objects.equals(user, that.user) &&
-                Objects.equals(category, that.category);
+        return Objects.equals(userId, that.userId) &&
+                Objects.equals(categoryId, that.categoryId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(user, category);
+        return Objects.hash(userId, categoryId);
     }
 }

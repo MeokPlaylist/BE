@@ -12,28 +12,20 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UserCategory {
 
-    @Id
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @EmbeddedId
+    private UserCategoryId id;
+
+    @ManyToOne
+    @MapsId("userId") // 복합키 매핑
+    @JoinColumn(name = "user_id")
     private Users user;
 
-    @Id
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "food_category_id", nullable = false)
-    private FoodCategory foodCategory;
+    @ManyToOne
+    @MapsId("categoryId")
+    @JoinColumn(name = "category_id")
+    private Category category;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "local_category_id")
-    private LocalCategory localCategory;
+    public UserCategory() {
 
-    public UserCategory(Users user, FoodCategory foodCategory) {
-        this.user = user;
-        this.foodCategory = foodCategory;
-    }
-
-    public UserCategory(Users user, LocalCategory localCategory, FoodCategory foodCategory) {
-        this.user = user;
-        this.localCategory = localCategory;
-        this.foodCategory = foodCategory;
     }
 }
