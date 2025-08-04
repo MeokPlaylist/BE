@@ -55,7 +55,6 @@ public class AuthService {
         String name=null;
         String email = null;
 
-        // ✅ OAuth provider 미리 조회
         OauthProviders oauthProvider = oauthProvidersRepository.findByName(request.provider())
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.INVALID_OAUTH_PROVIDER));
 
