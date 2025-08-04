@@ -10,10 +10,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class UserCategory {
+public class UserFoodCategory {
 
     @EmbeddedId
-    private UserCategoryId id;
+    private UserFoodCategoryId id;
 
     @ManyToOne
     @MapsId("userId") // 복합키 매핑
@@ -23,9 +23,10 @@ public class UserCategory {
     @ManyToOne
     @MapsId("categoryId")
     @JoinColumn(name = "category_id")
-    private Category category;
+    private FoodCategory foodCategory;
 
-    public UserCategory() {
-
+    public UserFoodCategory(FoodCategory foodCategory, Users user) {
+        this.foodCategory = foodCategory;
+        this.user = user;
     }
 }

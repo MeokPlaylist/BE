@@ -1,6 +1,5 @@
 package com.meokplaylist.infra.Category;
 
-import com.meokplaylist.infra.Entity.CategoryType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,17 +9,16 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class Category {
+public class FoodCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long categoryId;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private CategoryType type;
+    private String type;
 
     @Column(nullable = false)
-    private String name;
+    private String foodName;
 
 }

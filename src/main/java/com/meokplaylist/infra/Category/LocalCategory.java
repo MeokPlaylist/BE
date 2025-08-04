@@ -17,13 +17,9 @@ public class LocalCategory {
     private Long localCategoryId;
 
     @Column
-    private String localBigObject;
+    private String type;
 
     @Column
-    private String localSmallObject;
+    private String localName;
 
-    public LocalCategory(String localSmallObject, String localBigObject) {
-        this.localSmallObject = localSmallObject;
-        this.localBigObject = localBigObject;
-    }
 }

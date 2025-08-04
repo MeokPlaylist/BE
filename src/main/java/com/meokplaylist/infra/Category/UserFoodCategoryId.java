@@ -11,7 +11,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
-public class UserCategoryId implements Serializable {
+public class UserFoodCategoryId implements Serializable {
 
     private Long userId;
     private Long categoryId;
@@ -19,8 +19,8 @@ public class UserCategoryId implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof UserCategoryId)) return false;
-        UserCategoryId that = (UserCategoryId) o;
+        if (!(o instanceof UserFoodCategoryId)) return false;
+        UserFoodCategoryId that = (UserFoodCategoryId) o;
         return Objects.equals(userId, that.userId) &&
                 Objects.equals(categoryId, that.categoryId);
     }
