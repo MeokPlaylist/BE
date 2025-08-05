@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface UserCategoryRepository extends JpaRepository<UserCategory, UserCategoryId> {
-    Optional<UserCategory> findByUserId(Long userId);
+    Optional<UserCategory> findByUserUserId(Long userId);
 }

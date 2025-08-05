@@ -117,7 +117,7 @@ public class UserService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        userConsentRepository.findByUserId(user.getUserId())
+        userConsentRepository.findByUserUserId(user.getUserId())
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.CONSENT_NOT_FOUND));
 
     }
@@ -137,7 +137,7 @@ public class UserService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        userCategoryRepository.findByUserId(user.getUserId())
+        userCategoryRepository.findByUserUserId(user.getUserId())
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USERCATEGORY_NOT_FONUD));
     }
 }
