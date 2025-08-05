@@ -17,7 +17,9 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+
 public class ImageService {
+    private static final String BASE_PROFILE_FMG="https://kr.object.ncloudstorage.com/meokplaylist/%EA%B8%B0%EB%B3%B8%20%ED%94%84%EB%A1%9C%ED%95%84.png";
 
     private final S3Client s3Client;
     @Value("${cloud.ncp.object-storage.bucket}")
@@ -28,7 +30,8 @@ public class ImageService {
     public String uploadProfileImage(MultipartFile file, Long userId) throws IOException {
 
         if (file == null || file.isEmpty()) {
-            return null;
+
+            return BASE_PROFILE_FMG;
         }
 
         if (file.isEmpty() || !file.getContentType().startsWith("image/"))
