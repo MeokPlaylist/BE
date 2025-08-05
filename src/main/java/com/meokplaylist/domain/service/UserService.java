@@ -139,5 +139,6 @@ public class UserService {
 
         userCategoryRepository.findByUserUserId(user.getUserId())
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USERCATEGORY_NOT_FONUD));
+
     }
 }
