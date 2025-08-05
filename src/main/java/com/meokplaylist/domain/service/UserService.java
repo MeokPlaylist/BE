@@ -117,28 +117,24 @@ public class UserService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
+        //이전에 완료 했던 사용자인지 확인
+        if(user.getCheckstatus()){
+            throw new BizExceptionHandler(ErrorCode.CHECH_OK);
+        }
+
+        //동의서 체크
         userConsentRepository.findByUserUserId(user.getUserId())
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.CONSENT_NOT_FOUND));
 
-    }
-
-    public void profileCheck(Long userId){
-
-        Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+        // 프로필 체크
         if(user.getNickname().isEmpty()){
             throw new BizExceptionHandler(ErrorCode.DONT_HAVE_NICKNAME);
         }
 
-    }
-
-    public void categoryCheck(Long userId){
-
-        Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-
+        //카테고리 체크
         userCategoryRepository.findByUserUserId(user.getUserId())
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USERCATEGORY_NOT_FONUD));
 
     }
+
 }

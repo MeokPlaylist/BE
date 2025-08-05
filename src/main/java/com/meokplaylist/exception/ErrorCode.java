@@ -25,8 +25,12 @@ public enum ErrorCode {
 
     // 5xx
     INTERNAL_ERROR       (551, "서버 오류"),
-    INVALID_OAUTH_PROVIDER(455,"제공하지 않는 소셜");
+    INVALID_OAUTH_PROVIDER(455,"제공하지 않는 소셜"),
 
+
+    //10XX
+
+    CHECH_OK    (1000,"newB chech ok");
     private final int status;
     private final String message;
 }
