@@ -10,11 +10,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @AllArgsConstructor
+@RequestMapping("/auth")
 public class AuthController {
 
     private AuthService authService;
@@ -26,7 +28,7 @@ public class AuthController {
         return ResponseEntity.ok().body(response);
     }
 
-    @PostMapping("/social/login")
+    @PostMapping("/socialLogin")
     public ResponseEntity<?> socialLogin(@Valid @RequestBody AuthSocialLoginRequest authSocialLoginRequest) throws Exception {
         return switch (authSocialLoginRequest.provider()){
             case "kakao" -> ResponseEntity.ok(authService.loginWithKakao(authSocialLoginRequest.token()));

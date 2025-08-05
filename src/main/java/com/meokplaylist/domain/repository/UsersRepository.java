@@ -13,6 +13,7 @@ public interface UsersRepository extends JpaRepository<Users,Long>{
     Optional<Users> findByEmailAndPasswordHashIsNotNull(String email);
 
     Optional<Users> findByUserId(Long userId);
+
     Optional<Users> findByEmail(String Email);
 
     Optional<Users> findByUserIdAndNameAndEmailAndBirthDay(Long userId,String name, String email, LocalDate birthday);
