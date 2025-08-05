@@ -42,7 +42,7 @@ public class AuthController {
         return ResponseEntity.ok().body(response);
     }
 
-    @PostMapping("/emailInspect")
+    @PostMapping("/email/inspect")
     public ResponseEntity<?> emailInspect(@Valid @RequestBody AuthEmailInspectRequest authEmailInspectRequest){
 
         BooleanResponse response = new BooleanResponse(authService.emailInspect(authEmailInspectRequest));
