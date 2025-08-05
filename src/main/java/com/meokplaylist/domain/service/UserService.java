@@ -2,7 +2,8 @@ package com.meokplaylist.domain.service;
 
 import com.meokplaylist.api.dto.BooleanRequest;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
-import com.meokplaylist.api.dto.user.UserNewPasswordRequest;
+import com.meokplaylist.api.dto.user.FindUserRequest;
+import com.meokplaylist.api.dto.user.NewPasswordRequest;
 import com.meokplaylist.domain.repository.UserConsentRepository;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.FoodCategoryRepository;
@@ -39,13 +40,20 @@ public class UserService {
     private static String consentFileUrl ="https://kr.object.ncloudstorage.com/meokplaylist/%EB%A8%B9%ED%94%8C%EB%A6%AC%20%EB%8F%99%EC%9D%98%EC%84%9C%20%EB%82%B4%EC%9A%A9.txt";
 
 
-    @Transactional
-    public Boolean newPassword(UserNewPasswordRequest request, Long userId){
-        Users user = usersRepository.findByUserIdAndNameAndEmailAndBirthDay(userId, request.name(),request.email() ,request.birthDay())
+    public Long findUser(FindUserRequest request){
+        Users user = usersRepository.findByEmailAndPasswordHashIsNotNull(request.email())
                         .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        user.setPasswordHash(passwordEncoder.encode(request.password()));
 
+        return user.getUserId();
+    }
+
+    @Transactional
+    public Boolean newPassword(NewPasswordRequest request){
+        Users user =usersRepository.findByUserId(request.userId())
+                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         return true;
     }
 
