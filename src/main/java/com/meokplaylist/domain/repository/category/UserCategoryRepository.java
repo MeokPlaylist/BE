@@ -4,6 +4,8 @@ import com.meokplaylist.infra.Category.UserCategory;
 import com.meokplaylist.infra.Category.UserCategoryId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserFoodCategoryRepository extends JpaRepository<UserCategory, UserCategoryId> {
+import java.util.Optional;
 
+public interface UserCategoryRepository extends JpaRepository<UserCategory, UserCategoryId> {
+    Optional<UserCategory> findByUserId(Long userId);
 }

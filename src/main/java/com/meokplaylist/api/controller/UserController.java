@@ -42,7 +42,7 @@ public class UserController {
         return ResponseEntity.ok().body(booleanResponse);
     }
 
-    @PostMapping("/setup/profile")
+    @PostMapping("/setupProfile")
     public ResponseEntity<?> setupProfile(@AuthenticationPrincipal Long userId, UserProfileSetupRequest userProfileSetupRequest) throws IOException {
         StringUrlResponse stringUrlResponse=new StringUrlResponse(imageService.uploadProfileImage(userProfileSetupRequest.profileImg(), userId));
         return ResponseEntity.ok().body(stringUrlResponse);
@@ -57,6 +57,25 @@ public class UserController {
     @PostMapping("/categorySet")
     public ResponseEntity<?> categorySet(@Valid @RequestBody CategorySetUpRequest categorySetUpRequest, @AuthenticationPrincipal Long userId){
         userService.categorySetUp(categorySetUpRequest,userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/consentCheck")
+    public ResponseEntity<?> consentCheck(@AuthenticationPrincipal Long userId){
+        userService.consentCheck(userId);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @PostMapping("/profileCheck")
+    public ResponseEntity<?> profileCheck(@AuthenticationPrincipal Long userId){
+        userService.profileCheck(userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/categoryCheck")
+    public ResponseEntity<?> categoryCheck(@AuthenticationPrincipal Long userId){
+        userService.categoryCheck(userId);
         return ResponseEntity.ok().build();
     }
 

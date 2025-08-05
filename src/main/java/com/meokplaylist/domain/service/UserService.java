@@ -6,9 +6,9 @@ import com.meokplaylist.api.dto.user.FindUserRequest;
 import com.meokplaylist.api.dto.user.NewPasswordRequest;
 import com.meokplaylist.domain.repository.UserConsentRepository;
 import com.meokplaylist.domain.repository.UsersRepository;
-import com.meokplaylist.domain.repository.category.FoodCategoryRepository;
+import com.meokplaylist.domain.repository.category.CategoryRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
-import com.meokplaylist.domain.repository.category.UserFoodCategoryRepository;
+import com.meokplaylist.domain.repository.category.UserCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
@@ -33,9 +33,9 @@ public class UserService {
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserConsentRepository userConsentRepository;
-    private  final FoodCategoryRepository foodCategoryRepository;
+    private  final CategoryRepository categoryRepository;
     private final LocalCategoryRepository localCategoryRepository;
-    private final UserFoodCategoryRepository userFoodCategoryRepository;
+    private final UserCategoryRepository userCategoryRepository;
     private final UserLocalCategoryRepository userLocalCategoryRepository;
     private static String consentFileUrl ="https://kr.object.ncloudstorage.com/meokplaylist/%EB%A8%B9%ED%94%8C%EB%A6%AC%20%EB%8F%99%EC%9D%98%EC%84%9C%20%EB%82%B4%EC%9A%A9.txt";
 
@@ -84,7 +84,7 @@ public class UserService {
         List<String> categoryLocalNames = request.categoryLocalNames();
 
         // 3. 이름으로 카테고리 엔티티 조회
-        List<Category> foodCategories = foodCategoryRepository.findAllByNameIn(categoryFoodNames);
+        List<Category> foodCategories = categoryRepository.findAllByNameIn(categoryFoodNames);
 
         if (foodCategories.isEmpty()){
             throw new BizExceptionHandler(ErrorCode.CATEGORY_NOT_FOUND);
@@ -94,7 +94,7 @@ public class UserService {
         for (Category category : foodCategories) {
 
             UserCategory userCategory = new UserCategory(category,user);
-            userFoodCategoryRepository.save(userCategory);
+            userCategoryRepository.save(userCategory);
         }
 
         if(!categoryLocalNames.isEmpty()){
@@ -109,5 +109,35 @@ public class UserService {
         }
 
 
+
+    }
+
+    public void consentCheck(Long userId){
+
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        userConsentRepository.findByUserId(user.getUserId())
+                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.CONSENT_NOT_FOUND));
+
+    }
+
+    public void profileCheck(Long userId){
+
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+        if(user.getNickname().isEmpty()){
+            throw new BizExceptionHandler(ErrorCode.DONT_HAVE_NICKNAME);
+        }
+
+    }
+
+    public void categoryCheck(Long userId){
+
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        userCategoryRepository.findByUserId(user.getUserId())
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USERCATEGORY_NOT_FONUD));
     }
 }
