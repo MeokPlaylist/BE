@@ -27,6 +27,10 @@ public class ImageService {
     @Transactional
     public String uploadProfileImage(MultipartFile file, Long userId) throws IOException {
 
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+
         if (file.isEmpty() || !file.getContentType().startsWith("image/"))
             throw new IllegalArgumentException("이미지 파일만 업로드 가능합니다.");
 

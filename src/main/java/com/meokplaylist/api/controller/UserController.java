@@ -4,10 +4,7 @@ import com.meokplaylist.api.dto.BooleanRequest;
 import com.meokplaylist.api.dto.BooleanResponse;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
 import com.meokplaylist.api.dto.StringUrlResponse;
-import com.meokplaylist.api.dto.user.FindUserRequest;
-import com.meokplaylist.api.dto.user.FindUserResponse;
-import com.meokplaylist.api.dto.user.NewPasswordRequest;
-import com.meokplaylist.api.dto.user.UserProfileSetupRequest;
+import com.meokplaylist.api.dto.user.*;
 import com.meokplaylist.domain.service.ImageService;
 import com.meokplaylist.domain.service.UserService;
 import jakarta.validation.Valid;
@@ -46,6 +43,12 @@ public class UserController {
     public ResponseEntity<?> setupProfile(@AuthenticationPrincipal Long userId, UserProfileSetupRequest userProfileSetupRequest) throws IOException {
         StringUrlResponse stringUrlResponse=new StringUrlResponse(imageService.uploadProfileImage(userProfileSetupRequest.profileImg(), userId));
         return ResponseEntity.ok().body(stringUrlResponse);
+    }
+
+    @PostMapping("/setupDetailInfo")
+    public ResponseEntity<?> setupDetailInfo(@AuthenticationPrincipal Long userId, @Valid UserDetailInfoSetupRequest userDetailInfoSetupRequest){
+        userService.DetailSetup(userId,userDetailInfoSetupRequest);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/consentAgree")

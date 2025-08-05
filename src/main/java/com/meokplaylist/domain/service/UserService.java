@@ -4,6 +4,7 @@ import com.meokplaylist.api.dto.BooleanRequest;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
 import com.meokplaylist.api.dto.user.FindUserRequest;
 import com.meokplaylist.api.dto.user.NewPasswordRequest;
+import com.meokplaylist.api.dto.user.UserDetailInfoSetupRequest;
 import com.meokplaylist.domain.repository.UserConsentRepository;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.CategoryRepository;
@@ -48,6 +49,7 @@ public class UserService {
         return user.getUserId();
     }
 
+    //패스워드 새로 설정
     @Transactional
     public Boolean newPassword(NewPasswordRequest request){
         Users user =usersRepository.findByUserId(request.userId())
@@ -73,6 +75,7 @@ public class UserService {
 
     }
 
+    //유저 카테고리 설정
     @Transactional
     public void categorySetUp(CategorySetUpRequest request, Long userId) {
         // 1. 유저 조회
@@ -112,6 +115,21 @@ public class UserService {
 
     }
 
+    //유저 nickname, introduction 설정
+    @Transactional
+    public void DetailSetup(Long userId, UserDetailInfoSetupRequest request){
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        user.setNickname(request.nickname());
+
+        if(!request.introduction().isEmpty()) {
+            user.setIntroduction(request.introduction());
+        }
+    }
+
+
+    @Transactional
     public void consentCheck(Long userId){
 
         Users user = usersRepository.findByUserId(userId)
