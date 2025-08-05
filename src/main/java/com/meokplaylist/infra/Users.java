@@ -39,7 +39,8 @@ public class Users {
     @Column
     private String introduction;
 
-
+    @Column
+    private Boolean checkstatus;
 
     @Column(name = "jwt_access_token", length = 2048)
     private String jwtAccessToken;

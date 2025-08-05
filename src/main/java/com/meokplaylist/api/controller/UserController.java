@@ -60,25 +60,11 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/consentCheck")
+    @PostMapping("/newBCheck")
     public ResponseEntity<?> consentCheck(@AuthenticationPrincipal Long userId){
         userService.consentCheck(userId);
         return ResponseEntity.ok().build();
     }
-
-
-    @PostMapping("/profileCheck")
-    public ResponseEntity<?> profileCheck(@AuthenticationPrincipal Long userId){
-        userService.profileCheck(userId);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/categoryCheck")
-    public ResponseEntity<?> categoryCheck(@AuthenticationPrincipal Long userId){
-        userService.categoryCheck(userId);
-        return ResponseEntity.ok().build();
-    }
-
 
 
 
