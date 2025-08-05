@@ -118,6 +118,7 @@ public class UserService {
     //유저 nickname, introduction 설정
     @Transactional
     public void DetailSetup(Long userId, UserDetailInfoSetupRequest request){
+        System.out.println("asdasdasdasdasdasdasdasdasdas"+userId);
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 

@@ -1,5 +1,9 @@
 package com.meokplaylist.domain.service;
 
+import com.meokplaylist.domain.repository.UsersRepository;
+import com.meokplaylist.exception.BizExceptionHandler;
+import com.meokplaylist.exception.ErrorCode;
+import com.meokplaylist.infra.Users;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -22,8 +26,10 @@ public class ImageService {
     private static final String BASE_PROFILE_FMG="https://kr.object.ncloudstorage.com/meokplaylist/%EA%B8%B0%EB%B3%B8%20%ED%94%84%EB%A1%9C%ED%95%84.png";
 
     private final S3Client s3Client;
+    private final UsersRepository usersRepository;
     @Value("${cloud.ncp.object-storage.bucket}")
     private String bucketName;
+
 
 
     @Transactional
@@ -36,6 +42,11 @@ public class ImageService {
 
         if (file.isEmpty() || !file.getContentType().startsWith("image/"))
             throw new IllegalArgumentException("이미지 파일만 업로드 가능합니다.");
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+        //이미지 덮어 씌기 위한 옛 이미지 추출
+        String oldImageUrl = user.getProfileImgUrl();
+        String oldKey = extractKeyFromUrl(oldImageUrl);
 
         String ext = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf(".")); //원본 파일 마지막 이름 뽑아내기
         String key = "profiles/user_" + userId + "_" + UUID.randomUUID() + ext;
@@ -46,6 +57,11 @@ public class ImageService {
                 .acl("public-read") //공개 읽기 권한
                 .contentType(file.getContentType())
                 .build();
+
+        //기본 프로필 외에 덮어씌기
+        if (oldKey != null && !oldKey.contains("기본%20프로필.png")) {
+            s3Client.deleteObject(builder -> builder.bucket(bucketName).key(oldKey));
+        }
 
        PutObjectResponse response = s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
@@ -58,5 +74,10 @@ public class ImageService {
 
         return "https://" + bucketName + ".kr.object.ncloudstorage.com/" + key;
         // "https://kr.object.ncloudstorage.com/" + bucketName + "/" + key; 공식 표기 위에 것이 안되면 해보자,,
+    }
+
+    private String extractKeyFromUrl(String url) {
+        if (url == null || !url.contains(".com/")) return null;
+        return url.substring(url.indexOf(".com/") + 5); // ".com/" 이후부터 끝까지
     }
 }

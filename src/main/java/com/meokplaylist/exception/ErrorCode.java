@@ -14,12 +14,13 @@ public enum ErrorCode {
     USER_NOT_FOUND       (451,          "존재하지 않는 회원"),
     USEROAUTH_NOT_FOUND  (452, "존재하지 않는 Oauth"),
     CONSENT_NOT_FOUND               (453, "not found consent"),
+
+    INVALID_PASSWORD      (454,"잘못된 password"),
     DONT_HAVE_NICKNAME          (455, "don't have nickname"),
     USERCATEGORY_NOT_FONUD      (456, "userCategory not found"),
     INVALID_OAUTH_TOKEN  (460,"잘못된 Token"),
     INVALID_GOOGLEOAUTH_TOKEN  (461,"잘못된 GoogleToken"),
 
-    INVALID_PASSWORD      (454,"잘못된 password"),
     CATEGORY_NOT_FOUND    (470, "caregory not found"),
     NOT_HAVE_REFRESHTOKEN  (490, "refreshToken 존재하지 않는다."),
 

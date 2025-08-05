@@ -40,13 +40,13 @@ public class UserController {
     }
 
     @PostMapping("/setupProfile")
-    public ResponseEntity<?> setupProfile(@AuthenticationPrincipal Long userId, UserProfileSetupRequest userProfileSetupRequest) throws IOException {
+    public ResponseEntity<?> setupProfile(@AuthenticationPrincipal Long userId, @RequestBody UserProfileSetupRequest userProfileSetupRequest) throws IOException {
         StringUrlResponse stringUrlResponse=new StringUrlResponse(imageService.uploadProfileImage(userProfileSetupRequest.profileImg(), userId));
         return ResponseEntity.ok().body(stringUrlResponse);
     }
 
     @PostMapping("/setupDetailInfo")
-    public ResponseEntity<?> setupDetailInfo(@AuthenticationPrincipal Long userId, @Valid UserDetailInfoSetupRequest userDetailInfoSetupRequest){
+    public ResponseEntity<?> setupDetailInfo(@Valid @RequestBody UserDetailInfoSetupRequest userDetailInfoSetupRequest,@AuthenticationPrincipal Long userId){
         userService.DetailSetup(userId,userDetailInfoSetupRequest);
         return ResponseEntity.ok().build();
     }

@@ -61,6 +61,7 @@ public class JwtTokenService {
 
         return JWT.create()
                 .withSubject(String.valueOf(id))
+                .withClaim("userId", id)
                 .withJWTId(UUID.randomUUID().toString())
                 .withClaim("email", email)
                 .withClaim("name", name)
