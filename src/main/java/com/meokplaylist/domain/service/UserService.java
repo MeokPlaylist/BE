@@ -11,9 +11,9 @@ import com.meokplaylist.domain.repository.category.UserFoodCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
-import com.meokplaylist.infra.Category.FoodCategory;
+import com.meokplaylist.infra.Category.Category;
 import com.meokplaylist.infra.Category.LocalCategory;
-import com.meokplaylist.infra.Category.UserFoodCategory;
+import com.meokplaylist.infra.Category.UserCategory;
 import com.meokplaylist.infra.Category.UserLocalCategory;
 import com.meokplaylist.infra.UserConsent;
 import com.meokplaylist.infra.Users;
@@ -76,22 +76,22 @@ public class UserService {
         List<String> categoryLocalNames = request.categoryLocalNames();
 
         // 3. 이름으로 카테고리 엔티티 조회
-        List<FoodCategory> foodCategories = foodCategoryRepository.findAllByNameIn(categoryFoodNames);
+        List<Category> foodCategories = foodCategoryRepository.findAllByNameIn(categoryFoodNames);
 
         if (foodCategories.isEmpty()){
             throw new BizExceptionHandler(ErrorCode.CATEGORY_NOT_FOUND);
         }
 
         // 4. 매핑 저장
-        for (FoodCategory foodCategory : foodCategories) {
+        for (Category category : foodCategories) {
 
-            UserFoodCategory userFoodCategory = new UserFoodCategory(foodCategory,user);
-            userFoodCategoryRepository.save(userFoodCategory);
+            UserCategory userCategory = new UserCategory(category,user);
+            userFoodCategoryRepository.save(userCategory);
         }
 
         if(!categoryLocalNames.isEmpty()){
 
-            List<LocalCategory> localCategories= localCategoryRepository.findAllByNameIn(categoryLocalNames);
+            List<LocalCategory> localCategories= localCategoryRepository.findAllByLocalNameIn(categoryLocalNames);
             for (LocalCategory localCategory : localCategories) {
 
                 UserLocalCategory userLocalCategory = new UserLocalCategory(localCategory,user);

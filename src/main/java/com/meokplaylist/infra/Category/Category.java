@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class FoodCategory {
+public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +19,6 @@ public class FoodCategory {
     private String type;
 
     @Column(nullable = false)
-    private String foodName;
+    private String name;
 
 }

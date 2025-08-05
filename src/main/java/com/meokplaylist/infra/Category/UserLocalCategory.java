@@ -1,14 +1,19 @@
 package com.meokplaylist.infra.Category;
 
 import com.meokplaylist.infra.Users;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
 public class UserLocalCategory {
+
     @EmbeddedId
-    private UserLocalCategory id;
+    private UserLocalCategoryId id;
 
     @ManyToOne
     @MapsId("userId") // 복합키 매핑
@@ -17,7 +22,7 @@ public class UserLocalCategory {
 
     @ManyToOne
     @MapsId("categoryId")
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "local_category_id")
     private LocalCategory localCategory;
 
     public UserLocalCategory( LocalCategory localCategory,Users user) {

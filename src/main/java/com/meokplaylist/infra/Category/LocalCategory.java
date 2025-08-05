@@ -13,7 +13,6 @@ public class LocalCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="local_category_id")
     private Long localCategoryId;
 
     @Column

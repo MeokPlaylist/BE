@@ -2,7 +2,7 @@ INSERT INTO oauth_providers (name) VALUES ('google');
 INSERT INTO oauth_providers (name) VALUES ('kakao');
 
 -- 분위기 (mood)
-INSERT INTO category (type, foodName) VALUES
+INSERT INTO category (type, Name) VALUES
 ('mood', 'TRADITIONAL'),
 ('mood', 'UNIQUE'),
 ('mood', 'EMOTIONAL'),
@@ -12,7 +12,7 @@ INSERT INTO category (type, foodName) VALUES
 ('mood', 'ROMANTIC');
 
 -- 음식 (food)
-INSERT INTO category (type, foodName) VALUES
+INSERT INTO category (type, Name) VALUES
 ('food', 'BUNSIK'),
 ('food', 'CAFE_DESSERT'),
 ('food', 'CHICKEN'),
@@ -30,7 +30,7 @@ INSERT INTO category (type, foodName) VALUES
 ('food', 'STEW_SOUP');
 
 -- 동반자 (companion)
-INSERT INTO category (type, foodName) VALUES
+INSERT INTO category (type, Name) VALUES
 ('companion', 'ALONE'),
 ('companion', 'FRIEND'),
 ('companion', 'LOVER'),
