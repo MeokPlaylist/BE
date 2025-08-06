@@ -15,7 +15,7 @@ public class FeedCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private FeedCategory id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "feed_id")

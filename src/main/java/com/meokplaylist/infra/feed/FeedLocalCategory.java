@@ -3,12 +3,19 @@ package com.meokplaylist.infra.feed;
 import com.meokplaylist.infra.Users;
 import com.meokplaylist.infra.category.LocalCategory;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
 public class FeedLocalCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private FeedLocalCategory id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "feed_id")

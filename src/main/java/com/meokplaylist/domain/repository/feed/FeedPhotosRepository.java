@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface FeedPhotosRepository extends JpaRepository<FeedPhotos, Long> {
 
-    List<FeedPhotos> findByFeedId(Long feedId);
 }
 
