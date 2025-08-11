@@ -58,6 +58,13 @@ public class FeedService {
         }
 
 
+        /*
+
+        + 사진 storage 저장한는 서비스 + photo storageUrl 저장하는과정 필요
+
+        */
+
+
         for (FeedPhotoRequest photoRequest : feedCreateRequest.photos()) {
 
             FeedPhotos photo = FeedPhotos.builder()
