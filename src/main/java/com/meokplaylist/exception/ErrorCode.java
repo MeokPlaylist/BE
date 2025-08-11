@@ -23,6 +23,8 @@ public enum ErrorCode {
     INVALID_GOOGLEOAUTH_TOKEN  (461,"잘못된 GoogleToken"),
 
     CATEGORY_NOT_FOUND    (470, "caregory not found"),
+
+    FAILED_TO_UPLOAD_FILE   (480, "failed_to_upload_file"),
     NOT_HAVE_REFRESHTOKEN  (490, "refreshToken 존재하지 않는다."),
 
     // 5xx

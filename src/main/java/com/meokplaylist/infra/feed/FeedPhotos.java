@@ -24,7 +24,7 @@ public class FeedPhotos {
     private Feed feed;
 
     @Column
-    private String storageUrl;
+    private String storageKey;
 
     @Column
     private Double latitude;
@@ -36,10 +36,10 @@ public class FeedPhotos {
 
     private Integer sequence; // 피드 사진 순서
 
-    public FeedPhotos(Double longitude, Feed feed, String storageUrl, Double latitude, LocalDateTime dayAndTime, Integer sequence) {
+    public FeedPhotos(Double longitude, Feed feed, String storageKey, Double latitude, LocalDateTime dayAndTime, Integer sequence) {
         this.longitude = longitude;
         this.feed = feed;
-        this.storageUrl = storageUrl;
+        this.storageKey = storageKey;
         this.latitude = latitude;
         this.dayAndTime = dayAndTime;
         this.sequence = sequence;
