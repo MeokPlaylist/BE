@@ -13,10 +13,10 @@ import com.meokplaylist.domain.repository.category.UserCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
-import com.meokplaylist.infra.Category.Category;
-import com.meokplaylist.infra.Category.LocalCategory;
-import com.meokplaylist.infra.Category.UserCategory;
-import com.meokplaylist.infra.Category.UserLocalCategory;
+import com.meokplaylist.infra.category.Category;
+import com.meokplaylist.infra.category.LocalCategory;
+import com.meokplaylist.infra.category.UserCategory;
+import com.meokplaylist.infra.category.UserLocalCategory;
 import com.meokplaylist.infra.UserConsent;
 import com.meokplaylist.infra.Users;
 import jakarta.transaction.Transactional;
@@ -83,12 +83,11 @@ public class UserService {
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
         // 2. 카테고리 이름 목록 가져오기
-        List<String> categoryFoodNames = request.categoryFoodNames();  // ex) ["분위기:로맨틱", "음식:한식"]
+        List<String> categoryNames = request.categoryNames();  // ex) ["분위기:로맨틱", "음식:한식"]
         List<String> categoryLocalNames = request.categoryLocalNames();
 
         // 3. 이름으로 카테고리 엔티티 조회
-
-        List<Category> foodCategories = categoryRepository.findAllByNameIn(categoryFoodNames);
+        List<Category> foodCategories = categoryRepository.findAllByNameIn(categoryNames);
 
         if (foodCategories.isEmpty()){
             throw new BizExceptionHandler(ErrorCode.CATEGORY_NOT_FOUND);
@@ -119,7 +118,7 @@ public class UserService {
     //유저 nickname, introduction 설정
     @Transactional
     public void DetailSetup(Long userId, UserDetailInfoSetupRequest request){
-        System.out.println("asdasdasdasdasdasdasdasdasdas"+userId);
+
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
@@ -155,6 +154,7 @@ public class UserService {
         userCategoryRepository.findByUserUserId(user.getUserId())
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USERCATEGORY_NOT_FONUD));
 
+        user.setCheckstatus(true);
     }
 
 }

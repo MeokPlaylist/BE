@@ -1,10 +1,7 @@
-package com.meokplaylist.infra.Category;
+package com.meokplaylist.infra.category;
 
 import jakarta.persistence.Embeddable;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -14,7 +11,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
-public class UserLocalCategoryId implements Serializable {
+public class UserCategoryId implements Serializable {
 
     private Long userId;
     private Long categoryId;
@@ -22,8 +19,8 @@ public class UserLocalCategoryId implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof UserLocalCategoryId)) return false;
-        UserLocalCategoryId that = (UserLocalCategoryId) o;
+        if (!(o instanceof UserCategoryId)) return false;
+        UserCategoryId that = (UserCategoryId) o;
         return Objects.equals(userId, that.userId) &&
                 Objects.equals(categoryId, that.categoryId);
     }

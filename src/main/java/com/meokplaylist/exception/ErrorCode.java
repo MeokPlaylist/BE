@@ -18,10 +18,13 @@ public enum ErrorCode {
     INVALID_PASSWORD      (454,"잘못된 password"),
     DONT_HAVE_NICKNAME          (455, "don't have nickname"),
     USERCATEGORY_NOT_FONUD      (456, "userCategory not found"),
+    NOT_FOUND_FEED              (457, "not found feed"),
     INVALID_OAUTH_TOKEN  (460,"잘못된 Token"),
     INVALID_GOOGLEOAUTH_TOKEN  (461,"잘못된 GoogleToken"),
 
     CATEGORY_NOT_FOUND    (470, "caregory not found"),
+
+    FAILED_TO_UPLOAD_FILE   (480, "failed_to_upload_file"),
     NOT_HAVE_REFRESHTOKEN  (490, "refreshToken 존재하지 않는다."),
 
     // 5xx

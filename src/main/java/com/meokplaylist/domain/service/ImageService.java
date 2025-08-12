@@ -27,6 +27,7 @@ public class ImageService {
 
     private final S3Client s3Client;
     private final UsersRepository usersRepository;
+
     @Value("${cloud.ncp.object-storage.bucket}")
     private String bucketName;
 

@@ -1,4 +1,4 @@
-package com.meokplaylist.infra.Category;
+package com.meokplaylist.infra.category;
 
 import com.meokplaylist.infra.Users;
 import jakarta.persistence.*;
