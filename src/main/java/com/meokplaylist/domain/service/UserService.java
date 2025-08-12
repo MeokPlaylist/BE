@@ -87,6 +87,7 @@ public class UserService {
         List<String> categoryLocalNames = request.categoryLocalNames();
 
         // 3. 이름으로 카테고리 엔티티 조회
+
         List<Category> foodCategories = categoryRepository.findAllByNameIn(categoryFoodNames);
 
         if (foodCategories.isEmpty()){
