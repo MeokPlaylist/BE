@@ -44,7 +44,7 @@ cloud:
       access-key: ncp_iam_BPAMKR3RB01iniV2T75P
       secret-key: ncp_iam_BPKMKRCaBvaLBbnEhWbbR56ueQNlOYfWnn
       endpoint: https://kr.object.ncloudstorage.com
-      bucket: meokplaylist
+      bucket: testmeokplaylist
 
 oauth:
   google:
