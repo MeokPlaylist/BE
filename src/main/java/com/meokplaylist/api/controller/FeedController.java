@@ -18,11 +18,12 @@ public class FeedController {
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createFeed(
-            @AuthenticationPrincipal Long userId,
+           // @AuthenticationPrincipal Long userId,
+            @RequestParam Long userId, //테스트용
             @ModelAttribute FeedCreateRequest feedCreateRequest,
             @ModelAttribute FeedCategorySetUpRequest feedCategorySetUpRequest
     ){
-        //FeedCreateRequest feedCreateRequest =new FeedCreateRequest(content, photoFile, hashTag, photos);
+
         BooleanResponse booleanResponse=new BooleanResponse(feedService.createFeed(feedCreateRequest,feedCategorySetUpRequest,userId));
 
         return ResponseEntity.ok(booleanResponse);

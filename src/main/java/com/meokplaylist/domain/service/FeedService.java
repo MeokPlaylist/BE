@@ -64,20 +64,24 @@ public class FeedService {
                 .content(feedCreateRequest.content())
                 .hashTag(feedCreateRequest.hashTag())
                 .build();
-
+        System.out.println("check 1");
         feed = feedRepository.save(feed);
 
         //피드 카테고리 저장
         if(feedCategorySetUpRequest.categoryNames() !=null){
             feedCategorySetUp(feedCategorySetUpRequest,feed.getFeedId());
+
+            System.out.println("check 2");
         }
 
         List<FeedPhotos> feedPhotos =new ArrayList<>();
 
         for (FeedPhotoForm photoForm : feedCreateRequest.photos()) {
 
+            System.out.println("check 3");
             String storageKey = putFileToBucket(photoForm.photo(), user.getUserId()); //key 리턴
 
+            System.out.println("check 4");
             FeedPhotos photo = FeedPhotos.builder()
                     .feed(feed)
                     .latitude(photoForm.latitude())
@@ -90,6 +94,7 @@ public class FeedService {
 
         }
 
+        System.out.println("check 5");
         feedPhotosRepository.saveAll(feedPhotos);
         return true;
     }
@@ -115,6 +120,8 @@ public class FeedService {
 
     @Transactional
     public void feedCategorySetUp(FeedCategorySetUpRequest request, Long feedId) {
+
+        System.out.println("check 4");
         // 1. 피드 조회
         Feed feed = feedRepository.findByFeedId(feedId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
@@ -157,6 +164,11 @@ public class FeedService {
 
 
     private String putFileToBucket(MultipartFile file,Long userId) {
+        System.out.println("file == null? " + (file == null));
+        System.out.println("file.isEmpty()? " + (file != null && file.isEmpty()));
+        System.out.println("origName=" + (file != null ? file.getOriginalFilename() : "null"));
+        System.out.println("ct=" + (file != null ? file.getContentType() : "null"));
+        System.out.println("size=" + (file != null ? file.getSize() : -1));
 
         if (file == null || file.isEmpty()) {
             throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
@@ -166,19 +178,20 @@ public class FeedService {
         if (!ALLOWED.contains(ct)) {
             throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
         }
-
+        System.out.println("ct= "+ ct);
         try {
             String key = StorageKeyUtil.buildKey("photos", userId, file.getOriginalFilename());
+            System.out.println("key = "+key);
 
-            objectStorageClient.putObject(
-                    PutObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(key)
-                            .contentType(file.getContentType())
-                            .build(),
-                    RequestBody.fromInputStream(file.getInputStream(), file.getSize())
-            );
 
+            PutObjectRequest putReq = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .contentType(file.getContentType())
+                    .build();
+            objectStorageClient.putObject(putReq, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+            System.out.println("key2 = "+key);
             return key;
 
         } catch (IOException e) {

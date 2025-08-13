@@ -11,7 +11,7 @@ public final class StorageKeyUtil {
         String ext = getExtensionOrDefault(originalFilename, "bin");
         String uuid = UUID.randomUUID().toString();
         // 예: photos/123/uuid.png
-        return String.format("%s/%d/%s/%s.%s", topLevel, userId, uuid, ext);
+        return String.format("%s/%d/%s.%s", topLevel, userId, uuid, ext);
     }
 
     private static String getExtensionOrDefault(String filename, String def) {

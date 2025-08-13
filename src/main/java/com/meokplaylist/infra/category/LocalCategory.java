@@ -21,4 +21,7 @@ public class LocalCategory {
     @Column
     private String localName;
 
+    public LocalCategory() {
+
+    }
 }
