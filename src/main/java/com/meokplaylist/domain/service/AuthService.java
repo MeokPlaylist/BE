@@ -161,7 +161,6 @@ public class AuthService {
                 .passwordHash(passwordEncoder.encode(request.password()))
                 .name(request.name())
                 .birthDay(request.birthDay())
-                .checkstatus(Boolean.FALSE)
                 .build();
 
         usersRepository.save(users);

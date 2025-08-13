@@ -6,6 +6,7 @@ import com.meokplaylist.api.dto.feed.FeedPhotoForm;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.CategoryRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
+import com.meokplaylist.domain.repository.category.UserCategoryRepository;
 import com.meokplaylist.domain.repository.feed.FeedCategoryRespository;
 import com.meokplaylist.domain.repository.feed.FeedLocalCategoryRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
@@ -15,6 +16,7 @@ import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.Users;
 import com.meokplaylist.infra.category.Category;
 import com.meokplaylist.infra.category.LocalCategory;
+import com.meokplaylist.infra.category.UserCategory;
 import com.meokplaylist.infra.feed.Feed;
 import com.meokplaylist.infra.feed.FeedCategory;
 import com.meokplaylist.infra.feed.FeedLocalCategory;
@@ -53,6 +55,7 @@ public class FeedService {
     private final LocalCategoryRepository localCategoryRepository;
     private final CategoryRepository categoryRepository;
     private final UsersRepository usersRepository;
+    private final UserCategoryRepository userCategoryRepository;
 
     @Transactional
     public Boolean createFeed(FeedCreateRequest feedCreateRequest, FeedCategorySetUpRequest feedCategorySetUpRequest,Long userId) {
@@ -64,24 +67,20 @@ public class FeedService {
                 .content(feedCreateRequest.content())
                 .hashTag(feedCreateRequest.hashTag())
                 .build();
-        System.out.println("check 1");
         feed = feedRepository.save(feed);
 
         //피드 카테고리 저장
         if(feedCategorySetUpRequest.categoryNames() !=null){
             feedCategorySetUp(feedCategorySetUpRequest,feed.getFeedId());
 
-            System.out.println("check 2");
         }
 
         List<FeedPhotos> feedPhotos =new ArrayList<>();
 
         for (FeedPhotoForm photoForm : feedCreateRequest.photos()) {
 
-            System.out.println("check 3");
             String storageKey = putFileToBucket(photoForm.photo(), user.getUserId()); //key 리턴
 
-            System.out.println("check 4");
             FeedPhotos photo = FeedPhotos.builder()
                     .feed(feed)
                     .latitude(photoForm.latitude())
@@ -94,34 +93,13 @@ public class FeedService {
 
         }
 
-        System.out.println("check 5");
         feedPhotosRepository.saveAll(feedPhotos);
         return true;
     }
 
-
-    /*
-     content : 오늘 점심
-     hashTag : 학식
-     hashTag : 맛집
-     photos[0].file : (파일 선택)
-     photos[0].lat : 37.123
-     photos[0].lng : 127.456
-     photos[0].placeName : 정문
-     photos[0].order : 0
-     photos[1].file : (파일 선택)
-     photos[1].lat : 37.124
-     photos[1].lng : 127.457
-     photos[1].placeName : 학식
-     photos[1].order : 1
-
-     */
-
-
     @Transactional
     public void feedCategorySetUp(FeedCategorySetUpRequest request, Long feedId) {
 
-        System.out.println("check 4");
         // 1. 피드 조회
         Feed feed = feedRepository.findByFeedId(feedId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
@@ -162,13 +140,8 @@ public class FeedService {
 
     }
 
-
+    @Transactional
     private String putFileToBucket(MultipartFile file,Long userId) {
-        System.out.println("file == null? " + (file == null));
-        System.out.println("file.isEmpty()? " + (file != null && file.isEmpty()));
-        System.out.println("origName=" + (file != null ? file.getOriginalFilename() : "null"));
-        System.out.println("ct=" + (file != null ? file.getContentType() : "null"));
-        System.out.println("size=" + (file != null ? file.getSize() : -1));
 
         if (file == null || file.isEmpty()) {
             throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
@@ -181,9 +154,6 @@ public class FeedService {
         System.out.println("ct= "+ ct);
         try {
             String key = StorageKeyUtil.buildKey("photos", userId, file.getOriginalFilename());
-            System.out.println("key = "+key);
-
-
             PutObjectRequest putReq = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
@@ -191,12 +161,26 @@ public class FeedService {
                     .build();
             objectStorageClient.putObject(putReq, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-            System.out.println("key2 = "+key);
             return key;
 
         } catch (IOException e) {
             throw new BizExceptionHandler(ErrorCode.FAILED_TO_UPLOAD_FILE);
         }
+    }
+
+    @Transactional
+    public void mainFeedSelect(Long userId){
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        List<UserCategory> userCategory=userCategoryRepository.findByUserUserId(user.getUserId())
+                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.NOT_FOUND_USERCATEGORY));
+
+        for(int i=0; i< userCategory.size(); i++){
+            Category category = userCategory.get(i).getCategory();
+        }
+
+
     }
 
 }

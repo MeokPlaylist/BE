@@ -28,4 +28,30 @@ public class FeedController {
 
         return ResponseEntity.ok(booleanResponse);
     }
+
+    @GetMapping("/main")
+    public ResponseEntity<?> mainFeedElement(@AuthenticationPrincipal Long userId){
+
+        return ResponseEntity.ok().build();
+    }
+
 }
+
+
+    /*
+     createFeed Dto
+     content : 오늘 점심
+     hashTag : 학식
+     hashTag : 맛집
+     photos[0].file : (파일 선택)
+     photos[0].lat : 37.123
+     photos[0].lng : 127.456
+     photos[0].placeName : 정문
+     photos[0].order : 0
+     photos[1].file : (파일 선택)
+     photos[1].lat : 37.124
+     photos[1].lng : 127.457
+     photos[1].placeName : 학식
+     photos[1].order : 1
+
+     */
