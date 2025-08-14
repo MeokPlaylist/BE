@@ -5,16 +5,13 @@ import com.meokplaylist.api.dto.BooleanResponse;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
 import com.meokplaylist.api.dto.StringUrlResponse;
 import com.meokplaylist.api.dto.user.*;
-import com.meokplaylist.domain.service.ImageService;
+import com.meokplaylist.domain.service.S3Service;
 import com.meokplaylist.domain.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -24,8 +21,7 @@ import java.io.IOException;
 public class UserController {
 
     private final UserService userService;
-    private ImageService imageService;
-
+    private S3Service s3Service;
 
     @PostMapping("/find")
     public ResponseEntity<?> findUser(@Valid @RequestBody FindUserRequest findUserRequest){
@@ -41,7 +37,7 @@ public class UserController {
 
     @PostMapping("/setupProfile")
     public ResponseEntity<?> setupProfile(@AuthenticationPrincipal Long userId, @RequestBody UserProfileSetupRequest userProfileSetupRequest) throws IOException {
-        StringUrlResponse stringUrlResponse=new StringUrlResponse(imageService.uploadProfileImage(userProfileSetupRequest.profileImg(), userId));
+        StringUrlResponse stringUrlResponse=new StringUrlResponse(s3Service.uploadProfileImage(userProfileSetupRequest.profileImg(), userId));
         return ResponseEntity.ok().body(stringUrlResponse);
     }
 
@@ -69,6 +65,12 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/mypage")
+    public ResponseEntity<?> mypage(@AuthenticationPrincipal Long userId){
 
+        MypageResponse mypageResponse=userService.mypageLoad(userId);
+
+        return ResponseEntity.ok(mypageResponse);
+    }
 
 }

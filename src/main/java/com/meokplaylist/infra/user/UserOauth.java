@@ -1,4 +1,4 @@
-package com.meokplaylist.infra;
+package com.meokplaylist.infra.user;
 
 import jakarta.persistence.*;
 import lombok.*;

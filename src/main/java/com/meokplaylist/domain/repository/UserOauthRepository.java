@@ -1,9 +1,8 @@
 package com.meokplaylist.domain.repository;
 
-import com.meokplaylist.infra.UserOauth;
-import com.meokplaylist.infra.UserOauthId;
+import com.meokplaylist.infra.user.UserOauth;
+import com.meokplaylist.infra.user.UserOauthId;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 

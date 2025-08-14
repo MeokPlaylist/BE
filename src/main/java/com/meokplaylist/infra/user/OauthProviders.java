@@ -1,10 +1,9 @@
-package com.meokplaylist.infra;
+package com.meokplaylist.infra.user;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.*;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Entity
 @Getter

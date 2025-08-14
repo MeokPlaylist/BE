@@ -1,4 +1,4 @@
-package com.meokplaylist.infra;
+package com.meokplaylist.infra.user;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,7 +34,7 @@ public class Users {
     private String nickname;
 
     @Column
-    private String profileImgUrl;
+    private String profileImgKey;
 
     @Column
     private String introduction;

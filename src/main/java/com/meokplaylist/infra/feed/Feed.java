@@ -1,6 +1,6 @@
 package com.meokplaylist.infra.feed;
 
-import com.meokplaylist.infra.Users;
+import com.meokplaylist.infra.user.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

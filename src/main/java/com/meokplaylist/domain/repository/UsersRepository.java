@@ -2,8 +2,7 @@ package com.meokplaylist.domain.repository;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.meokplaylist.infra.Users;
-import org.springframework.data.jpa.repository.Query;
+import com.meokplaylist.infra.user.Users;
 
 import java.time.LocalDate;
 import java.util.Optional;

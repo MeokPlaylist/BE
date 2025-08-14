@@ -13,7 +13,7 @@ import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
-import com.meokplaylist.infra.Users;
+import com.meokplaylist.infra.user.Users;
 import com.meokplaylist.infra.category.Category;
 import com.meokplaylist.infra.category.LocalCategory;
 import com.meokplaylist.infra.category.UserCategory;
@@ -179,9 +179,11 @@ public class FeedService {
         for(int i=0; i< userCategory.size(); i++){
             Category category = userCategory.get(i).getCategory();
         }
-
+        //개발 대기
 
     }
+
+
 
 }
 

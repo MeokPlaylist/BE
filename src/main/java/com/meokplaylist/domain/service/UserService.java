@@ -3,6 +3,7 @@ package com.meokplaylist.domain.service;
 import com.meokplaylist.api.dto.BooleanRequest;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
 import com.meokplaylist.api.dto.user.FindUserRequest;
+import com.meokplaylist.api.dto.user.MypageResponse;
 import com.meokplaylist.api.dto.user.NewPasswordRequest;
 import com.meokplaylist.api.dto.user.UserDetailInfoSetupRequest;
 import com.meokplaylist.domain.repository.UserConsentRepository;
@@ -11,20 +12,26 @@ import com.meokplaylist.domain.repository.category.CategoryRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
+import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
+import com.meokplaylist.domain.repository.feed.FeedRepository;
+import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.category.Category;
 import com.meokplaylist.infra.category.LocalCategory;
 import com.meokplaylist.infra.category.UserCategory;
 import com.meokplaylist.infra.category.UserLocalCategory;
-import com.meokplaylist.infra.UserConsent;
-import com.meokplaylist.infra.Users;
-import jakarta.transaction.Transactional;
+import com.meokplaylist.infra.feed.FeedPhotos;
+import com.meokplaylist.infra.user.UserConsent;
+import com.meokplaylist.infra.user.Users;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,9 +45,13 @@ public class UserService {
     private final LocalCategoryRepository localCategoryRepository;
     private final UserCategoryRepository userCategoryRepository;
     private final UserLocalCategoryRepository userLocalCategoryRepository;
+    private  final FollowsRepository followsRepository;
+    private final FeedRepository feedRepository;
+    private final FeedPhotosRepository feedPhotosRepository;
+    private final S3Service s3Service;
     private static String consentFileUrl ="https://kr.object.ncloudstorage.com/meokplaylist/%EB%A8%B9%ED%94%8C%EB%A6%AC%20%EB%8F%99%EC%9D%98%EC%84%9C%20%EB%82%B4%EC%9A%A9.txt";
 
-
+    @Transactional(readOnly = true)
     public Long findUser(FindUserRequest request){
         Users user = usersRepository.findByEmailAndPasswordHashIsNotNull(request.email())
                         .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
@@ -155,6 +166,37 @@ public class UserService {
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USERCATEGORY_NOT_FONUD));
 
         user.setCheckstatus(true);
+    }
+
+    @Transactional(readOnly = true)
+    public MypageResponse mypageLoad(Long userId){
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        Long feedNum = feedRepository.countByUserUserId(user.getUserId());
+        Long followingNum =followsRepository.countByFollowingUserId(user.getUserId());
+        Long followerNum =followsRepository.countByFollowerUserId(user.getUserId());
+        String userNickname=user.getNickname();
+        String userIntro=user.getIntroduction();
+        String profileUrl=s3Service.generatePresignedUrl(user.getProfileImgKey());
+        List<FeedPhotos> thumbnailPhotos = feedPhotosRepository.findThumbnailsByUser(user);
+
+        // 5. 조회된 사진 목록의 StorageKey로 Presigned URL 목록 생성
+        List<String> feedMainPhotoUrls = thumbnailPhotos.stream()
+                .map(photo -> s3Service.generatePresignedUrl(photo.getStorageKey()))
+                .collect(Collectors.toList());
+
+        MypageResponse mypageResponse =MypageResponse.builder()
+                .feedNum(feedNum)
+                .followingNum(followingNum)
+                .followerNum(followerNum)
+                .userNickname(userNickname)
+                .userIntro(userIntro)
+                .profileUrl(profileUrl)
+                .feedMainPhotoUrls(feedMainPhotoUrls)
+                .build();
+
+        return mypageResponse;
     }
 
 }
