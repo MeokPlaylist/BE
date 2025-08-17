@@ -155,14 +155,14 @@ public class UserService {
 
 
     @Transactional
-    public void consentCheck(Long userId){
+    public Boolean consentCheck(Long userId){
 
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
         //이전에 완료 했던 사용자인지 확인
         if(user.getCheckstatus()){
-            throw new BizExceptionHandler(ErrorCode.CHECH_OK);
+            return true;
         }
 
         //동의서 체크
@@ -179,6 +179,7 @@ public class UserService {
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USERCATEGORY_NOT_FONUD));
 
         user.setCheckstatus(true);
+        return true;
     }
 
 }
