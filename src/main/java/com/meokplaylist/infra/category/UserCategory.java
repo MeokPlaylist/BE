@@ -4,12 +4,14 @@ import com.meokplaylist.infra.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserCategory {
 
     @EmbeddedId
@@ -32,11 +34,13 @@ public class UserCategory {
     public UserCategory(Category category, Users user) {
         this.category = category;
         this.user = user;
+        this.id = new UserCategoryId(user.getUserId(), category.getCategoryId());
     }
 
     public UserCategory(Users user, Category category, LocalCategory localCategory) {
         this.user = user;
         this.category = category;
         this.localCategory = localCategory;
+        this.id = new UserCategoryId(user.getUserId(), category.getCategoryId());
     }
 }

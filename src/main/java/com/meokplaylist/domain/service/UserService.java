@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -62,6 +63,9 @@ public class UserService {
     @Transactional
     public Boolean consentUpload(BooleanRequest request, Long userId){
 
+        if (request.isAvailable() == null) {
+            throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // 혹은 적절한 코드
+        }
         Users user =usersRepository.findByUserId(userId)
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
         if(request.isAvailable()) {
@@ -82,36 +86,56 @@ public class UserService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        // 2. 카테고리 이름 목록 가져오기
-        List<String> categoryNames = request.categoryNames();  // ex) ["분위기:로맨틱", "음식:한식"]
-        List<String> categoryLocalNames = request.categoryLocalNames();
+        List<String> categoryList = request.categories(); // ["분위기:전통적인", "음식:한식", ...]
+        if (categoryList == null || categoryList.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
-        // 3. 이름으로 카테고리 엔티티 조회
-        List<Category> foodCategories = categoryRepository.findAllByNameIn(categoryNames);
+        List<Category> saveCategories =new ArrayList<>();
 
-        if (foodCategories.isEmpty()){
-            throw new BizExceptionHandler(ErrorCode.CATEGORY_NOT_FOUND);
+        for (String raw : categoryList) {
+            String[] parts = raw.split(":", 2);
+            if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // "분류:이름" 형식 아니면 에러
+            String type = parts[0].trim();  // 예: "분위기"
+            String name = parts[1].trim();  // 예: "전통적인"
+            if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
+
+            Category foodCategory = categoryRepository.findByTypeAndName(type,name);
+
+
+            saveCategories.add(foodCategory);
         }
 
-        // 4. 매핑 저장
-        for (Category category : foodCategories) {
+        List<UserCategory> mappings = saveCategories.stream()
+                .map(cat -> new UserCategory(cat, user))   // user는 앞에서 조회된 Users
+                .toList();
 
-            UserCategory userCategory = new UserCategory(category,user);
-            userCategoryRepository.save(userCategory);
+        userCategoryRepository.saveAll(mappings);
+
+
+        List<String> regions = request.regions();
+        List<LocalCategory> saveRegion =new ArrayList<>();
+        if (regions == null || regions.isEmpty()){
+
         }
+        else {
+            for (String raw : categoryList) {
+                String[] parts = raw.split(":", 2);
+                if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // "분류:이름" 형식 아니면 에러
+                String type = parts[0].trim();  // 예: "경기도"
+                String name = parts[1].trim();  // 예: "수원시"
+                if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
-        if(!categoryLocalNames.isEmpty()){
+                LocalCategory region = localCategoryRepository.findByTypeAndLocalName(type, name);
 
-            List<LocalCategory> localCategories= localCategoryRepository.findAllByLocalNameIn(categoryLocalNames);
-            for (LocalCategory localCategory : localCategories) {
 
-                UserLocalCategory userLocalCategory = new UserLocalCategory(localCategory,user);
-
-                userLocalCategoryRepository.save(userLocalCategory);
+                saveRegion.add(region);
             }
+
+            List<UserLocalCategory> regionMappings = saveRegion.stream()
+                    .map(cat -> new UserLocalCategory(cat, user))   // user는 앞에서 조회된 Users
+                    .toList();
+
+            userLocalCategoryRepository.saveAll(regionMappings);
         }
-
-
 
     }
 
@@ -146,7 +170,7 @@ public class UserService {
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.CONSENT_NOT_FOUND));
 
         // 프로필 체크
-        if(user.getNickname().isEmpty()){
+        if(user.getNickname()==null){
             throw new BizExceptionHandler(ErrorCode.DONT_HAVE_NICKNAME);
         }
 

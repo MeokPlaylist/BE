@@ -66,14 +66,14 @@ public class FeedService {
                 .build();
         System.out.println("check 1");
         feed = feedRepository.save(feed);
-
+        /*
         //피드 카테고리 저장
         if(feedCategorySetUpRequest.categoryNames() !=null){
             feedCategorySetUp(feedCategorySetUpRequest,feed.getFeedId());
 
             System.out.println("check 2");
         }
-
+        */
         List<FeedPhotos> feedPhotos =new ArrayList<>();
 
         for (FeedPhotoForm photoForm : feedCreateRequest.photos()) {
@@ -117,7 +117,7 @@ public class FeedService {
 
      */
 
-
+    /*
     @Transactional
     public void feedCategorySetUp(FeedCategorySetUpRequest request, Long feedId) {
 
@@ -161,7 +161,7 @@ public class FeedService {
 
 
     }
-
+    */
 
     private String putFileToBucket(MultipartFile file,Long userId) {
         System.out.println("file == null? " + (file == null));

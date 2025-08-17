@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface LocalCategoryRepository extends JpaRepository<LocalCategory, Long> {
-    List<LocalCategory> findAllByLocalNameIn(List<String> names);
+    LocalCategory findByTypeAndLocalName(String type, String localName);
 }

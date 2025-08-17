@@ -4,12 +4,14 @@ import com.meokplaylist.infra.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserLocalCategory {
 
     @EmbeddedId
@@ -28,5 +30,6 @@ public class UserLocalCategory {
     public UserLocalCategory( LocalCategory localCategory,Users user) {
         this.localCategory = localCategory;
         this.user = user;
+        this.id=new UserLocalCategoryId(user.getUserId(),localCategory.getLocalCategoryId());
     }
 }

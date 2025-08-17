@@ -3,6 +3,7 @@ package com.meokplaylist.infra;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -12,8 +13,13 @@ import java.time.OffsetDateTime;
 @Entity
 @Getter
 @Setter
-@Table
+@Table(name = "user_consent",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_user_consent_user",
+                columnNames = {"user_id"}
+        ))
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserConsent {
 
     @Id

@@ -11,10 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -40,9 +37,11 @@ public class UserController {
     }
 
     @PostMapping("/setupProfile")
-    public ResponseEntity<?> setupProfile(@AuthenticationPrincipal Long userId, @RequestBody UserProfileSetupRequest userProfileSetupRequest) throws IOException {
-        StringUrlResponse stringUrlResponse=new StringUrlResponse(imageService.uploadProfileImage(userProfileSetupRequest.profileImg(), userId));
-        return ResponseEntity.ok().body(stringUrlResponse);
+    public ResponseEntity<?> setupProfile( //여기 check 해봐야함
+            @AuthenticationPrincipal Long userId,
+            @ModelAttribute UserProfileSetupRequest userProfileSetupRequest) throws IOException {
+        imageService.uploadProfileImage(userProfileSetupRequest.profileImg(), userId);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/setupDetailInfo")
@@ -52,7 +51,7 @@ public class UserController {
     }
 
     @PostMapping("/consentAgree")
-    public ResponseEntity<?> consentUpload(@Valid @RequestBody BooleanRequest booleanRequest, @AuthenticationPrincipal Long userId){
+    public ResponseEntity<?> consentUpload(@RequestBody BooleanRequest booleanRequest, @AuthenticationPrincipal Long userId){
         BooleanResponse booleanResponse = new BooleanResponse(userService.consentUpload(booleanRequest,userId));
         return ResponseEntity.ok().body(booleanResponse);
     }
