@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -110,7 +111,6 @@ public class UserService {
 
         userCategoryRepository.saveAll(mappings);
 
-
         List<String> regions = request.regions();
         List<LocalCategory> saveRegion =new ArrayList<>();
         if (regions == null || regions.isEmpty()){
@@ -135,6 +135,7 @@ public class UserService {
                     .toList();
 
             userLocalCategoryRepository.saveAll(regionMappings);
+            user.setCheckstatus(true);
         }
 
     }
@@ -175,10 +176,9 @@ public class UserService {
         }
 
         //카테고리 체크
-        userCategoryRepository.findByUserUserId(user.getUserId())
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USERCATEGORY_NOT_FONUD));
+        List<UserCategory> categories = userCategoryRepository.findAllByUserUserId(user.getUserId());
+        if (categories.isEmpty()) throw new BizExceptionHandler(ErrorCode.USERCATEGORY_NOT_FOUND);
 
-        user.setCheckstatus(true);
         return true;
     }
 
