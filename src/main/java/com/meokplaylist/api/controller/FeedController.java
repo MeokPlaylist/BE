@@ -18,8 +18,7 @@ public class FeedController {
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createFeed(
-           // @AuthenticationPrincipal Long userId,
-            @RequestParam Long userId, //테스트용
+           @AuthenticationPrincipal Long userId,
             @ModelAttribute FeedCreateRequest feedCreateRequest,
             @ModelAttribute FeedCategorySetUpRequest feedCategorySetUpRequest
     ){

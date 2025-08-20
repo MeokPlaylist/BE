@@ -21,6 +21,7 @@ import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.category.Category;
 import com.meokplaylist.infra.category.LocalCategory;
 import com.meokplaylist.infra.category.UserCategory;
+import com.meokplaylist.infra.category.UserLocalCategory;
 import com.meokplaylist.infra.feed.FeedPhotos;
 import com.meokplaylist.infra.user.UserConsent;
 import com.meokplaylist.infra.user.Users;
@@ -47,6 +48,7 @@ public class UserService {
     private final FeedRepository feedRepository;
     private final FollowsRepository followsRepository;
     private final FeedPhotosRepository feedPhotosRepository;
+    private final UserLocalCategoryRepository userLocalCategoryRepository;
 
     private final S3Service s3Service;
     private static String consentFileUrl ="https://kr.object.ncloudstorage.com/meokplaylist/%EB%A8%B9%ED%94%8C%EB%A6%AC%20%EB%8F%99%EC%9D%98%EC%84%9C%20%EB%82%B4%EC%9A%A9.txt";
@@ -91,7 +93,7 @@ public class UserService {
 
     //유저 카테고리 설정
     @Transactional
-    public void categorySetUp(CategorySetUpRequest request, Long userId) {
+    public Boolean categorySetUp(CategorySetUpRequest request, Long userId) {
         // 1. 유저 조회
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
@@ -123,7 +125,8 @@ public class UserService {
         List<String> regions = request.regions();
         List<LocalCategory> saveRegion =new ArrayList<>();
         if (regions == null || regions.isEmpty()){
-
+            user.setCheckstatus(true);
+            return true;
         }
         else {
             for (String raw : categoryList) {
@@ -138,9 +141,17 @@ public class UserService {
 
                 saveRegion.add(region);
             }
+            List<UserLocalCategory> mapping = saveRegion.stream()
+                    .map(reg->new UserLocalCategory(reg,user))
+                    .toList();
 
+            userLocalCategoryRepository.saveAll(mapping);
 
         }
+
+
+        user.setCheckstatus(true);
+        return true;
     }
 
     //유저 nickname, introduction 설정
@@ -174,15 +185,15 @@ public class UserService {
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.CONSENT_NOT_FOUND));
 
         // 프로필 체크
-        if(user.getNickname().isEmpty()){
+        if(user.getNickname()==null){
             throw new BizExceptionHandler(ErrorCode.DONT_HAVE_NICKNAME);
         }
 
-        //카테고리 체크
-        userCategoryRepository.findByUserUserId(user.getUserId())
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_USERCATEGORY));
+        List<UserCategory> categories = userCategoryRepository.findByUserUserId(user.getUserId());
+        if (categories.isEmpty()) {
+            throw new BizExceptionHandler(ErrorCode.NOT_FOUND_USERCATEGORY);
+        }
 
-        user.setCheckstatus(true);
     }
 
     @Transactional(readOnly = true)
