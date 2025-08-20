@@ -68,13 +68,13 @@ public class FeedService {
                 .hashTag(feedCreateRequest.hashTag())
                 .build();
         feed = feedRepository.save(feed);
-
+        /*
         //피드 카테고리 저장
         if(feedCategorySetUpRequest.categoryNames() !=null){
             feedCategorySetUp(feedCategorySetUpRequest,feed.getFeedId());
 
         }
-
+        */
         List<FeedPhotos> feedPhotos =new ArrayList<>();
 
         for (FeedPhotoForm photoForm : feedCreateRequest.photos()) {
@@ -96,7 +96,7 @@ public class FeedService {
         feedPhotosRepository.saveAll(feedPhotos);
         return true;
     }
-
+    /*
     @Transactional
     public void feedCategorySetUp(FeedCategorySetUpRequest request, Long feedId) {
 
@@ -109,7 +109,7 @@ public class FeedService {
         List<String> categoryLocalNames = request.categoryLocalNames();
 
         // 3. 이름으로 카테고리 엔티티 조회
-        List<Category> foodCategories = categoryRepository.findAllByNameIn(categoryNames);
+        List<Category> foodCategories = categoryRepository.findByTypeAndName(categoryNames);
 
         if (foodCategories.isEmpty()){
             throw new BizExceptionHandler(ErrorCode.CATEGORY_NOT_FOUND);
@@ -139,7 +139,7 @@ public class FeedService {
 
 
     }
-
+    */
     @Transactional
     private String putFileToBucket(MultipartFile file,Long userId) {
 

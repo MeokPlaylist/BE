@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface FeedPhotosRepository extends JpaRepository<FeedPhotos, Long> {
-    FeedPhotos findByFeedIdAndSequence(Long feedId, Integer sequence);
+    //FeedPhotos findByFeedIdAndSequence(Long feedId, Integer sequence);
 
     @Query("SELECT p FROM FeedPhotos p " +
             "WHERE p.feed.user = :user AND p.sequence = 0 " +

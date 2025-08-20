@@ -8,10 +8,14 @@ import com.meokplaylist.api.dto.user.NewPasswordRequest;
 import com.meokplaylist.api.dto.user.UserDetailInfoSetupRequest;
 import com.meokplaylist.domain.repository.UserConsentRepository;
 import com.meokplaylist.domain.repository.UsersRepository;
+
 import com.meokplaylist.domain.repository.category.CategoryRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
+import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
+import com.meokplaylist.domain.repository.feed.FeedRepository;
+import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.category.Category;
@@ -27,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +44,11 @@ public class UserService {
     private  final CategoryRepository categoryRepository;
     private final LocalCategoryRepository localCategoryRepository;
     private final UserCategoryRepository userCategoryRepository;
-    private final UserLocalCategoryRepository userLocalCategoryRepository;
+    private final FeedRepository feedRepository;
+    private final FollowsRepository followsRepository;
+    private final FeedPhotosRepository feedPhotosRepository;
+
+    private final S3Service s3Service;
     private static String consentFileUrl ="https://kr.object.ncloudstorage.com/meokplaylist/%EB%A8%B9%ED%94%8C%EB%A6%AC%20%EB%8F%99%EC%9D%98%EC%84%9C%20%EB%82%B4%EC%9A%A9.txt";
 
     @Transactional(readOnly = true)
@@ -131,7 +140,7 @@ public class UserService {
             }
 
 
-
+        }
     }
 
     //유저 nickname, introduction 설정
@@ -171,7 +180,7 @@ public class UserService {
 
         //카테고리 체크
         userCategoryRepository.findByUserUserId(user.getUserId())
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USERCATEGORY_NOT_FONUD));
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_USERCATEGORY));
 
         user.setCheckstatus(true);
     }
