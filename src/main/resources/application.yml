@@ -11,7 +11,7 @@ spring:
       connection-init-sql: SET NAMES utf8mb4
 
   flyway:
-    enabled: true          # default: true
+    enabled: true     # default: true
     baseline-on-migrate: true  # 기존 테이블이 있어도 1회차부터 진행
     locations: classpath:db/migration
 

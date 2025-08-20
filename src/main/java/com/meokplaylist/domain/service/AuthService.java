@@ -120,8 +120,9 @@ public class AuthService {
                 ? me.getKakao_account().getProfile().getNickname() : null;
 
         OauthProviders oauthProvider = oauthProvidersRepository.findByName("kakao");
-
+        System.out.println(kakaoId);
         Optional<UserOauth> OptionalUserOauth = userOauthRepository.findByProviderUid(kakaoId);
+        Optional<Users> OptionalUser = usersRepository.findByEmail(email);
 
         if (OptionalUserOauth.isPresent()) {
             UserOauth userOauth = OptionalUserOauth.get();
@@ -129,12 +130,15 @@ public class AuthService {
             if (!userOauth.getRefreshToken().isEmpty()) {
                 String setAccess = jwtTokenService.reissueAccessToken(userOauth.getUser().getJwtRefreshToken());
                 userOauth.getUser().setJwtAccessToken(setAccess);
+
                 return new AuthJwtResponse(setAccess);
             } else {
                 throw new BizExceptionHandler(ErrorCode.NOT_HAVE_REFRESHTOKEN);
             }
 
         } else {
+            //새 유정 생성 전 emaiㅌ0l로 기존 유저에 존재하는 지 확인
+
             // 새 유저 생성
             Users user = new Users(email, null, name, null);
             usersRepository.save(user);

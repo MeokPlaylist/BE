@@ -17,7 +17,7 @@ public enum ErrorCode {
 
     INVALID_PASSWORD      (454,"잘못된 password"),
     DONT_HAVE_NICKNAME          (455, "don't have nickname"),
-    USERCATEGORY_NOT_FONUD      (456, "userCategory not found"),
+    USERCATEGORY_NOT_FOUND      (456, "userCategory not found"),
     NOT_FOUND_FEED              (457, "not found feed"),
     NOT_FOUND_USERCATEGORY      (458, "not found userCategory"),
     INVALID_OAUTH_TOKEN  (460,"잘못된 Token"),

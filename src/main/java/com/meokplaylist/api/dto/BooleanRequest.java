@@ -5,5 +5,5 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record BooleanRequest(
-        @NotBlank Boolean isAvailable
+        Boolean isAvailable
 ){ }

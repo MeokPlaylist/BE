@@ -40,17 +40,19 @@ public class S3Service {
 
 
     @Transactional
-    public String uploadProfileImage(MultipartFile file, Long userId) throws IOException {
-
-        if (file == null || file.isEmpty()) {
-
-            return BASE_PROFILE_FMG;
-        }
+    public void uploadProfileImage(MultipartFile file, Long userId) throws IOException {
 
         if (file.isEmpty() || !file.getContentType().startsWith("image/"))
             throw new IllegalArgumentException("이미지 파일만 업로드 가능합니다.");
+
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        if (file == null || file.isEmpty()) {
+
+          //set 설정 추가필요
+        }
+
         //이미지 덮어 씌기 위한 옛 이미지 추출
         String oldImageKey = user.getProfileImgKey();
         String oldKey = extractKeyFromUrl(oldImageKey);
@@ -78,9 +80,6 @@ public class S3Service {
             System.out.println(" 업로드 실패! 상태 코드: " + response.sdkHttpResponse().statusCode());
         }
         //디버깅을 위한 코드
-
-        return "https://" + bucketName + ".kr.object.ncloudstorage.com/" + key;
-        // "https://kr.object.ncloudstorage.com/" + bucketName + "/" + key; 공식 표기 위에 것이 안되면 해보자,,
     }
 
     private String extractKeyFromUrl(String url) {
