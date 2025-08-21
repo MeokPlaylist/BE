@@ -43,6 +43,7 @@ public class NcpS3Config {
     @Bean // 이 메서드가 반환하는 객체를 Spring Bean으로 등록합니다.
     public S3Presigner s3Presigner() {
         return S3Presigner.builder()
+                .endpointOverride(URI.create("https://kr.object.ncloudstorage.com"))
                 .region(Region.of("kr-standard"))
                 .credentialsProvider(StaticCredentialsProvider.create(
                         AwsBasicCredentials.create(accessKey, secretKey)

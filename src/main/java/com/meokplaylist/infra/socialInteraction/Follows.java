@@ -4,6 +4,7 @@ import com.meokplaylist.infra.user.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,6 +14,18 @@ import java.time.OffsetDateTime;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
+@Table(
+        name = "follows",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_follower_following",
+                columnNames = {"follower_id", "following_id"}
+        ),
+        indexes = {
+                @Index(name = "idx_follows_follower_id", columnList = "follower_id"),
+                @Index(name = "idx_follows_following_id", columnList = "following_id")
+        }
+)
 public class Follows {
 
     @Id

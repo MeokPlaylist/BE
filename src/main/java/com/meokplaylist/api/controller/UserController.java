@@ -9,6 +9,9 @@ import com.meokplaylist.domain.service.S3Service;
 import com.meokplaylist.domain.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +40,7 @@ public class UserController {
 
     @PostMapping("/setupProfile")
     public ResponseEntity<?> setupProfile(@AuthenticationPrincipal Long userId, @RequestBody UserProfileSetupRequest userProfileSetupRequest) throws IOException {
-        s3Service.uploadProfileImage(userProfileSetupRequest.profileImg(), userId);
+        s3Service.uploadProfileImage(userProfileSetupRequest, userId);
         return ResponseEntity.ok().build();
     }
 
@@ -65,12 +68,41 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    //내 페이지
     @GetMapping("/mypage")
     public ResponseEntity<?> mypage(@AuthenticationPrincipal Long userId){
 
         MypageResponse mypageResponse=userService.mypageLoad(userId);
 
         return ResponseEntity.ok(mypageResponse);
+    }
+
+
+    //팔로우 확인
+    @GetMapping("/getFollowerList")
+    public ResponseEntity<?> followerList(
+            @RequestParam("userId") Long userId,
+            //@AuthenticationPrincipal Long userId,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        return ResponseEntity.ok(userService.getMyFollowers(userId, pageable));
+    }
+
+    @GetMapping("/getFollowingList")
+    public ResponseEntity<?> followingList(
+            @AuthenticationPrincipal Long userId,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        return ResponseEntity.ok(userService.getMyFollowings(userId, pageable));
+    }
+
+
+    @GetMapping("/personalInfor")
+    public ResponseEntity<?> personalInfor(@AuthenticationPrincipal Long userId){
+
+        PersonalInforResponse personalInfor=userService.getPersonalInfor(userId);
+
+        return ResponseEntity.ok().body(personalInfor);
     }
 
 }

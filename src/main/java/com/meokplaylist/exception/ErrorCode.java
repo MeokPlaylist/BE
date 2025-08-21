@@ -29,12 +29,10 @@ public enum ErrorCode {
     NOT_HAVE_REFRESHTOKEN  (490, "refreshToken 존재하지 않는다."),
 
     // 5xx
-    INTERNAL_ERROR       (551, "서버 오류"),
+    INTERNAL_ERROR       (551, "서버 오류");
 
 
-    //590
 
-    CHECH_OK    (590,"newB chech ok");
     private final int status;
     private final String message;
 }

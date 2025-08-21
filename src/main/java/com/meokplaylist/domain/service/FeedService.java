@@ -22,14 +22,12 @@ import com.meokplaylist.infra.feed.FeedCategory;
 import com.meokplaylist.infra.feed.FeedLocalCategory;
 import com.meokplaylist.infra.feed.FeedPhotos;
 import com.meokplaylist.util.StorageKeyUtil;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.services.s3.S3Client;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -47,7 +45,6 @@ public class FeedService {
 
     private static final Set<String> ALLOWED = Set.of("image/jpeg","image/png");
 
-    private final S3Client objectStorageClient;
     private final FeedRepository feedRepository;
     private final FeedPhotosRepository feedPhotosRepository;
     private final FeedLocalCategoryRepository feedLocalCategoryRepository;
@@ -56,116 +53,110 @@ public class FeedService {
     private final CategoryRepository categoryRepository;
     private final UsersRepository usersRepository;
     private final UserCategoryRepository userCategoryRepository;
+    private final S3Service s3Service;
 
     @Transactional
-    public Boolean createFeed(FeedCreateRequest feedCreateRequest, FeedCategorySetUpRequest feedCategorySetUpRequest,Long userId) {
+    public List<String> createFeed(FeedCreateRequest feedCreateRequest,Long userId) {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
         Feed feed = Feed.builder()
                 .user(user)
-                .content(feedCreateRequest.content())
-                .hashTag(feedCreateRequest.hashTag())
+                .content(feedCreateRequest.getContent())
+                .hashTag(feedCreateRequest.getHashTag())
                 .build();
         feed = feedRepository.save(feed);
-        /*
         //피드 카테고리 저장
-        if(feedCategorySetUpRequest.categoryNames() !=null){
-            feedCategorySetUp(feedCategorySetUpRequest,feed.getFeedId());
-
+        if(feedCreateRequest.getCategories() !=null){
+            List<String> categories=feedCreateRequest.getCategories();
+            List<String> regions =feedCreateRequest.getRegions();
+            feedCategorySetUp(categories,regions,feed.getFeedId());
         }
-        */
+
+
         List<FeedPhotos> feedPhotos =new ArrayList<>();
+        for (FeedPhotoForm photoForm : feedCreateRequest.getPhotos()) {
 
-        for (FeedPhotoForm photoForm : feedCreateRequest.photos()) {
-
-            String storageKey = putFileToBucket(photoForm.photo(), user.getUserId()); //key 리턴
+            String storageKey = StorageKeyUtil.buildKey("feeds", userId, feed.getFeedId(), photoForm.getFileName());//key 리턴
 
             FeedPhotos photo = FeedPhotos.builder()
                     .feed(feed)
-                    .latitude(photoForm.latitude())
-                    .longitude(photoForm.longitude())
-                    .dayAndTime(photoForm.dayAndTime())
-                    .sequence(photoForm.sequence())
+                    .latitude(photoForm.getLatitude())
+                    .longitude(photoForm.getLongitude())
+                    .dayAndTime(photoForm.getDayAndTime())
+                    .sequence(photoForm.getSequence())
                     .storageKey(storageKey)
                     .build();
             feedPhotos.add(photo);
 
         }
+        List<String> presignedUrlList =new ArrayList<>();
 
         feedPhotosRepository.saveAll(feedPhotos);
-        return true;
-    }
-    /*
-    @Transactional
-    public void feedCategorySetUp(FeedCategorySetUpRequest request, Long feedId) {
 
-        // 1. 피드 조회
+        for (int i=0; i <feedPhotos.size(); i++){
+            String fileKey=feedPhotos.get(i).getStorageKey();
+            String presignedUrl = s3Service.generatePutPresignedUrl(fileKey);
+            presignedUrlList.add(presignedUrl);
+        }
+
+        System.out.println(presignedUrlList);
+
+        return presignedUrlList;
+    }
+
+
+    @Transactional
+    public void feedCategorySetUp(List<String> categories,List<String> regions , Long feedId) {
+        // 1. 유저 조회
         Feed feed = feedRepository.findByFeedId(feedId)
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+ // ["분위기:전통적인", "음식:한식", ...]
+        if (categories == null || categories.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
-        // 2. 카테고리 이름 목록 가져오기
-        List<String> categoryNames = request.categoryNames();  // ex) ["분위기:로맨틱", "음식:한식"]
-        List<String> categoryLocalNames = request.categoryLocalNames();
+        List<Category> saveCategories =new ArrayList<>();
 
-        // 3. 이름으로 카테고리 엔티티 조회
-        List<Category> foodCategories = categoryRepository.findByTypeAndName(categoryNames);
+        for (String raw : categories) {
+            String[] parts = raw.split(":", 2);
+            if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // "분류:이름" 형식 아니면 에러
+            String type = parts[0].trim();  // 예: "분위기"
+            String name = parts[1].trim();  // 예: "전통적인"
+            if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
-        if (foodCategories.isEmpty()){
-            throw new BizExceptionHandler(ErrorCode.CATEGORY_NOT_FOUND);
+            Category foodCategory = categoryRepository.findByTypeAndName(type,name);
+
+
+            saveCategories.add(foodCategory);
         }
 
-        // 4. 매핑 저장
-        for (Category category : foodCategories) {
+        List<FeedCategory> mappings = saveCategories.stream()
+                .map(cat -> new FeedCategory(cat, feed))   // user는 앞에서 조회된 Users
+                .toList();
 
-            FeedCategory feedCategory = new FeedCategory(category,feed);
-            feedCategoryRespository.save(feedCategory);
+        feedCategoryRespository.saveAll(mappings);
+
+        List<LocalCategory> saveRegion =new ArrayList<>();
+
+
+        for (String raw : regions) {
+            String[] parts = raw.split(":", 2);
+            if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // "분류:이름" 형식 아니면 에러
+            String type = parts[0].trim();  // 예: "경기도"
+            String name = parts[1].trim();  // 예: "수원시"
+            if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
+
+            LocalCategory region = localCategoryRepository.findByTypeAndLocalName(type, name);
+
+
+            saveRegion.add(region);
         }
 
-        if(!categoryLocalNames.isEmpty()){
+        List<FeedLocalCategory> mapping = saveRegion.stream()
+                .map(reg->new FeedLocalCategory(reg,feed))
+                .toList();
 
-            List<LocalCategory> localCategories= localCategoryRepository.findAllByLocalNameIn(categoryLocalNames);
+        feedLocalCategoryRepository.saveAll(mapping);
 
-            for (LocalCategory localCategory : localCategories) {
-
-
-                FeedLocalCategory feedLocalCategory = new FeedLocalCategory(localCategory,feed);
-
-                feedLocalCategoryRepository.save(feedLocalCategory);
-
-            }
-
-        }
-
-
-    }
-    */
-    @Transactional
-    private String putFileToBucket(MultipartFile file,Long userId) {
-
-        if (file == null || file.isEmpty()) {
-            throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
-        }
-        String ct = Optional.ofNullable(file.getContentType()).orElse("");
-
-        if (!ALLOWED.contains(ct)) {
-            throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
-        }
-        System.out.println("ct= "+ ct);
-        try {
-            String key = StorageKeyUtil.buildKey("photos", userId, file.getOriginalFilename());
-            PutObjectRequest putReq = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .contentType(file.getContentType())
-                    .build();
-            objectStorageClient.putObject(putReq, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-
-            return key;
-
-        } catch (IOException e) {
-            throw new BizExceptionHandler(ErrorCode.FAILED_TO_UPLOAD_FILE);
-        }
     }
 
     @Transactional
@@ -173,11 +164,13 @@ public class FeedService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        List<UserCategory> userCategory=userCategoryRepository.findByUserUserId(user.getUserId())
-                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.NOT_FOUND_USERCATEGORY));
+        List<UserCategory> categories = userCategoryRepository.findByUserUserId(user.getUserId());
+        if (categories.isEmpty()) {
+            throw new BizExceptionHandler(ErrorCode.NOT_FOUND_USERCATEGORY);
+        }
 
-        for(int i=0; i< userCategory.size(); i++){
-            Category category = userCategory.get(i).getCategory();
+        for(int i=0; i< categories.size(); i++){
+            Category category = categories.get(i).getCategory();
         }
         //개발 대기
 

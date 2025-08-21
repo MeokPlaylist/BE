@@ -1,12 +1,11 @@
 package com.meokplaylist.domain.service;
 
 import com.meokplaylist.api.dto.BooleanRequest;
+import com.meokplaylist.api.dto.GetFollowResponse;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
-import com.meokplaylist.api.dto.user.FindUserRequest;
-import com.meokplaylist.api.dto.user.MypageResponse;
-import com.meokplaylist.api.dto.user.NewPasswordRequest;
-import com.meokplaylist.api.dto.user.UserDetailInfoSetupRequest;
+import com.meokplaylist.api.dto.user.*;
 import com.meokplaylist.domain.repository.UserConsentRepository;
+import com.meokplaylist.domain.repository.UserOauthRepository;
 import com.meokplaylist.domain.repository.UsersRepository;
 
 import com.meokplaylist.domain.repository.category.CategoryRepository;
@@ -24,7 +23,10 @@ import com.meokplaylist.infra.category.UserCategory;
 import com.meokplaylist.infra.category.UserLocalCategory;
 import com.meokplaylist.infra.feed.FeedPhotos;
 import com.meokplaylist.infra.user.UserConsent;
+import com.meokplaylist.infra.user.UserOauth;
 import com.meokplaylist.infra.user.Users;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,6 +47,7 @@ public class UserService {
     private  final CategoryRepository categoryRepository;
     private final LocalCategoryRepository localCategoryRepository;
     private final UserCategoryRepository userCategoryRepository;
+    private final UserOauthRepository userOauthRepository;
     private final FeedRepository feedRepository;
     private final FollowsRepository followsRepository;
     private final FeedPhotosRepository feedPhotosRepository;
@@ -76,7 +79,7 @@ public class UserService {
     public Boolean consentUpload(BooleanRequest request, Long userId){
 
         if (request.isAvailable() == null) {
-            throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // 혹은 적절한 코드
+            throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
         }
         Users user =usersRepository.findByUserId(userId)
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
@@ -129,7 +132,7 @@ public class UserService {
             return true;
         }
         else {
-            for (String raw : categoryList) {
+            for (String raw : regions) {
                 String[] parts = raw.split(":", 2);
                 if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // "분류:이름" 형식 아니면 에러
                 String type = parts[0].trim();  // 예: "경기도"
@@ -177,7 +180,7 @@ public class UserService {
 
         //이전에 완료 했던 사용자인지 확인
         if(user.getCheckstatus()){
-            throw new BizExceptionHandler(ErrorCode.CHECH_OK);
+            return;
         }
 
         //동의서 체크
@@ -206,12 +209,12 @@ public class UserService {
         Long followerNum =followsRepository.countByFollowerUserId(user.getUserId());
         String userNickname=user.getNickname();
         String userIntro=user.getIntroduction();
-        String profileUrl=s3Service.generatePresignedUrl(user.getProfileImgKey());
+        String profileUrl=s3Service.generatePutPresignedUrl(user.getProfileImgKey());
         List<FeedPhotos> thumbnailPhotos = feedPhotosRepository.findThumbnailsByUser(user);
 
         // 5. 조회된 사진 목록의 StorageKey로 Presigned URL 목록 생성
         List<String> feedMainPhotoUrls = thumbnailPhotos.stream()
-                .map(photo -> s3Service.generatePresignedUrl(photo.getStorageKey()))
+                .map(photo -> s3Service.generatePutPresignedUrl(photo.getStorageKey()))
                 .collect(Collectors.toList());
 
         MypageResponse mypageResponse =MypageResponse.builder()
@@ -225,6 +228,56 @@ public class UserService {
                 .build();
 
         return mypageResponse;
+    }
+
+
+    // 내가 팔로우하는 사람들 (팔로잉 목록)
+    @Transactional(readOnly = true)
+    public Page<GetFollowResponse> getMyFollowings(Long userId, Pageable pageable) {
+        Page<Users> page = followsRepository.findFollowingsUsers(userId, pageable);
+
+        return page.map(u -> new GetFollowResponse(
+                u.getNickname(),
+                u.getProfileImgKey(),
+                u.getIntroduction()
+        ));
+
+    }
+
+    // 나를 팔로우하는 사람들 (팔로워 목록)
+    @Transactional(readOnly = true)
+    public Page<GetFollowResponse> getMyFollowers(Long userId, Pageable pageable) {
+        Page<Users> page = followsRepository.findFollowersUsers(userId, pageable);
+
+        return page.map(u -> new GetFollowResponse(
+                u.getNickname(),
+                u.getProfileImgKey(),
+                u.getIntroduction()
+        ));
+    }
+
+    @Transactional(readOnly = true)
+    public PersonalInforResponse getPersonalInfor(Long userId){
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        Boolean oauthUser=true;
+        UserOauth userOauth =userOauthRepository.findByUser(user);
+
+        if(userOauth==null){
+            oauthUser=false;
+        }
+
+        PersonalInforResponse response =PersonalInforResponse.builder()
+                .name(user.getName())
+                .email(user.getEmail())
+                .birthDay(user.getBirthDay())
+                .createdAt(user.getCreatedAt())
+                .OauthUser(oauthUser)
+                .build();
+
+        return response;
+
     }
 
 }

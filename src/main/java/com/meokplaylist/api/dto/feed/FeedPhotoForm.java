@@ -1,15 +1,14 @@
 package com.meokplaylist.api.dto.feed;
 
-import jakarta.validation.constraints.NotNull;
-import org.springframework.web.multipart.MultipartFile;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-public record FeedPhotoForm(
-        MultipartFile photo,
-        @NotNull Double latitude,
-        @NotNull  Double longitude,
-        @NotNull LocalDateTime dayAndTime,
-        @NotNull Integer sequence
-)
-{}
+@Getter
+public class FeedPhotoForm{
+    private String fileName;
+    private Double latitude;
+    private Double longitude;
+    private LocalDateTime dayAndTime;
+    private Integer sequence;
+}

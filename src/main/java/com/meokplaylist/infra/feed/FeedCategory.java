@@ -25,9 +25,6 @@ public class FeedCategory {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @ManyToOne
-    @JoinColumn(name = "local_category_id")
-    private LocalCategory localCategory;
 
     public FeedCategory(Category category, Feed feed) {
         this.feed = feed;
@@ -37,6 +34,5 @@ public class FeedCategory {
     public FeedCategory(Feed feed, Category category, LocalCategory localCategory) {
         this.feed = feed;
         this.category = category;
-        this.localCategory = localCategory;
     }
 }
