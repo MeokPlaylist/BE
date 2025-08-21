@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class PresignedUrlResponse {
-    private List<String> presignedUrls;
+    private List<String> presignedPutUrls;
 }

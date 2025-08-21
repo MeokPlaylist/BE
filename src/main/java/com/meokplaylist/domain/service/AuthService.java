@@ -124,7 +124,7 @@ public class AuthService {
         Optional<UserOauth> OptionalUserOauth = userOauthRepository.findByProviderUid(kakaoId);
         Optional<Users> OptionalUser = usersRepository.findByEmail(email);
 
-        if (OptionalUserOauth.isPresent()) {
+        if (OptionalUser.isPresent()) {
             UserOauth userOauth = OptionalUserOauth.get();
 
             if (!userOauth.getRefreshToken().isEmpty()) {

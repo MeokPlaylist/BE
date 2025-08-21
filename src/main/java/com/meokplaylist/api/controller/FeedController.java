@@ -22,9 +22,9 @@ public class FeedController {
             @AuthenticationPrincipal Long userId,
             @RequestBody FeedCreateRequest feedCreateRequest
     ) {
-        PresignedUrlResponse presignedUrls =new PresignedUrlResponse(feedService.createFeed(feedCreateRequest, userId));
+        PresignedUrlResponse presignedPutUrls =new PresignedUrlResponse(feedService.createFeed(feedCreateRequest, userId));
 
-        return ResponseEntity.ok().body(presignedUrls);
+        return ResponseEntity.ok().body(presignedPutUrls);
     }
 
     @GetMapping("/main")
