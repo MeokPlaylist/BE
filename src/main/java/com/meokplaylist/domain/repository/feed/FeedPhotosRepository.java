@@ -1,5 +1,6 @@
 package com.meokplaylist.domain.repository.feed;
 
+import com.meokplaylist.infra.feed.Feed;
 import com.meokplaylist.infra.feed.FeedPhotos;
 import com.meokplaylist.infra.user.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,5 +16,7 @@ public interface FeedPhotosRepository extends JpaRepository<FeedPhotos, Long> {
             "WHERE p.feed.user = :user AND p.sequence = 0 " +
             "ORDER BY p.feed.createdAt DESC") // 최신 피드 순으로 정렬
     List<FeedPhotos> findThumbnailsByUser(@Param("user") Users user);
+
+    List<FeedPhotos> findAllByFeedId(List<Long> feedId);
 }
 

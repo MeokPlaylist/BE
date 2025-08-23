@@ -28,7 +28,7 @@ public class FeedController {
     }
 
     @GetMapping("/main")
-    public ResponseEntity<?> mainFeedElement(@AuthenticationPrincipal Long userId) {
+    public ResponseEntity<?> mainFeeds(@AuthenticationPrincipal Long userId) {
 
         return ResponseEntity.ok().build();
     }

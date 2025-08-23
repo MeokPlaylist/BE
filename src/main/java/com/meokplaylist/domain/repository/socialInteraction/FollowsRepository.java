@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface FollowsRepository extends JpaRepository<Follows, Long> {
 
     // 내가 팔로우하는 사용자들 (팔로잉)
@@ -20,6 +22,7 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
            """)
     Page<Users> findFollowingsUsers(@Param("userId") Long userId, Pageable pageable);
 
+
     // 나를 팔로우하는 사용자들 (팔로워)
     @Query("""
            select f.follower
@@ -30,6 +33,7 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
     Page<Users> findFollowersUsers(@Param("userId") Long userId, Pageable pageable);
 
     boolean existsByFollowerUserIdAndFollowingUserId(Long followerId, Long followingId);
+
     @Modifying
     void deleteByFollowerUserIdAndFollowingUserId(Long followerId, Long followingId);
 

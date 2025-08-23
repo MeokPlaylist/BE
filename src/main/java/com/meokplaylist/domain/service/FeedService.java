@@ -3,6 +3,7 @@ package com.meokplaylist.domain.service;
 import com.meokplaylist.api.dto.category.FeedCategorySetUpRequest;
 import com.meokplaylist.api.dto.feed.FeedCreateRequest;
 import com.meokplaylist.api.dto.feed.FeedPhotoForm;
+import com.meokplaylist.api.dto.mainFeedResponse;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.CategoryRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
@@ -25,16 +26,16 @@ import com.meokplaylist.util.StorageKeyUtil;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import java.util.ArrayList;
-import java.util.Set;
+import java.util.*;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +54,7 @@ public class FeedService {
     private final CategoryRepository categoryRepository;
     private final UsersRepository usersRepository;
     private final UserCategoryRepository userCategoryRepository;
+
     private final S3Service s3Service;
 
     @Transactional
@@ -159,8 +161,8 @@ public class FeedService {
 
     }
 
-    @Transactional
-    public void mainFeedSelect(Long userId){
+    @Transactional(readOnly = true)
+    public Page<mainFeedResponse> mainFeedSelect(Long userId, Pageable pageable){
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
@@ -169,14 +171,55 @@ public class FeedService {
             throw new BizExceptionHandler(ErrorCode.NOT_FOUND_USERCATEGORY);
         }
 
+        /*
         for(int i=0; i< categories.size(); i++){
             Category category = categories.get(i).getCategory();
         }
-        //개발 대기
+        */
 
+        Page<Feed> page =feedRepository.findFollowingFeeds(user.getUserId(),pageable); //새로 업로드한 피드가 여러개일수 있다.
+
+        List<Long> feedIdList = page.getContent().stream()
+                .map(Feed::getFeedId) // 각 Feed 객체에서 ID를 추출
+                .toList();
+        List<FeedPhotos> feedPhotos=feedPhotosRepository.findAllByFeedId(feedIdList);
+
+        Map<Long, List<FeedPhotos>> photosMapByFeedId = feedPhotos.stream()
+                .collect(Collectors.groupingBy(photo -> photo.getFeed().getFeedId()));
+
+        // 4. 최종 결과를 담을 Map<Long, List<String>>을 생성합니다. (Key: feedId, Value: URL 리스트)
+        Map<Long, List<String>> feedUrlsMap = new HashMap<>();
+
+        // 5. 그룹화된 photosMapByFeedId를 순회하며 Presigned URL을 생성합니다.
+        for (Map.Entry<Long, List<FeedPhotos>> entry : photosMapByFeedId.entrySet()) {
+            Long feedId = entry.getKey();
+            List<FeedPhotos> photosOfFeed = entry.getValue();
+
+            // 해당 feedId에 속한 사진들의 URL만 담을 리스트를 생성
+            List<String> urls = new ArrayList<>();
+            for (FeedPhotos photo : photosOfFeed) {
+                urls.add(s3Service.generateGetPresignedUrl(photo.getStorageKey()));
+            }
+            feedUrlsMap.put(feedId, urls);
+        }
+
+        Page<mainFeedResponse> responsePage = page.map(feed -> {
+
+            // getOrDefault를 사용하면 해당 feedId에 사진이 없을 경우, Null 대신 빈 리스트를 반환
+            List<String> urlsForThisFeed = feedUrlsMap.getOrDefault(feed.getFeedId(), Collections.emptyList());
+
+            return new mainFeedResponse(
+                    feed.getUser().getNickname(),
+                    feed.getContent(),
+                    feed.getHashTag(),
+                    feed.getCreatedAt(),
+                    urlsForThisFeed
+            );
+
+        });
+
+        return responsePage;
     }
-
-
 
 }
 
