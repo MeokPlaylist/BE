@@ -19,7 +19,7 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
 
     Long countByUserUserId(Long userId);
 
-    @EntityGraph(attributePaths = {"user"}) // N+1 줄이기
+
     @Query("""
         select f
         from Feed f
@@ -28,7 +28,7 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
             from Follows fl
             where fl.follower.userId = :userId
         )
-        order by f.createAt desc, f.id desc
+        order by f.createdAt desc, f.feedId desc
     """)
     Page<Feed> findFollowingFeeds(@Param("userId") Long userId, Pageable pageable);
 
@@ -40,6 +40,6 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
         GROUP BY f.id
         ORDER BY COUNT(fc.id) DESC, f.createdAt DESC
     """)
-    Page<Feed> findByCategoryIds(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
+    Page<Feed> findCategoryIds(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
 
 }

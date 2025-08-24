@@ -177,14 +177,14 @@ public class FeedService {
             if (categoryIds.isEmpty()) {
                 throw new BizExceptionHandler(ErrorCode.NOT_FOUND_USERCATEGORY);
             }
-            page =feedRepository.findByCategoryIds(categoryIds, pageable);
+            page =feedRepository.findCategoryIds(categoryIds, pageable);
 
         }
 
         List<Long> feedIdList = page.getContent().stream()
                 .map(Feed::getFeedId) // 각 Feed 객체에서 ID를 추출
                 .toList();
-        List<FeedPhotos> feedPhotos=feedPhotosRepository.findAllByFeedId(feedIdList);
+        List<FeedPhotos> feedPhotos=feedPhotosRepository.findAllByFeedFeedIdIn(feedIdList);
 
         Map<Long, List<FeedPhotos>> photosMapByFeedId = feedPhotos.stream()
                 .collect(Collectors.groupingBy(photo -> photo.getFeed().getFeedId()));

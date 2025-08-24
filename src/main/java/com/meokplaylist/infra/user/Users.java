@@ -40,6 +40,7 @@ public class Users {
     private String introduction;
 
     @Column
+    @Builder.Default
     private Boolean checkstatus=false;
 
     @Column(name = "jwt_access_token", length = 2048)

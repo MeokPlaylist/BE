@@ -17,6 +17,6 @@ public interface FeedPhotosRepository extends JpaRepository<FeedPhotos, Long> {
             "ORDER BY p.feed.createdAt DESC") // 최신 피드 순으로 정렬
     List<FeedPhotos> findThumbnailsByUser(@Param("user") Users user);
 
-    List<FeedPhotos> findAllByFeedId(List<Long> feedId);
+    List<FeedPhotos> findAllByFeedFeedIdIn(List<Long> feedId);
 }
 
