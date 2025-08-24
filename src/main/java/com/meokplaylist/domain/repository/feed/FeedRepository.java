@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 
+import java.util.List;
 import java.util.Optional;
 
 public interface FeedRepository extends JpaRepository<Feed,Long> {
@@ -18,7 +19,7 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
 
     Long countByUserUserId(Long userId);
 
-    @EntityGraph(attributePaths = {"user"}) // N+1 줄이기 (필요한 연관만)
+    @EntityGraph(attributePaths = {"user"}) // N+1 줄이기
     @Query("""
         select f
         from Feed f
@@ -30,5 +31,15 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
         order by f.createAt desc, f.id desc
     """)
     Page<Feed> findFollowingFeeds(@Param("userId") Long userId, Pageable pageable);
+
+    @Query("""
+        SELECT f
+        FROM Feed f
+        JOIN FeedCategory fc ON fc.feed = f
+        WHERE fc.category.id IN :categoryIds
+        GROUP BY f.id
+        ORDER BY COUNT(fc.id) DESC, f.createdAt DESC
+    """)
+    Page<Feed> findByCategoryIds(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
 
 }

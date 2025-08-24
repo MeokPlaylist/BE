@@ -166,18 +166,20 @@ public class FeedService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        List<UserCategory> categories = userCategoryRepository.findByUserUserId(user.getUserId());
-        if (categories.isEmpty()) {
-            throw new BizExceptionHandler(ErrorCode.NOT_FOUND_USERCATEGORY);
-        }
+        Page<Feed> page;
 
-        /*
-        for(int i=0; i< categories.size(); i++){
-            Category category = categories.get(i).getCategory();
-        }
-        */
+        page =feedRepository.findFollowingFeeds(user.getUserId(),pageable); //새로 업로드한 피드가 여러개일수 있다.
 
-        Page<Feed> page =feedRepository.findFollowingFeeds(user.getUserId(),pageable); //새로 업로드한 피드가 여러개일수 있다.
+        if(page.isEmpty()||page==null){ //최근 업로드 된 피드가 없다면 카테고리를 이용하여 피드 갱신
+
+            List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
+
+            if (categoryIds.isEmpty()) {
+                throw new BizExceptionHandler(ErrorCode.NOT_FOUND_USERCATEGORY);
+            }
+            page =feedRepository.findByCategoryIds(categoryIds, pageable);
+
+        }
 
         List<Long> feedIdList = page.getContent().stream()
                 .map(Feed::getFeedId) // 각 Feed 객체에서 ID를 추출

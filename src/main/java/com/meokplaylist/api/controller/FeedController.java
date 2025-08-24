@@ -4,8 +4,12 @@ package com.meokplaylist.api.controller;
 import com.meokplaylist.api.dto.PresignedUrlResponse;
 import com.meokplaylist.api.dto.category.FeedCategorySetUpRequest;
 import com.meokplaylist.api.dto.feed.FeedCreateRequest;
+import com.meokplaylist.api.dto.mainFeedResponse;
 import com.meokplaylist.domain.service.FeedService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,10 +31,13 @@ public class FeedController {
         return ResponseEntity.ok().body(presignedPutUrls);
     }
 
-    @GetMapping("/main")
-    public ResponseEntity<?> mainFeeds(@AuthenticationPrincipal Long userId) {
 
-        return ResponseEntity.ok().build();
+    @GetMapping("/main")
+    public ResponseEntity<?> mainFeeds(
+            @AuthenticationPrincipal Long userId,
+            @PageableDefault(size = 2) Pageable pageable
+    ) {
+        return ResponseEntity.ok().body(feedService.mainFeedSelect(userId,pageable));
     }
 
 }
