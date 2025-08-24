@@ -112,7 +112,8 @@ public class FeedService {
         Feed feed = feedRepository.findByFeedId(feedId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
  // ["분위기:전통적인", "음식:한식", ...]
-        if (categories == null || categories.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
+        //이거 왜 처리함
+        //if (categories == null || categories.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
         List<Category> saveCategories =new ArrayList<>();
 
