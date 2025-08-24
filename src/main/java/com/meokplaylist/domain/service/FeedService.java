@@ -1,8 +1,9 @@
 package com.meokplaylist.domain.service;
 
-import com.meokplaylist.api.dto.category.FeedCategorySetUpRequest;
 import com.meokplaylist.api.dto.feed.FeedCreateRequest;
 import com.meokplaylist.api.dto.feed.FeedPhotoForm;
+import com.meokplaylist.api.dto.feed.FeedResponse;
+import com.meokplaylist.api.dto.feed.SlicedResponse;
 import com.meokplaylist.api.dto.mainFeedResponse;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.CategoryRepository;
@@ -17,7 +18,6 @@ import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.user.Users;
 import com.meokplaylist.infra.category.Category;
 import com.meokplaylist.infra.category.LocalCategory;
-import com.meokplaylist.infra.category.UserCategory;
 import com.meokplaylist.infra.feed.Feed;
 import com.meokplaylist.infra.feed.FeedCategory;
 import com.meokplaylist.infra.feed.FeedLocalCategory;
@@ -28,8 +28,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 
 import java.util.*;
@@ -37,6 +39,7 @@ import java.util.*;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FeedService {
@@ -223,6 +226,65 @@ public class FeedService {
 
         return responsePage;
     }
+    @Transactional(readOnly = true)
+    public SlicedResponse<FeedResponse> mainFeedSelectSlice(Long userId, Pageable pageable) {
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
+        // Page로 받아도 무방 (Slice 전환은 리포지토리 시그니처를 Slice로 바꾸면 더 좋음)
+        Page<Feed> page = feedRepository.findFollowingFeeds(user.getUserId(), pageable);
+
+        if (page.isEmpty()) {
+            List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
+            if (categoryIds.isEmpty()) {
+                // 빈 결과를 slice 형태로 반환
+                return new SlicedResponse<>(List.of(),
+                        pageable.getPageNumber(), pageable.getPageSize(),
+                        true, true, true, false);
+            }
+            page = feedRepository.findCategoryIds(categoryIds, pageable);
+        }
+
+        // 이번 페이지의 feedId 수집
+        List<Feed> feeds = page.getContent();
+        List<Long> feedIds = feeds.stream().map(Feed::getFeedId).toList();
+
+        // 사진 일괄 조회(정렬 보장)
+        final Map<Long, List<String>> feedUrlsMap;
+
+        if (!feedIds.isEmpty()) {
+            List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdIn(feedIds);
+            Map<Long, List<FeedPhotos>> photosMapByFeedId = photos.stream()
+                    .collect(Collectors.groupingBy(fp -> fp.getFeed().getFeedId(), LinkedHashMap::new, Collectors.toList()));
+
+            Map<Long, List<String>> tmp = new HashMap<>(photosMapByFeedId.size());
+            for (var e : photosMapByFeedId.entrySet()) {
+                List<String> urls = new ArrayList<>(e.getValue().size());
+                for (FeedPhotos p : e.getValue()) {
+                    urls.add(s3Service.generateGetPresignedUrl(p.getStorageKey()));
+                }
+                tmp.put(e.getKey(), urls);
+            }
+            feedUrlsMap = tmp;
+        } else {
+            feedUrlsMap = Collections.emptyMap();
+        }
+
+        // 엔티티 -> DTO
+        List<FeedResponse> content = feeds.stream().map(feed -> new FeedResponse(
+                feed.getUser().getNickname(),
+                feed.getContent(),
+                feed.getHashTag(),
+                feed.getCreatedAt(),
+                feedUrlsMap.getOrDefault(feed.getFeedId(), List.of())
+        )).toList();
+
+        // Page를 Slice처럼 포장 (hasNext는 Page에서 가져와도 동일)
+        Slice<FeedResponse> sliceView = new org.springframework.data.domain.SliceImpl<>(
+                content, pageable, page.hasNext()
+        );
+
+        return SlicedResponse.of(sliceView);
+    }
 }
 

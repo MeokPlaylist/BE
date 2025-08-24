@@ -4,6 +4,8 @@ package com.meokplaylist.api.controller;
 import com.meokplaylist.api.dto.PresignedUrlResponse;
 import com.meokplaylist.api.dto.category.FeedCategorySetUpRequest;
 import com.meokplaylist.api.dto.feed.FeedCreateRequest;
+import com.meokplaylist.api.dto.feed.FeedResponse;
+import com.meokplaylist.api.dto.feed.SlicedResponse;
 import com.meokplaylist.api.dto.mainFeedResponse;
 import com.meokplaylist.domain.service.FeedService;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +35,11 @@ public class FeedController {
 
 
     @GetMapping("/main")
-    public ResponseEntity<?> mainFeeds(
+    public ResponseEntity<SlicedResponse<FeedResponse>> mainFeeds(
             @AuthenticationPrincipal Long userId,
             @PageableDefault(size = 2) Pageable pageable
     ) {
-        return ResponseEntity.ok().body(feedService.mainFeedSelect(userId,pageable));
+        var slice = feedService.mainFeedSelectSlice(userId, pageable);
+        return ResponseEntity.ok(feedService.mainFeedSelectSlice(userId, pageable));
     }
-
 }
