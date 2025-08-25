@@ -4,6 +4,7 @@ import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,7 +21,7 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
              join f.following u
             where f.follower.userId = :userId
            """)
-    Page<Users> findFollowingsUsers(@Param("userId") Long userId, Pageable pageable);
+    Slice<Users> findFollowingsUsers(@Param("userId") Long userId, Pageable pageable);
 
 
     // 나를 팔로우하는 사용자들 (팔로워)
@@ -30,7 +31,7 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
              join f.follower u
             where f.following.userId = :userId
            """)
-    Page<Users> findFollowersUsers(@Param("userId") Long userId, Pageable pageable);
+    Slice<Users> findFollowersUsers(@Param("userId") Long userId, Pageable pageable);
 
     boolean existsByFollowerUserIdAndFollowingUserId(Long followerId, Long followingId);
 

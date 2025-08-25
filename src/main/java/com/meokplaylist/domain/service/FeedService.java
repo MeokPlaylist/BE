@@ -4,7 +4,6 @@ import com.meokplaylist.api.dto.feed.FeedCreateRequest;
 import com.meokplaylist.api.dto.feed.FeedPhotoForm;
 import com.meokplaylist.api.dto.feed.FeedResponse;
 import com.meokplaylist.api.dto.feed.SlicedResponse;
-import com.meokplaylist.api.dto.mainFeedResponse;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.CategoryRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
@@ -26,7 +25,6 @@ import com.meokplaylist.util.StorageKeyUtil;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -37,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
-import java.io.IOException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -117,9 +114,7 @@ public class FeedService {
         // 1. 유저 조회
         Feed feed = feedRepository.findByFeedId(feedId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
- // ["분위기:전통적인", "음식:한식", ...]
-        //이거 왜 처리함
-        //if (categories == null || categories.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
+
 
         List<Category> saveCategories =new ArrayList<>();
 

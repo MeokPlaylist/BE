@@ -81,8 +81,7 @@ public class UserController {
     //팔로우 확인
     @GetMapping("/getFollowerList")
     public ResponseEntity<?> followerList(
-            @RequestParam("userId") Long userId,
-            //@AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal Long userId,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ){
         return ResponseEntity.ok(userService.getMyFollowers(userId, pageable));

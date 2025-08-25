@@ -27,6 +27,7 @@ import com.meokplaylist.infra.user.UserOauth;
 import com.meokplaylist.infra.user.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -233,10 +234,10 @@ public class UserService {
 
     // 내가 팔로우하는 사람들 (팔로잉 목록)
     @Transactional(readOnly = true)
-    public Page<GetFollowResponse> getMyFollowings(Long userId, Pageable pageable) {
-        Page<Users> page = followsRepository.findFollowingsUsers(userId, pageable);
+    public Slice<GetFollowResponse> getMyFollowings(Long userId, Pageable pageable) {
+        Slice<Users> slice = followsRepository.findFollowingsUsers(userId, pageable);
 
-        return page.map(u -> new GetFollowResponse(
+        return slice.map(u -> new GetFollowResponse(
                 u.getNickname(),
                 u.getProfileImgKey(),
                 u.getIntroduction()
@@ -246,10 +247,10 @@ public class UserService {
 
     // 나를 팔로우하는 사람들 (팔로워 목록)
     @Transactional(readOnly = true)
-    public Page<GetFollowResponse> getMyFollowers(Long userId, Pageable pageable) {
-        Page<Users> page = followsRepository.findFollowersUsers(userId, pageable);
+    public Slice<GetFollowResponse> getMyFollowers(Long userId, Pageable pageable) {
+        Slice<Users> slice = followsRepository.findFollowersUsers(userId, pageable);
 
-        return page.map(u -> new GetFollowResponse(
+        return slice.map(u -> new GetFollowResponse(
                 u.getNickname(),
                 u.getProfileImgKey(),
                 u.getIntroduction()
