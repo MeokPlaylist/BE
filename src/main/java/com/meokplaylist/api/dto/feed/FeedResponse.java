@@ -1,6 +1,8 @@
 // 아이템 DTO
 package com.meokplaylist.api.dto.feed;
 
+import com.meokplaylist.infra.feed.Feed;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -12,7 +14,7 @@ public record FeedResponse(
         List<String> feedPhotoUrl
 ) {
     public static FeedResponse of(
-            com.meokplaylist.infra.feed.Feed feed,
+            Feed feed,
             List<String> photoUrls
     ) {
         return new FeedResponse(

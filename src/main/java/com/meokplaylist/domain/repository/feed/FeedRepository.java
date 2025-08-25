@@ -4,6 +4,7 @@ import com.meokplaylist.infra.feed.Feed;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,7 +31,7 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
         )
         order by f.createdAt desc, f.feedId desc
     """)
-    Page<Feed> findFollowingFeeds(@Param("userId") Long userId, Pageable pageable);
+    Slice<Feed> findFollowingFeeds(@Param("userId") Long userId, Pageable pageable);
 
     @Query("""
         SELECT f
@@ -40,6 +41,6 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
         GROUP BY f.id
         ORDER BY COUNT(fc.id) DESC, f.createdAt DESC
     """)
-    Page<Feed> findCategoryIds(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
+    Slice<Feed> findCategoryIds(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
 
 }

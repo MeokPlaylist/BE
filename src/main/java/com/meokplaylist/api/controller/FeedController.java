@@ -40,6 +40,6 @@ public class FeedController {
             @PageableDefault(size = 2) Pageable pageable
     ) {
         var slice = feedService.mainFeedSelectSlice(userId, pageable);
-        return ResponseEntity.ok(feedService.mainFeedSelectSlice(userId, pageable));
+        return ResponseEntity.ok(slice);
     }
 }

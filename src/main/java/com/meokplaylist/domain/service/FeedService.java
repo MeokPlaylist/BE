@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -165,88 +166,27 @@ public class FeedService {
 
     }
 
-    @Transactional(readOnly = true)
-    public Page<mainFeedResponse> mainFeedSelect(Long userId, Pageable pageable){
-        Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        Page<Feed> page;
-
-        page =feedRepository.findFollowingFeeds(user.getUserId(),pageable); //새로 업로드한 피드가 여러개일수 있다.
-
-        if(page.isEmpty()||page==null){ //최근 업로드 된 피드가 없다면 카테고리를 이용하여 피드 갱신
-
-            List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
-
-            if (categoryIds.isEmpty()) {
-                throw new BizExceptionHandler(ErrorCode.NOT_FOUND_USERCATEGORY);
-            }
-            page =feedRepository.findCategoryIds(categoryIds, pageable);
-
-        }
-
-        List<Long> feedIdList = page.getContent().stream()
-                .map(Feed::getFeedId) // 각 Feed 객체에서 ID를 추출
-                .toList();
-        List<FeedPhotos> feedPhotos=feedPhotosRepository.findAllByFeedFeedIdIn(feedIdList);
-
-        Map<Long, List<FeedPhotos>> photosMapByFeedId = feedPhotos.stream()
-                .collect(Collectors.groupingBy(photo -> photo.getFeed().getFeedId()));
-
-        // 4. 최종 결과를 담을 Map<Long, List<String>>을 생성합니다. (Key: feedId, Value: URL 리스트)
-        Map<Long, List<String>> feedUrlsMap = new HashMap<>();
-
-        // 5. 그룹화된 photosMapByFeedId를 순회하며 Presigned URL을 생성합니다.
-        for (Map.Entry<Long, List<FeedPhotos>> entry : photosMapByFeedId.entrySet()) {
-            Long feedId = entry.getKey();
-            List<FeedPhotos> photosOfFeed = entry.getValue();
-
-            // 해당 feedId에 속한 사진들의 URL만 담을 리스트를 생성
-            List<String> urls = new ArrayList<>();
-            for (FeedPhotos photo : photosOfFeed) {
-                urls.add(s3Service.generateGetPresignedUrl(photo.getStorageKey()));
-            }
-            feedUrlsMap.put(feedId, urls);
-        }
-
-        Page<mainFeedResponse> responsePage = page.map(feed -> {
-
-            // getOrDefault를 사용하면 해당 feedId에 사진이 없을 경우, Null 대신 빈 리스트를 반환
-            List<String> urlsForThisFeed = feedUrlsMap.getOrDefault(feed.getFeedId(), Collections.emptyList());
-
-            return new mainFeedResponse(
-                    feed.getUser().getNickname(),
-                    feed.getContent(),
-                    feed.getHashTag(),
-                    feed.getCreatedAt(),
-                    urlsForThisFeed
-            );
-
-        });
-
-        return responsePage;
-    }
     @Transactional(readOnly = true)
     public SlicedResponse<FeedResponse> mainFeedSelectSlice(Long userId, Pageable pageable) {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        // Page로 받아도 무방 (Slice 전환은 리포지토리 시그니처를 Slice로 바꾸면 더 좋음)
-        Page<Feed> page = feedRepository.findFollowingFeeds(user.getUserId(), pageable);
 
-        if (page.isEmpty()) {
+        Slice<Feed> slice = feedRepository.findFollowingFeeds(user.getUserId(), pageable);
+
+        if (slice.isEmpty()) {
             List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
             if (categoryIds.isEmpty()) {
                 // 빈 결과를 slice 형태로 반환
-                return new SlicedResponse<>(List.of(),
-                        pageable.getPageNumber(), pageable.getPageSize(),
-                        true, true, true, false);
+                Slice<FeedResponse> emptySlice = new SliceImpl<>(List.of(), pageable, false);
+                return SlicedResponse.of(emptySlice);
             }
-            page = feedRepository.findCategoryIds(categoryIds, pageable);
+            slice = feedRepository.findCategoryIds(categoryIds, pageable);
         }
 
         // 이번 페이지의 feedId 수집
-        List<Feed> feeds = page.getContent();
+        List<Feed> feeds = slice.getContent();
         List<Long> feedIds = feeds.stream().map(Feed::getFeedId).toList();
 
         // 사진 일괄 조회(정렬 보장)
@@ -271,7 +211,7 @@ public class FeedService {
         }
 
         // 엔티티 -> DTO
-        List<FeedResponse> content = feeds.stream().map(feed -> new FeedResponse(
+        List<FeedResponse> feedSliceDto = feeds.stream().map(feed -> new FeedResponse(
                 feed.getUser().getNickname(),
                 feed.getContent(),
                 feed.getHashTag(),
@@ -279,10 +219,7 @@ public class FeedService {
                 feedUrlsMap.getOrDefault(feed.getFeedId(), List.of())
         )).toList();
 
-        // Page를 Slice처럼 포장 (hasNext는 Page에서 가져와도 동일)
-        Slice<FeedResponse> sliceView = new org.springframework.data.domain.SliceImpl<>(
-                content, pageable, page.hasNext()
-        );
+        Slice<FeedResponse> sliceView = new SliceImpl<>(feedSliceDto, pageable, slice.hasNext());
 
         return SlicedResponse.of(sliceView);
     }
