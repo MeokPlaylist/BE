@@ -192,7 +192,7 @@ public class FeedService {
         final Map<Long, FeedMapDto> feedUrlsAndSocialMap;
 
         if (!feedIds.isEmpty()) {
-            List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdIn(feedIds);
+            List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
             List<LikeCountDto> likeCount=likesRepository.countByFeedFeedId(feedIds);
 
             Map<Long, Long> likeMapByFeedId = likeCount.stream()
