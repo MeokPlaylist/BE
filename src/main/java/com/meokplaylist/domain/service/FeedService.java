@@ -1,8 +1,10 @@
 package com.meokplaylist.domain.service;
 
+import com.meokplaylist.api.dto.FeedMapDto;
+import com.meokplaylist.api.dto.LikeCountDto;
 import com.meokplaylist.api.dto.feed.FeedCreateRequest;
 import com.meokplaylist.api.dto.feed.FeedPhotoForm;
-import com.meokplaylist.api.dto.feed.FeedResponse;
+import com.meokplaylist.api.dto.feed.MainFeedResponse;
 import com.meokplaylist.api.dto.feed.SlicedResponse;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.CategoryRepository;
@@ -12,6 +14,7 @@ import com.meokplaylist.domain.repository.feed.FeedCategoryRespository;
 import com.meokplaylist.domain.repository.feed.FeedLocalCategoryRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
+import com.meokplaylist.domain.repository.socialInteraction.LikesRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.user.Users;
@@ -55,6 +58,7 @@ public class FeedService {
     private final CategoryRepository categoryRepository;
     private final UsersRepository usersRepository;
     private final UserCategoryRepository userCategoryRepository;
+    private final LikesRepository likesRepository;
 
     private final S3Service s3Service;
 
@@ -163,7 +167,7 @@ public class FeedService {
 
 
     @Transactional(readOnly = true)
-    public SlicedResponse<FeedResponse> mainFeedSelectSlice(Long userId, Pageable pageable) {
+    public SlicedResponse<MainFeedResponse> mainFeedSelectSlice(Long userId, Pageable pageable) {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
@@ -174,7 +178,7 @@ public class FeedService {
             List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
             if (categoryIds.isEmpty()) {
                 // 빈 결과를 slice 형태로 반환
-                Slice<FeedResponse> emptySlice = new SliceImpl<>(List.of(), pageable, false);
+                Slice<MainFeedResponse> emptySlice = new SliceImpl<>(List.of(), pageable, false);
                 return SlicedResponse.of(emptySlice);
             }
             slice = feedRepository.findCategoryIds(categoryIds, pageable);
@@ -185,36 +189,52 @@ public class FeedService {
         List<Long> feedIds = feeds.stream().map(Feed::getFeedId).toList();
 
         // 사진 일괄 조회(정렬 보장)
-        final Map<Long, List<String>> feedUrlsMap;
+        final Map<Long, FeedMapDto> feedUrlsAndSocialMap;
 
         if (!feedIds.isEmpty()) {
             List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdIn(feedIds);
+            List<LikeCountDto> likeCount=likesRepository.countByFeedFeedId(feedIds);
+
+            Map<Long, Long> likeMapByFeedId = likeCount.stream()
+                    .collect(Collectors.toMap(
+                            LikeCountDto::getFeedId,
+                            LikeCountDto::getLikeCount
+                    ));
+
+
+
             Map<Long, List<FeedPhotos>> photosMapByFeedId = photos.stream()
                     .collect(Collectors.groupingBy(fp -> fp.getFeed().getFeedId(), LinkedHashMap::new, Collectors.toList()));
 
-            Map<Long, List<String>> tmp = new HashMap<>(photosMapByFeedId.size());
+            Map<Long, FeedMapDto> tmp = new HashMap<>(photosMapByFeedId.size());
             for (var e : photosMapByFeedId.entrySet()) {
                 List<String> urls = new ArrayList<>(e.getValue().size());
                 for (FeedPhotos p : e.getValue()) {
                     urls.add(s3Service.generateGetPresignedUrl(p.getStorageKey()));
                 }
-                tmp.put(e.getKey(), urls);
+                Long like= likeMapByFeedId.get(e.getKey());
+
+                FeedMapDto feedMapDto =new FeedMapDto(urls,like);
+
+                tmp.put(e.getKey(), feedMapDto);
             }
-            feedUrlsMap = tmp;
+
+            feedUrlsAndSocialMap = tmp;
         } else {
-            feedUrlsMap = Collections.emptyMap();
+            feedUrlsAndSocialMap = Collections.emptyMap();
         }
 
         // 엔티티 -> DTO
-        List<FeedResponse> feedSliceDto = feeds.stream().map(feed -> new FeedResponse(
+        List<MainFeedResponse> feedSliceDto = feeds.stream().map(feed -> new MainFeedResponse(
                 feed.getUser().getNickname(),
                 feed.getContent(),
                 feed.getHashTag(),
                 feed.getCreatedAt(),
-                feedUrlsMap.getOrDefault(feed.getFeedId(), List.of())
+                feedUrlsAndSocialMap.get(feed.getFeedId()).getPhotoUrls(),
+                feedUrlsAndSocialMap.get(feed.getFeedId()).getLikeNum()
         )).toList();
 
-        Slice<FeedResponse> sliceView = new SliceImpl<>(feedSliceDto, pageable, slice.hasNext());
+        Slice<MainFeedResponse> sliceView = new SliceImpl<>(feedSliceDto, pageable, slice.hasNext());
 
         return SlicedResponse.of(sliceView);
     }
