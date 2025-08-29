@@ -5,7 +5,6 @@ import com.meokplaylist.infra.feed.FeedPhotos;
 import com.meokplaylist.infra.user.Users;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +12,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface FeedPhotosRepository extends JpaRepository<FeedPhotos, Long> {
-    //FeedPhotos findByFeedIdAndSequence(Long feedId, Integer sequence);
 
     @Query("SELECT p FROM FeedPhotos p " +
             "WHERE p.feed.user = :user AND p.sequence = 0 " +
