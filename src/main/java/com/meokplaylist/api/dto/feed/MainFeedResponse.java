@@ -14,13 +14,15 @@ public record MainFeedResponse(
         OffsetDateTime createdAt,
         List<String> feedPhotoUrl,
 
-        Long likes
+        long likeCount,
+        long commentCount
 
 ) {
     public static MainFeedResponse of(
             Feed feed,
             List<String> photoUrls,
-            Long like
+            long likeCount,
+            long commentCount
     ) {
         return new MainFeedResponse(
                 feed.getUser().getNickname(),
@@ -28,7 +30,8 @@ public record MainFeedResponse(
                 feed.getHashTag(),      // 컬렉션 매핑에 맞춰 조정
                 feed.getCreatedAt(),     // LocalDateTime이면 컨버전해서 넣어도 OK
                 photoUrls,
-                like
+                likeCount,
+                commentCount
         );
     }
 }

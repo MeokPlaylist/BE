@@ -18,9 +18,9 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
 
     Optional<Feed> findByFeedId(Long feedId);
 
-    Long countByUserUserId(Long userId);
+    long countByUserUserId(Long userId);
 
-
+    @EntityGraph(attributePaths = {"user"})
     @Query("""
         select f
         from Feed f
@@ -33,13 +33,14 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
     """)
     Slice<Feed> findFollowingFeeds(@Param("userId") Long userId, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"user"})
     @Query("""
         SELECT f
         FROM Feed f
         JOIN FeedCategory fc ON fc.feed = f
         WHERE fc.category.id IN :categoryIds
         GROUP BY f.id
-        ORDER BY COUNT(fc.id) DESC, f.createdAt DESC
+        ORDER BY COUNT(fc.id) DESC, MAX(f.createdAt) DESC, f.id DESC
     """)
     Slice<Feed> findCategoryIds(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
 

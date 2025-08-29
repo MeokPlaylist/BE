@@ -1,4 +1,4 @@
-package com.meokplaylist.api.dto;
+package com.meokplaylist.api.dto.feed;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class LikeCountDto {
     private Long feedId;
-    private Long likeCount;
+    private long likeCount;
 }

@@ -3,13 +3,14 @@ package com.meokplaylist.api.controller;
 import com.meokplaylist.api.dto.BooleanRequest;
 import com.meokplaylist.api.dto.BooleanResponse;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
-import com.meokplaylist.api.dto.StringUrlResponse;
+import com.meokplaylist.api.dto.PresignedGetUrlResponse;
 import com.meokplaylist.api.dto.user.*;
 import com.meokplaylist.domain.service.S3Service;
 import com.meokplaylist.domain.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -71,9 +72,7 @@ public class UserController {
     //내 페이지
     @GetMapping("/mypage")
     public ResponseEntity<?> mypage(@AuthenticationPrincipal Long userId){
-
         MypageResponse mypageResponse=userService.mypageLoad(userId);
-
         return ResponseEntity.ok(mypageResponse);
     }
 
@@ -95,7 +94,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getMyFollowings(userId, pageable));
     }
 
-
+    //개인정보
     @GetMapping("/personalInfor")
     public ResponseEntity<?> personalInfor(@AuthenticationPrincipal Long userId){
 
@@ -104,4 +103,14 @@ public class UserController {
         return ResponseEntity.ok().body(personalInfor);
     }
 
+    //지역별 피드 재설정
+    @GetMapping("/thumbnailsSetLocal")
+    public ResponseEntity<?> thumbnailsSetLocal(
+            @AuthenticationPrincipal Long userId,
+            @PageableDefault(size = 2) Pageable pageable
+    ){
+        Slice<PresignedGetUrlResponse> slice = userService.thumbnailsSetLocal(userId, pageable);
+
+        return ResponseEntity.ok().body(slice);
+    }
 }

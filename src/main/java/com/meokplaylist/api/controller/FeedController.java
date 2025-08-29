@@ -1,7 +1,7 @@
 package com.meokplaylist.api.controller;
 
 
-import com.meokplaylist.api.dto.PresignedUrlResponse;
+import com.meokplaylist.api.dto.PresignedPutListUrlResponse;
 import com.meokplaylist.api.dto.feed.FeedCreateRequest;
 import com.meokplaylist.api.dto.feed.MainFeedResponse;
 import com.meokplaylist.api.dto.feed.SlicedResponse;
@@ -24,7 +24,7 @@ public class FeedController {
             @AuthenticationPrincipal Long userId,
             @RequestBody FeedCreateRequest feedCreateRequest
     ) {
-        PresignedUrlResponse presignedPutUrls =new PresignedUrlResponse(feedService.createFeed(feedCreateRequest, userId));
+        PresignedPutListUrlResponse presignedPutUrls =new PresignedPutListUrlResponse(feedService.createFeed(feedCreateRequest, userId));
 
         return ResponseEntity.ok().body(presignedPutUrls);
     }

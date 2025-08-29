@@ -8,9 +8,9 @@ import java.util.List;
 @Data
 @Builder
 public class MypageResponse {
-    Long feedNum;
-    Long followingNum;
-    Long followerNum;
+    long feedNum;
+    long followingNum;
+    long followerNum;
     String userNickname;
     String userIntro;
     String profileUrl;

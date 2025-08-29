@@ -1,4 +1,4 @@
-package com.meokplaylist.api.dto;
+package com.meokplaylist.api.dto.feed;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class FeedMapDto {
     private List<String> photoUrls;
-    private Long likeNum;
+    private long likeCoount;
+    private long commetCount;
 
 }

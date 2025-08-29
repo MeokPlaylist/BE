@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class PresignedUrlResponse {
+public class PresignedPutListUrlResponse {
     private List<String> presignedPutUrls;
 }

@@ -1,11 +1,6 @@
 package com.meokplaylist.domain.service;
 
-import com.meokplaylist.api.dto.FeedMapDto;
-import com.meokplaylist.api.dto.LikeCountDto;
-import com.meokplaylist.api.dto.feed.FeedCreateRequest;
-import com.meokplaylist.api.dto.feed.FeedPhotoForm;
-import com.meokplaylist.api.dto.feed.MainFeedResponse;
-import com.meokplaylist.api.dto.feed.SlicedResponse;
+import com.meokplaylist.api.dto.feed.*;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.CategoryRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
@@ -14,6 +9,7 @@ import com.meokplaylist.domain.repository.feed.FeedCategoryRespository;
 import com.meokplaylist.domain.repository.feed.FeedLocalCategoryRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
+import com.meokplaylist.domain.repository.socialInteraction.CommentsRepository;
 import com.meokplaylist.domain.repository.socialInteraction.LikesRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
@@ -59,6 +55,7 @@ public class FeedService {
     private final UsersRepository usersRepository;
     private final UserCategoryRepository userCategoryRepository;
     private final LikesRepository likesRepository;
+    private final CommentsRepository commentsRepository;
 
     private final S3Service s3Service;
 
@@ -174,7 +171,7 @@ public class FeedService {
 
         Slice<Feed> slice = feedRepository.findFollowingFeeds(user.getUserId(), pageable);
 
-        if (slice.isEmpty()) {
+        if (slice.getContent().isEmpty()) {
             List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
             if (categoryIds.isEmpty()) {
                 // 빈 결과를 slice 형태로 반환
@@ -186,6 +183,11 @@ public class FeedService {
 
         // 이번 페이지의 feedId 수집
         List<Feed> feeds = slice.getContent();
+
+        if (feeds.isEmpty()) { //방어 코드
+            return SlicedResponse.of(new SliceImpl<>(List.of(), pageable, false));
+        }
+
         List<Long> feedIds = feeds.stream().map(Feed::getFeedId).toList();
 
         // 사진 일괄 조회(정렬 보장)
@@ -193,14 +195,20 @@ public class FeedService {
 
         if (!feedIds.isEmpty()) {
             List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
-            List<LikeCountDto> likeCount=likesRepository.countByFeedFeedId(feedIds);
+            List<LikeCountDto> likeCounts=likesRepository.countByFeedIdsIncludingZero(feedIds);
+            List<CommentCountDto> commentCounts=commentsRepository.countByFeedIdsIncludingZero(feedIds);
 
-            Map<Long, Long> likeMapByFeedId = likeCount.stream()
+            Map<Long, Long> likeMapByFeedId = likeCounts.stream()
                     .collect(Collectors.toMap(
                             LikeCountDto::getFeedId,
                             LikeCountDto::getLikeCount
                     ));
 
+            Map<Long, Long> commnetMapByFeedId = commentCounts.stream()
+                    .collect(Collectors.toMap(
+                            CommentCountDto::getFeedId,
+                            CommentCountDto::getCommentCount
+                    ));
 
 
             Map<Long, List<FeedPhotos>> photosMapByFeedId = photos.stream()
@@ -212,9 +220,10 @@ public class FeedService {
                 for (FeedPhotos p : e.getValue()) {
                     urls.add(s3Service.generateGetPresignedUrl(p.getStorageKey()));
                 }
-                Long like= likeMapByFeedId.get(e.getKey());
+                long likeCount= likeMapByFeedId.get(e.getKey());
+                long commnetCount=commnetMapByFeedId.get(e.getKey());
 
-                FeedMapDto feedMapDto =new FeedMapDto(urls,like);
+                FeedMapDto feedMapDto =new FeedMapDto(urls,likeCount,commnetCount);
 
                 tmp.put(e.getKey(), feedMapDto);
             }
@@ -231,7 +240,8 @@ public class FeedService {
                 feed.getHashTag(),
                 feed.getCreatedAt(),
                 feedUrlsAndSocialMap.get(feed.getFeedId()).getPhotoUrls(),
-                feedUrlsAndSocialMap.get(feed.getFeedId()).getLikeNum()
+                feedUrlsAndSocialMap.get(feed.getFeedId()).getLikeCoount(),
+                feedUrlsAndSocialMap.get(feed.getFeedId()).getCommetCount()
         )).toList();
 
         Slice<MainFeedResponse> sliceView = new SliceImpl<>(feedSliceDto, pageable, slice.hasNext());

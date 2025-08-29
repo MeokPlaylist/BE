@@ -2,6 +2,7 @@ package com.meokplaylist.domain.service;
 
 import com.meokplaylist.api.dto.BooleanRequest;
 import com.meokplaylist.api.dto.GetFollowResponse;
+import com.meokplaylist.api.dto.PresignedGetUrlResponse;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
 import com.meokplaylist.api.dto.user.*;
 import com.meokplaylist.domain.repository.UserConsentRepository;
@@ -25,7 +26,6 @@ import com.meokplaylist.infra.feed.FeedPhotos;
 import com.meokplaylist.infra.user.UserConsent;
 import com.meokplaylist.infra.user.UserOauth;
 import com.meokplaylist.infra.user.Users;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.transaction.annotation.Transactional;
@@ -205,9 +205,9 @@ public class UserService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        Long feedNum = feedRepository.countByUserUserId(user.getUserId());
-        Long followingNum =followsRepository.countByFollowingUserId(user.getUserId());
-        Long followerNum =followsRepository.countByFollowerUserId(user.getUserId());
+        long feedNum = feedRepository.countByUserUserId(user.getUserId());
+        long followingNum =followsRepository.countByFollowingUserId(user.getUserId());
+        long followerNum =followsRepository.countByFollowerUserId(user.getUserId());
         String userNickname=user.getNickname();
         String userIntro=user.getIntroduction();
         String profileUrl=s3Service.generatePutPresignedUrl(user.getProfileImgKey());
@@ -278,7 +278,18 @@ public class UserService {
                 .build();
 
         return response;
+    }
 
+    @Transactional(readOnly = true)
+    public Slice<PresignedGetUrlResponse> thumbnailsSetLocal(Long userId, Pageable pageable){
+
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        Slice<FeedPhotos> feedPhotos = feedPhotosRepository.findThumbnailsByUserOrderInLocal(user,pageable);
+        return feedPhotos.map(fp->new PresignedGetUrlResponse(
+           s3Service.generateGetPresignedUrl(fp.getStorageKey())
+        ));
     }
 
 }

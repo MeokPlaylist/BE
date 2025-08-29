@@ -7,6 +7,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
+@Table(  name = "feed_local_category",
+        indexes = {
+                @Index(name = "idx_flc_feed", columnList = "feed_id"),
+                @Index(name = "idx_flc_local", columnList = "local_category_id")
+})
 @Getter
 @Setter
 @AllArgsConstructor
