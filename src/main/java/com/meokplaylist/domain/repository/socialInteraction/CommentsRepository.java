@@ -13,12 +13,9 @@ public interface CommentsRepository extends JpaRepository<Comments,Long> {
 
     long countByFeedFeedId(Long feedId);
 
-    @Query("""
-        select f.feedId as feedId, coalesce(count(c.id), 0) as cnt
-        from Feed f
-        left join Comments c on c.feed = f
-         where f.feedId in :feedIds
-        group by f.feedId
-        """)
-    List<CommentCountDto> countByFeedIdsIncludingZero(@Param("feedIds") List<Long> feedIds);
+    @Query("select new com.meokplaylist.api.dto.feed.CommentCountDto(f.feedId, count(c)) " +
+            "from Feed f left join f.comments c " +
+            "where f.feedId in :feedIds " +
+            "group by f.feedId")
+    List<CommentCountDto> findCommentCountsByFeedIds(@Param("feedIds") List<Long> feedIds);
 }

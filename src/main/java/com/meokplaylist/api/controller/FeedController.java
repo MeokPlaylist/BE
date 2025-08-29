@@ -1,7 +1,7 @@
 package com.meokplaylist.api.controller;
 
 
-import com.meokplaylist.api.dto.PresignedPutListUrlResponse;
+import com.meokplaylist.api.dto.presignedUrl.PresignedPutListUrlResponse;
 import com.meokplaylist.api.dto.feed.FeedCreateRequest;
 import com.meokplaylist.api.dto.feed.MainFeedResponse;
 import com.meokplaylist.api.dto.feed.SlicedResponse;
@@ -38,4 +38,6 @@ public class FeedController {
         var slice = feedService.mainFeedSelectSlice(userId, pageable);
         return ResponseEntity.ok(slice);
     }
+
+
 }

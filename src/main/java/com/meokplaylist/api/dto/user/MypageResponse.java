@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -14,6 +15,8 @@ public class MypageResponse {
     String userNickname;
     String userIntro;
     String profileUrl;
-    List<Long> feedId;
-    List<String> feedMainPhotoUrls;
+    Map<Integer, List<String>> urlGroupedByYear; //년도에 따른
+
+    Map<Long, String> urlMappedByFeedId;
+
 }

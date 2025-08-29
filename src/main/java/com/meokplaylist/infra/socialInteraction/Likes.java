@@ -35,13 +35,11 @@ public class Likes {
 
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id",
-            foreignKey = @ForeignKey(name = "fk_likes_user"))
+    @JoinColumn(name = "user_id")
     private Users user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "feed_id",
-            foreignKey = @ForeignKey(name = "fk_likes_feed"))
+    @JoinColumn(name = "feed_id")
     private Feed feed;
 
 

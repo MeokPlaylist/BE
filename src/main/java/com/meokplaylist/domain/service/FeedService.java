@@ -195,8 +195,9 @@ public class FeedService {
 
         if (!feedIds.isEmpty()) {
             List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
-            List<LikeCountDto> likeCounts=likesRepository.countByFeedIdsIncludingZero(feedIds);
-            List<CommentCountDto> commentCounts=commentsRepository.countByFeedIdsIncludingZero(feedIds);
+            List<LikeCountDto> likeCounts=likesRepository.countLikesByFeedIds(feedIds);
+
+            List<CommentCountDto> commentCounts=commentsRepository.findCommentCountsByFeedIds(feedIds);
 
             Map<Long, Long> likeMapByFeedId = likeCounts.stream()
                     .collect(Collectors.toMap(
@@ -220,8 +221,12 @@ public class FeedService {
                 for (FeedPhotos p : e.getValue()) {
                     urls.add(s3Service.generateGetPresignedUrl(p.getStorageKey()));
                 }
-                long likeCount= likeMapByFeedId.get(e.getKey());
-                long commnetCount=commnetMapByFeedId.get(e.getKey());
+                long likeCount= likeMapByFeedId.getOrDefault(e.getKey(), 0L);
+                long commnetCount=commnetMapByFeedId.getOrDefault(e.getKey(), 0L);
+
+                System.out.println(e.getKey());
+                System.out.println(likeCount);
+                System.out.println(commnetCount);
 
                 FeedMapDto feedMapDto =new FeedMapDto(urls,likeCount,commnetCount);
 
@@ -248,5 +253,6 @@ public class FeedService {
 
         return SlicedResponse.of(sliceView);
     }
+
 }
 

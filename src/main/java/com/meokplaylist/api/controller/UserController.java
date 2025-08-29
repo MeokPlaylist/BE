@@ -1,16 +1,15 @@
 package com.meokplaylist.api.controller;
 
-import com.meokplaylist.api.dto.BooleanRequest;
-import com.meokplaylist.api.dto.BooleanResponse;
+import com.meokplaylist.api.dto.Boolean.BooleanRequest;
+import com.meokplaylist.api.dto.Boolean.BooleanResponse;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
-import com.meokplaylist.api.dto.PresignedGetUrlResponse;
+import com.meokplaylist.api.dto.ThumbnailSetLocalResponse;
 import com.meokplaylist.api.dto.user.*;
 import com.meokplaylist.domain.service.S3Service;
 import com.meokplaylist.domain.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +45,7 @@ public class UserController {
     }
 
     @PostMapping("/setupDetailInfo")
-    public ResponseEntity<?> setupDetailInfo(@Valid @RequestBody UserDetailInfoSetupRequest userDetailInfoSetupRequest,@AuthenticationPrincipal Long userId){
+    public ResponseEntity<?> setupDetailInfo(@AuthenticationPrincipal Long userId, @Valid @RequestBody UserDetailInfoSetupRequest userDetailInfoSetupRequest){
         userService.DetailSetup(userId,userDetailInfoSetupRequest);
         return ResponseEntity.ok().build();
     }
@@ -71,7 +70,9 @@ public class UserController {
 
     //내 페이지
     @GetMapping("/mypage")
-    public ResponseEntity<?> mypage(@AuthenticationPrincipal Long userId){
+    public ResponseEntity<?> mypage(
+            @AuthenticationPrincipal Long userId
+            ){
         MypageResponse mypageResponse=userService.mypageLoad(userId);
         return ResponseEntity.ok(mypageResponse);
     }
@@ -103,14 +104,16 @@ public class UserController {
         return ResponseEntity.ok().body(personalInfor);
     }
 
-    //지역별 피드 재설정
-    @GetMapping("/thumbnailsSetLocal")
-    public ResponseEntity<?> thumbnailsSetLocal(
-            @AuthenticationPrincipal Long userId,
-            @PageableDefault(size = 2) Pageable pageable
-    ){
-        Slice<PresignedGetUrlResponse> slice = userService.thumbnailsSetLocal(userId, pageable);
+//    //지역별 피드 재설정
+//    @GetMapping("/thumbnailsSetLocal")
+//    public ResponseEntity<?> thumbnailsSetLocal(
+//            @AuthenticationPrincipal Long userId,
+//            @PageableDefault(size = 2) Pageable pageable
+//    ){
+//        ThumbnailSetLocalResponse thumbnailSetLocalResponse = new ThumbnailSetLocalResponse(userService.thumbnailsSetLocal(userId, pageable));
+//
+//        return ResponseEntity.ok().body(thumbnailSetLocalResponse);
+//    }
 
-        return ResponseEntity.ok().body(slice);
-    }
+
 }

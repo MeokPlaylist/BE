@@ -44,4 +44,7 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
     """)
     Slice<Feed> findCategoryIds(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
 
+    @Query("select f.feedId from Feed f where f.user.userId = :userId")
+    List<Long> findFeedIdsByUserUserId(@Param("userId") Long userId);
+
 }

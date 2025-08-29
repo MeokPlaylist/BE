@@ -1,11 +1,10 @@
 package com.meokplaylist.api.controller;
 
-import com.meokplaylist.api.dto.BooleanResponse;
+import com.meokplaylist.api.dto.Boolean.BooleanResponse;
 import com.meokplaylist.api.dto.auth.*;
 import com.meokplaylist.domain.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.data.repository.config.RepositoryNameSpaceHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

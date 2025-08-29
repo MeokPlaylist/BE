@@ -30,13 +30,13 @@ public class Users {
     @Column(columnDefinition = "TEXT")
     private String passwordHash;
 
-    @Column(unique = true , length = 50)
+    @Column(name = "nickname", unique = true , length = 50)
     private String nickname;
 
     @Column
     private String profileImgKey;
 
-    @Column
+    @Column(name = "introduction")
     private String introduction;
 
     @Column

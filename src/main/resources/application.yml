@@ -25,7 +25,6 @@ spring:
         format_sql: true
 
   defer-datasource-initialization: true #이거 필수띠
-
   sql:
     init:
       mode: always

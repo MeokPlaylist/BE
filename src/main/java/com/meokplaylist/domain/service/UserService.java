@@ -1,8 +1,11 @@
 package com.meokplaylist.domain.service;
 
-import com.meokplaylist.api.dto.BooleanRequest;
+import com.meokplaylist.api.dto.Boolean.BooleanRequest;
+import com.meokplaylist.api.dto.FeedPhotosWithLocalDto;
+import com.meokplaylist.api.dto.FeedPhotosWithYearDto;
 import com.meokplaylist.api.dto.GetFollowResponse;
-import com.meokplaylist.api.dto.PresignedGetUrlResponse;
+import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
+import com.meokplaylist.api.dto.presignedUrl.PresignedGetUrlResponse;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
 import com.meokplaylist.api.dto.user.*;
 import com.meokplaylist.domain.repository.UserConsentRepository;
@@ -22,10 +25,10 @@ import com.meokplaylist.infra.category.Category;
 import com.meokplaylist.infra.category.LocalCategory;
 import com.meokplaylist.infra.category.UserCategory;
 import com.meokplaylist.infra.category.UserLocalCategory;
-import com.meokplaylist.infra.feed.FeedPhotos;
 import com.meokplaylist.infra.user.UserConsent;
 import com.meokplaylist.infra.user.UserOauth;
 import com.meokplaylist.infra.user.Users;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,10 +38,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
 
@@ -165,13 +173,13 @@ public class UserService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
+
         user.setNickname(request.nickname());
 
         if(!request.introduction().isEmpty()) {
             user.setIntroduction(request.introduction());
         }
     }
-
 
     @Transactional
     public void consentCheck(Long userId){
@@ -211,12 +219,26 @@ public class UserService {
         String userNickname=user.getNickname();
         String userIntro=user.getIntroduction();
         String profileUrl=s3Service.generatePutPresignedUrl(user.getProfileImgKey());
-        List<FeedPhotos> thumbnailPhotos = feedPhotosRepository.findThumbnailsByUser(user);
+        List<FeedPhotosWithYearDto> thumbnailPhotos = feedPhotosRepository.findThumbnailsByUser(user);
+        List<Long> feedIds = feedRepository.findFeedIdsByUserUserId(user.getUserId());
+        List<UrlMappedByFeedIdDto> urlList = feedPhotosRepository.findByFeedFeedId(feedIds);
 
-        // 5. 조회된 사진 목록의 StorageKey로 Presigned URL 목록 생성
-        List<String> feedMainPhotoUrls = thumbnailPhotos.stream()
-                .map(photo -> s3Service.generatePutPresignedUrl(photo.getStorageKey()))
-                .collect(Collectors.toList());
+        Map<Long, String> urlMappedByFeedId = urlList.stream()
+                .collect(Collectors.toMap(
+                        UrlMappedByFeedIdDto::getFeedId, // 키: feedId를 추출합니다.
+                        dto -> s3Service.generateGetPresignedUrl(dto.getFeedPhotos().getStorageKey()) // 값: DTO를 URL로 변환합니다.
+                ));
+
+        Map<Integer, List<String>> groupedUrlsByYear = thumbnailPhotos.stream()
+                .collect(Collectors.groupingBy(
+                        FeedPhotosWithYearDto::getYear,
+                        // 3. 각 그룹의 FeedPhotos 객체를 S3 URL로 변환하여 리스트로 만듭니다.
+                        Collectors.mapping(
+                                dto -> s3Service.generateGetPresignedUrl(dto.getFeedPhoto().getStorageKey()),
+                                Collectors.toList()
+                        )
+                ));
+
 
         MypageResponse mypageResponse =MypageResponse.builder()
                 .feedNum(feedNum)
@@ -225,7 +247,8 @@ public class UserService {
                 .userNickname(userNickname)
                 .userIntro(userIntro)
                 .profileUrl(profileUrl)
-                .feedMainPhotoUrls(feedMainPhotoUrls)
+                .urlGroupedByYear(groupedUrlsByYear)
+                .urlMappedByFeedId(urlMappedByFeedId)
                 .build();
 
         return mypageResponse;
@@ -280,16 +303,24 @@ public class UserService {
         return response;
     }
 
-    @Transactional(readOnly = true)
-    public Slice<PresignedGetUrlResponse> thumbnailsSetLocal(Long userId, Pageable pageable){
-
-        Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-
-        Slice<FeedPhotos> feedPhotos = feedPhotosRepository.findThumbnailsByUserOrderInLocal(user,pageable);
-        return feedPhotos.map(fp->new PresignedGetUrlResponse(
-           s3Service.generateGetPresignedUrl(fp.getStorageKey())
-        ));
-    }
+//    @Transactional(readOnly = true)
+//    public  Map<String, List<String>> thumbnailsSetLocal(Long userId, Pageable pageable){
+//
+//        Users user = usersRepository.findByUserId(userId)
+//                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+//
+//        Slice<FeedPhotosWithLocalDto> thumbnailPhotos = feedPhotosRepository.findThumbnailsByUserOrderInLocal(user,pageable);
+//        Map<String, List<String>> groupedUrlsByLocal =thumbnailPhotos.stream()
+//                .collect(Collectors.groupingBy(
+//                        FeedPhotosWithLocalDto::getLocalName,
+//                        Collectors.mapping(
+//                                dto -> s3Service.generateGetPresignedUrl(dto.getFeedPhoto().getStorageKey()),
+//                                Collectors.toList()
+//                        )
+//
+//                ));
+//
+//        return groupedUrlsByLocal;
+//    }
 
 }
