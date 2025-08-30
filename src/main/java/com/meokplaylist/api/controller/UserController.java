@@ -103,17 +103,4 @@ public class UserController {
 
         return ResponseEntity.ok().body(personalInfor);
     }
-
-//    //지역별 피드 재설정
-//    @GetMapping("/thumbnailsSetLocal")
-//    public ResponseEntity<?> thumbnailsSetLocal(
-//            @AuthenticationPrincipal Long userId,
-//            @PageableDefault(size = 2) Pageable pageable
-//    ){
-//        ThumbnailSetLocalResponse thumbnailSetLocalResponse = new ThumbnailSetLocalResponse(userService.thumbnailsSetLocal(userId, pageable));
-//
-//        return ResponseEntity.ok().body(thumbnailSetLocalResponse);
-//    }
-
-
 }

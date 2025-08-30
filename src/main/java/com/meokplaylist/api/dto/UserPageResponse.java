@@ -15,7 +15,8 @@ public class UserPageResponse {
     String userNickname;
     String userIntro;
     String profileUrl;
-    List<Long> feedId;
-    Map<Integer, List<String>> feedMainPhotoUrls;
+    Map<Integer, List<Long>> feedIdsGroupedByYear; //년도에 따른
+    Map<String, List<Long>> feedIdsGroupedByRegion; //지역별
+    Map<Long, String> urlMappedByFeedId;
     Boolean isMe;
 }

@@ -1,5 +1,6 @@
 package com.meokplaylist.domain.repository.feed;
 
+import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
 import com.meokplaylist.infra.feed.Feed;
 
 import org.springframework.data.domain.Page;
@@ -46,5 +47,22 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
 
     @Query("select f.feedId from Feed f where f.user.userId = :userId")
     List<Long> findFeedIdsByUserUserId(@Param("userId") Long userId);
+
+    @Query("SELECT YEAR(f.createdAt), f.feedId " +
+            "FROM Feed f " +
+            "WHERE f.user.userId = :userId " +
+            "ORDER BY f.createdAt DESC")
+    List<Object[]> findFeedIdsGroupedByYear(@Param("userId") Long userId);
+
+    @Query("""
+       SELECT new com.meokplaylist.api.dto.feed.FeedRegionMappingDto(
+           CONCAT(lc.type, CONCAT(':', lc.localName)),f.feedId
+       )
+       FROM Feed f
+       LEFT JOIN FeedLocalCategory flc ON flc.feed = f
+       LEFT JOIN flc.localCategory lc
+       WHERE f.user.userId = :userId
+       """)
+    List<FeedRegionMappingDto> findFeedIdsGroupedByRegion(@Param("userId") Long userId);
 
 }
