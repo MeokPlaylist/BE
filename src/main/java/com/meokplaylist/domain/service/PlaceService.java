@@ -45,7 +45,7 @@ public class PlaceService {
         Feed feed=feedRepository.findByFeedId(feedId)
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
 
-        List<FeedPhotos> feedPhotos=feedPhotosRepository.findAllByFeedFeedIdInOrderBySequenceAsc(feed.getFeedId());
+        List<FeedPhotos> feedPhotos=feedPhotosRepository.findAllByFeedFeedIdOrderBySequenceAsc(feed.getFeedId());
 
         Map<Integer, List<KakaoSearchResponse.Document>> KakoPlaceInfor = Map.of();
 
@@ -66,7 +66,7 @@ public class PlaceService {
 
         Feed feed=feedRepository.findByFeedId(request.getFeedId())
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
-        List<FeedPhotos> feedPhotos=feedPhotosRepository.findAllByFeedFeedIdInOrderBySequenceAsc(feed.getFeedId());
+        List<FeedPhotos> feedPhotos=feedPhotosRepository.findAllByFeedFeedIdOrderBySequenceAsc(feed.getFeedId());
 
         Map<Integer, KakaoSearchResponse.Document> payload = request.getSaveRoadMapPlaceInfor();
 
@@ -127,7 +127,7 @@ public class PlaceService {
         Feed feed=feedRepository.findByFeedId(feedId)
                 .orElseThrow(()-> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
 
-        List<RoadMapPlace> roadMapPlaceList=roadMapPlaceRepository.findAllByFeedFeedIdInOrderByFeedPhotoSequenceAsc(feed.getFeedId());
+        List<RoadMapPlace> roadMapPlaceList=roadMapPlaceRepository.findAllByFeedPhotosFeedFeedIdOrderByFeedPhotos_SequenceAsc(feed.getFeedId());
 
         if(roadMapPlaceList ==null || roadMapPlaceList.isEmpty()){
             throw new BizExceptionHandler(ErrorCode.NOT_FOUND_ROADMAPPLACE);

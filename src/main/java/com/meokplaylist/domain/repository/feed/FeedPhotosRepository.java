@@ -34,5 +34,7 @@ public interface FeedPhotosRepository extends JpaRepository<FeedPhotos, Long> {
     List<UrlMappedByFeedIdDto> findByFeedFeedId(@Param("feedIds") List<Long> feedIds);
 
     List<FeedPhotos> findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(List<Long> feedId);
+
+    List<FeedPhotos> findAllByFeedFeedIdOrderBySequenceAsc(Long feedId);
 }
 
