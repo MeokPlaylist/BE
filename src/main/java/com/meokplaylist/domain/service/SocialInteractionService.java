@@ -30,11 +30,11 @@ public class SocialInteractionService {
         private final FeedPhotosRepository feedPhotosRepository;
 
     @Transactional
-    public void follow(Long followerId, String followingNickname) {
+    public void follow(Long followingId, String followerNickname) {
 
-        Users following = usersRepository.findByNickname(followingNickname)
+        Users follower = usersRepository.findByNickname(followerNickname)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-        Long followingId =following.getUserId();
+        Long followerId =follower.getUserId();
 
         if (followerId.equals(followingId)) {
             throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // 자기 자신 팔로우 금지
@@ -44,7 +44,7 @@ public class SocialInteractionService {
             return; // 이미 팔로우 상태면 무시
         }
 
-        Users follower = usersRepository.findByUserId(followerId)
+        Users following = usersRepository.findByUserId(followingId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
 
@@ -55,11 +55,11 @@ public class SocialInteractionService {
     }
 
     @Transactional
-    public void unfollow(Long followerId, String unFollowingNickname) {
+    public void unfollow(Long followingId, String unFollowerNickname) {
 
-        Users following = usersRepository.findByNickname(unFollowingNickname)
+        Users follower = usersRepository.findByNickname(unFollowerNickname)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-        Long followingId =following.getUserId();
+        Long followerId =follower.getUserId();
 
         followsRepository.deleteByFollowerUserIdAndFollowingUserId(followerId, followingId);
     }

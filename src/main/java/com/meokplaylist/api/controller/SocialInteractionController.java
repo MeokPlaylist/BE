@@ -31,7 +31,7 @@ public class SocialInteractionController {
         socialInteractionService.unfollow(userId,nickname);
     }
 
-    @GetMapping("/userDistinction")
+    @GetMapping("/userPageDistinction")
     public void userDistinction(
             @AuthenticationPrincipal Long userId,
             String nickName
