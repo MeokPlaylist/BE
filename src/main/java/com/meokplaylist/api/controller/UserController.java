@@ -80,7 +80,7 @@ public class UserController {
 
     //팔로우 확인
     @GetMapping("/getFollowerList")
-    public ResponseEntity<?> followerList(
+    public ResponseEntity<?> getMyfollowerList(
             @AuthenticationPrincipal Long userId,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ){
@@ -88,11 +88,27 @@ public class UserController {
     }
 
     @GetMapping("/getFollowingList")
-    public ResponseEntity<?> followingList(
+    public ResponseEntity<?> getMyfollowingList(
             @AuthenticationPrincipal Long userId,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ){
         return ResponseEntity.ok(userService.getMyFollowings(userId, pageable));
+    }
+
+    @GetMapping("/getOtherUserFollowerList")
+    public ResponseEntity<?> getOtherUserfollowerList(
+            @RequestParam("nickname") String nickname,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        return ResponseEntity.ok(userService.getOtherUserFollowers(nickname, pageable));
+    }
+
+    @GetMapping("/getOtherUserFollowingList")
+    public ResponseEntity<?> getOtherUserfollowingList(
+            @RequestParam("nickname") String nickname,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        return ResponseEntity.ok(userService.getOtherUserFollowings(nickname, pageable));
     }
 
     //개인정보
@@ -104,16 +120,15 @@ public class UserController {
         return ResponseEntity.ok().body(personalInfor);
     }
 
-//    //지역별 피드 재설정
-//    @GetMapping("/thumbnailsSetLocal")
-//    public ResponseEntity<?> thumbnailsSetLocal(
-//            @AuthenticationPrincipal Long userId,
-//            @PageableDefault(size = 2) Pageable pageable
-//    ){
-//        ThumbnailSetLocalResponse thumbnailSetLocalResponse = new ThumbnailSetLocalResponse(userService.thumbnailsSetLocal(userId, pageable));
-//
-//        return ResponseEntity.ok().body(thumbnailSetLocalResponse);
-//    }
+    //지역별 피드 재설정
+    @GetMapping("/thumbnailsSetLocal")
+    public ResponseEntity<?> thumbnailsSetLocal(
+            @AuthenticationPrincipal Long userId
+    ){
+        ThumbnailSetLocalResponse thumbnailSetLocalResponse = new ThumbnailSetLocalResponse(userService.thumbnailsSetLocal(userId));
+
+        return ResponseEntity.ok().body(thumbnailSetLocalResponse);
+    }
 
 
 }

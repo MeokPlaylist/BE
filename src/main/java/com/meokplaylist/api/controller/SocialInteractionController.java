@@ -31,13 +31,14 @@ public class SocialInteractionController {
         socialInteractionService.unfollow(userId,nickname);
     }
 
-    @GetMapping("/userDistinction")
-    public void userDistinction(
+    @GetMapping("/userPageDistinction")
+    public void userPageDistinction(
             @AuthenticationPrincipal Long userId,
-            String nickName
+            @RequestParam("nickname") String nickName
     ){
-        socialInteractionService.userDistinction(userId,nickName);
+        socialInteractionService.userPageDistinction(userId,nickName);
 
     }
+
 
 }

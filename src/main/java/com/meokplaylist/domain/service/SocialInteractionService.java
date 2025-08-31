@@ -69,7 +69,7 @@ public class SocialInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public UserPageResponse userDistinction(Long userId, String nickName){
+    public UserPageResponse userPageDistinction(Long userId, String nickName){
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 

@@ -5,7 +5,6 @@ import com.meokplaylist.api.dto.FeedPhotosWithLocalDto;
 import com.meokplaylist.api.dto.FeedPhotosWithYearDto;
 import com.meokplaylist.api.dto.GetFollowResponse;
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
-import com.meokplaylist.api.dto.presignedUrl.PresignedGetUrlResponse;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
 import com.meokplaylist.api.dto.user.*;
 import com.meokplaylist.domain.repository.UserConsentRepository;
@@ -280,6 +279,29 @@ public class UserService {
         ));
     }
 
+
+    @Transactional(readOnly = true)
+    public Slice<GetFollowResponse> getOtherUserFollowers(String nickname, Pageable pageable) {
+        Slice<Users> slice = followsRepository.findFollowersOtherUser(nickname, pageable);
+
+        return slice.map(u -> new GetFollowResponse(
+                u.getNickname(),
+                u.getProfileImgKey(),
+                u.getIntroduction()
+        ));
+    }
+
+    @Transactional(readOnly = true)
+    public Slice<GetFollowResponse> getOtherUserFollowings(String nickname, Pageable pageable) {
+        Slice<Users> slice = followsRepository.findFollowingsOtherUser(nickname, pageable);
+
+        return slice.map(u -> new GetFollowResponse(
+                u.getNickname(),
+                u.getProfileImgKey(),
+                u.getIntroduction()
+        ));
+
+    }
     @Transactional(readOnly = true)
     public PersonalInforResponse getPersonalInfor(Long userId){
         Users user = usersRepository.findByUserId(userId)
@@ -303,24 +325,24 @@ public class UserService {
         return response;
     }
 
-//    @Transactional(readOnly = true)
-//    public  Map<String, List<String>> thumbnailsSetLocal(Long userId, Pageable pageable){
-//
-//        Users user = usersRepository.findByUserId(userId)
-//                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-//
-//        Slice<FeedPhotosWithLocalDto> thumbnailPhotos = feedPhotosRepository.findThumbnailsByUserOrderInLocal(user,pageable);
-//        Map<String, List<String>> groupedUrlsByLocal =thumbnailPhotos.stream()
-//                .collect(Collectors.groupingBy(
-//                        FeedPhotosWithLocalDto::getLocalName,
-//                        Collectors.mapping(
-//                                dto -> s3Service.generateGetPresignedUrl(dto.getFeedPhoto().getStorageKey()),
-//                                Collectors.toList()
-//                        )
-//
-//                ));
-//
-//        return groupedUrlsByLocal;
-//    }
+    @Transactional(readOnly = true)
+    public  Map<String, List<String>> thumbnailsSetLocal(Long userId){
+
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        List<FeedPhotosWithLocalDto> thumbnailPhotos = feedPhotosRepository.findThumbnailsByUserOrderInLocal(user);
+        Map<String, List<String>> groupedUrlsByLocal =thumbnailPhotos.stream()
+                .collect(Collectors.groupingBy(
+                        FeedPhotosWithLocalDto::getLocalName,
+                        Collectors.mapping(
+                                dto -> s3Service.generateGetPresignedUrl(dto.getFeedPhoto().getStorageKey()),
+                                Collectors.toList()
+                        )
+
+                ));
+
+        return groupedUrlsByLocal;
+    }
 
 }

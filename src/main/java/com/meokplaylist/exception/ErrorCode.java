@@ -20,12 +20,17 @@ public enum ErrorCode {
     USERCATEGORY_NOT_FOUND      (456, "userCategory not found"),
     NOT_FOUND_FEED              (457, "not found feed"),
     NOT_FOUND_USERCATEGORY      (458, "not found userCategory"),
+    NOT_FOUND_ROADMAPPLACE      (459,"roadMapPlace not found"),
     INVALID_OAUTH_TOKEN  (460,"잘못된 Token"),
     INVALID_GOOGLEOAUTH_TOKEN  (461,"잘못된 GoogleToken"),
 
     CATEGORY_NOT_FOUND    (470, "caregory not found"),
 
     FAILED_TO_UPLOAD_FILE   (480, "failed_to_upload_file"),
+    INVALID_PLACE_PAYLOAD   (481,"invalid place payload"),
+    SEQUENCE_COUNT_MISMATCH (482,"sequence count mismatch"),
+    SEQUENCE_SET_MISMATCH (483, "sequence set mismatch"),
+
     NOT_HAVE_REFRESHTOKEN  (490, "refreshToken 존재하지 않는다."),
 
     // 5xx

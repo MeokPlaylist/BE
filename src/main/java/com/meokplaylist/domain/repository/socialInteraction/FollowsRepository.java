@@ -23,7 +23,6 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
            """)
     Slice<Users> findFollowingsUsers(@Param("userId") Long userId, Pageable pageable);
 
-
     // 나를 팔로우하는 사용자들 (팔로워)
     @Query("""
            select f.follower
@@ -32,6 +31,24 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
             where f.following.userId = :userId
            """)
     Slice<Users> findFollowersUsers(@Param("userId") Long userId, Pageable pageable);
+
+    @Query("""
+           select f.following
+             from Follows f
+             join f.following u
+            where f.follower.nickname = :nickname
+           """)
+    Slice<Users> findFollowingsOtherUser(@Param("nickname") String nickname, Pageable pageable);
+
+
+    @Query("""
+           select f.follower
+             from Follows f
+             join f.follower u
+            where f.following.nickname = :nickname
+           """)
+    Slice<Users> findFollowersOtherUser(@Param("nickname") String nickname, Pageable pageable);
+
 
     boolean existsByFollowerUserIdAndFollowingUserId(Long followerId, Long followingId);
 

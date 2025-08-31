@@ -48,3 +48,9 @@ cloud:
 oauth:
   google:
     client-id: 614172335108-a6j4nkrudna9k8tpon4anj3jgi6ee0ts.apps.googleusercontent.com
+
+
+kakao:
+  local:
+    base-url: https://dapi.kakao.com
+    rest-api-key: YOUR_KAKAO_REST_API_KEY
