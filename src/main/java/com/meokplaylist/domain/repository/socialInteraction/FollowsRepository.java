@@ -16,19 +16,19 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
 
     // 내가 팔로우하는 사용자들 (팔로잉)
     @Query("""
-           select f.following
+           select f.follower
              from Follows f
-             join f.following u
-            where f.follower.userId = :userId
+             join f.follower u
+            where f.following.userId = :userId
            """)
     Slice<Users> findFollowingsUsers(@Param("userId") Long userId, Pageable pageable);
 
     // 나를 팔로우하는 사용자들 (팔로워)
     @Query("""
-           select f.follower
+           select f.following
              from Follows f
-             join f.follower u
-            where f.following.userId = :userId
+             join f.following u
+            where f.follower.userId = :userId
            """)
     Slice<Users> findFollowersUsers(@Param("userId") Long userId, Pageable pageable);
 

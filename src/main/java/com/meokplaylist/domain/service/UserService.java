@@ -1,11 +1,10 @@
 package com.meokplaylist.domain.service;
 
 import com.meokplaylist.api.dto.Boolean.BooleanRequest;
-import com.meokplaylist.api.dto.FeedPhotosWithLocalDto;
-import com.meokplaylist.api.dto.FeedPhotosWithYearDto;
 import com.meokplaylist.api.dto.GetFollowResponse;
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
+import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
 import com.meokplaylist.api.dto.user.*;
 import com.meokplaylist.domain.repository.UserConsentRepository;
 import com.meokplaylist.domain.repository.UserOauthRepository;
@@ -36,6 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -218,7 +218,9 @@ public class UserService {
         String userNickname=user.getNickname();
         String userIntro=user.getIntroduction();
         String profileUrl=s3Service.generatePutPresignedUrl(user.getProfileImgKey());
-        List<FeedPhotosWithYearDto> thumbnailPhotos = feedPhotosRepository.findThumbnailsByUser(user);
+
+        List<Object[]>  feedIdsGroupedByYear = feedRepository.findFeedIdsGroupedByYear(user.getUserId());
+        List<FeedRegionMappingDto> feedIdsGroupedByRegion = feedRepository.findFeedIdsGroupedByRegion(user.getUserId());
         List<Long> feedIds = feedRepository.findFeedIdsByUserUserId(user.getUserId());
         List<UrlMappedByFeedIdDto> urlList = feedPhotosRepository.findByFeedFeedId(feedIds);
 
@@ -228,15 +230,26 @@ public class UserService {
                         dto -> s3Service.generateGetPresignedUrl(dto.getFeedPhotos().getStorageKey()) // 값: DTO를 URL로 변환합니다.
                 ));
 
-        Map<Integer, List<String>> groupedUrlsByYear = thumbnailPhotos.stream()
+        Map<Integer, List<Long>> feedIdsgroupedByYear = feedIdsGroupedByYear.stream()
                 .collect(Collectors.groupingBy(
-                        FeedPhotosWithYearDto::getYear,
-                        // 3. 각 그룹의 FeedPhotos 객체를 S3 URL로 변환하여 리스트로 만듭니다.
-                        Collectors.mapping(
-                                dto -> s3Service.generateGetPresignedUrl(dto.getFeedPhoto().getStorageKey()),
-                                Collectors.toList()
-                        )
+                        row -> (Integer) row[0],   // 연도
+                        LinkedHashMap::new,        // 순서 유지
+                        Collectors.mapping(row -> (Long) row[1], Collectors.toList())
                 ));
+            //feed별로 맨 앞 지역 하나만
+            Map<Long, String> firstRegionByFeedId = feedIdsGroupedByRegion.stream()
+                    .collect(Collectors.toMap(
+                            FeedRegionMappingDto::feedId,
+                            dto -> dto.region() != null ? dto.region() : "기타",
+                    (existing, replacement) -> existing
+                    ));
+            //지역별 feed 매핑
+            Map<String, List<Long>> feedIdsgroupedByRegion = firstRegionByFeedId.entrySet().stream()
+                    .collect(Collectors.groupingBy(
+                            Map.Entry::getValue,
+                            Collectors.mapping(Map.Entry::getKey,
+                                    Collectors.toList())
+                    ));
 
 
         MypageResponse mypageResponse =MypageResponse.builder()
@@ -246,7 +259,8 @@ public class UserService {
                 .userNickname(userNickname)
                 .userIntro(userIntro)
                 .profileUrl(profileUrl)
-                .urlGroupedByYear(groupedUrlsByYear)
+                .feedIdsGroupedByYear(feedIdsgroupedByYear)
+                .feedIdsGroupedByRegion(feedIdsgroupedByRegion)
                 .urlMappedByFeedId(urlMappedByFeedId)
                 .build();
 
@@ -324,25 +338,4 @@ public class UserService {
 
         return response;
     }
-
-    @Transactional(readOnly = true)
-    public  Map<String, List<String>> thumbnailsSetLocal(Long userId){
-
-        Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-
-        List<FeedPhotosWithLocalDto> thumbnailPhotos = feedPhotosRepository.findThumbnailsByUserOrderInLocal(user);
-        Map<String, List<String>> groupedUrlsByLocal =thumbnailPhotos.stream()
-                .collect(Collectors.groupingBy(
-                        FeedPhotosWithLocalDto::getLocalName,
-                        Collectors.mapping(
-                                dto -> s3Service.generateGetPresignedUrl(dto.getFeedPhoto().getStorageKey()),
-                                Collectors.toList()
-                        )
-
-                ));
-
-        return groupedUrlsByLocal;
-    }
-
 }

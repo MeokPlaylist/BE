@@ -103,16 +103,13 @@ public class FeedService {
             String presignedUrl = s3Service.generatePutPresignedUrl(fileKey);
             presignedUrlList.add(presignedUrl);
         }
-
-        System.out.println(presignedUrlList);
-
         return presignedUrlList;
     }
 
 
     @Transactional
     public void feedCategorySetUp(List<String> categories,List<String> regions , Long feedId) {
-        // 1. 유저 조회
+        // 1. 유저 조회??
         Feed feed = feedRepository.findByFeedId(feedId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
 
@@ -128,12 +125,11 @@ public class FeedService {
 
             Category foodCategory = categoryRepository.findByTypeAndName(type,name);
 
-
             saveCategories.add(foodCategory);
         }
 
         List<FeedCategory> mappings = saveCategories.stream()
-                .map(cat -> new FeedCategory(cat, feed))   // user는 앞에서 조회된 Users
+                .map(cat -> new FeedCategory(cat, feed))   // user는 앞에서 조회된 Users ??
                 .toList();
 
         feedCategoryRespository.saveAll(mappings);
@@ -224,9 +220,6 @@ public class FeedService {
                 long likeCount= likeMapByFeedId.getOrDefault(e.getKey(), 0L);
                 long commnetCount=commnetMapByFeedId.getOrDefault(e.getKey(), 0L);
 
-                System.out.println(e.getKey());
-                System.out.println(likeCount);
-                System.out.println(commnetCount);
 
                 FeedMapDto feedMapDto =new FeedMapDto(urls,likeCount,commnetCount);
 

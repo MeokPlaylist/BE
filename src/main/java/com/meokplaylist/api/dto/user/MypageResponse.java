@@ -15,8 +15,8 @@ public class MypageResponse {
     String userNickname;
     String userIntro;
     String profileUrl;
-    Map<Integer, List<String>> urlGroupedByYear; //년도에 따른
-
+    Map<Integer, List<Long>> feedIdsGroupedByYear; //년도에 따른
+    Map<String, List<Long>> feedIdsGroupedByRegion; //지역별
     Map<Long, String> urlMappedByFeedId;
 
 }
