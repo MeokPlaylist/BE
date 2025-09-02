@@ -29,6 +29,11 @@ spring:
     init:
       mode: always
 
+  elasticsearch:
+    uris: http://localhost:9200
+    username: elastic
+    password: jBsdF_vM6qwceu-t_Ycv
+
 
 
 server:

@@ -1,7 +1,8 @@
 package com.meokplaylist.domain.service;
 
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
-import com.meokplaylist.api.dto.UserPageResponse;
+import com.meokplaylist.api.dto.UserPageDto;
+import com.meokplaylist.api.dto.UserSearchDto;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
@@ -12,6 +13,8 @@ import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +68,7 @@ public class SocialInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public UserPageResponse userPageDistinction(Long userId, String nickName){
+    public UserPageDto userPageDistinction(Long userId, String nickName){
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
@@ -115,7 +118,7 @@ public class SocialInteractionService {
                 ));
 
 
-        UserPageResponse userPageResponse =UserPageResponse.builder()
+        UserPageDto userPageDto = UserPageDto.builder()
                 .feedNum(feedNum)
                 .followingNum(followingNum)
                 .followerNum(followerNum)
@@ -128,6 +131,16 @@ public class SocialInteractionService {
                 .isMe(isMe)
                 .build();
 
-        return userPageResponse;
+        return userPageDto;
     }
+
+    @Transactional(readOnly = true)
+    public Slice<UserSearchDto> searchUser(String nickname, Pageable pageable){
+
+        Slice<UserSearchDto> userList=usersRepository.findUsersByNicknamePrefix(nickname,pageable);
+
+        return userList;
+
+    }
+
 }

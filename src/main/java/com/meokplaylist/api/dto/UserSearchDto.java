@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class UserPageResponse {
-    private UserPageDto userPageDto;
+public class UserSearchDto {
+    private String nickname;
+    private String introduction;
 }
