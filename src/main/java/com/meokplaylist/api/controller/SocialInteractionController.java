@@ -1,6 +1,7 @@
 package com.meokplaylist.api.controller;
 
 import com.meokplaylist.api.dto.RecommendRestaurantRequest;
+import com.meokplaylist.api.dto.RecommendRestaurantResponse;
 import com.meokplaylist.api.dto.UserPageResponse;
 import com.meokplaylist.domain.service.SocialInteractionService;
 import lombok.RequiredArgsConstructor;
@@ -46,8 +47,8 @@ public class SocialInteractionController {
 
     @GetMapping("/recommendRestaurant")
     public ResponseEntity<?> recommendRestaurant(RecommendRestaurantRequest recommendRestaurantRequest){
-        socialInteractionService.recommendRestaurant(recommendRestaurantRequest);
-
+        RecommendRestaurantResponse response=new RecommendRestaurantResponse(socialInteractionService.recommendRestaurant(recommendRestaurantRequest));
+        return ResponseEntity.ok().body(response);
     }
 
 
