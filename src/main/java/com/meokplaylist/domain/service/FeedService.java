@@ -144,7 +144,7 @@ public class FeedService {
             String name = parts[1].trim();  // 예: "수원시"
             if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
-            LocalCategory region = localCategoryRepository.findByTypeAndLocalName(type, name);
+            LocalCategory region = localCategoryRepository.findFirstByTypeAndLocalNameOrderByLocalCategoryIdAsc(type, name);
 
 
             saveRegion.add(region);

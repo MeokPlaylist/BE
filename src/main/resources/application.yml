@@ -30,8 +30,6 @@ spring:
       mode: always
 
 
-
-
 server:
   servlet:
     encoding:
@@ -54,7 +52,7 @@ oauth:
 kakao:
   local:
     base-url: https://dapi.kakao.com
-    rest-api-key: YOUR_KAKAO_REST_API_KEY
+    rest-api-key: d8fd3cc299e7921ad9cbce305123c7a8
 
 tourapi:
   base-url: https://apis.data.go.kr/B551011/TarRlteTarService1

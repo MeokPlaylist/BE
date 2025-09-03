@@ -20,28 +20,22 @@ import java.time.Duration;
 @Configuration
 public class TourismApiConfig {
 
-    @Value("tourapi.base-url")
-    private String baseUrl;
 
-    @Value("tourapi.service-key")
-    private String serviceKey;
+    @Value("${tourapi.base-url}") private String baseUrl;
 
-    @Value("tourapi.mobile-os")
-    private String mobileOs;
+    @Value("${tourapi.service-key}") private String serviceKey;
 
-    @Value("tourapi.mobile-app")
-    private String mobileApp;
+    @Value("${tourapi.mobile-os:ETC}") private String mobileOs;
 
-    @Value("tourapi.default-type")
-    private String defaultType;
+    @Value("${tourapi.mobile-app:MeokPlaylist}") private String mobileApp;
 
-    @Value("tourapi.connect-timeout-ms")
-    private int connectTimeoutMs;
+    @Value("${tourapi.default-type:json}") private String defaultType;
 
-    @Value("tourapi.read-timeout-ms")
-    private int readTimeoutMs;
+    @Value("${tourapi.connect-timeout-ms:2000}") private int connectTimeoutMs;
 
-    @Bean
+    @Value("${tourapi.read-timeout-ms:3000}") private int readTimeoutMs;
+
+    @Bean("tourWebClient")
     public WebClient tourApiWebClient() {
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMs)

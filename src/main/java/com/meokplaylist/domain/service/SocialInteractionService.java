@@ -14,15 +14,14 @@ import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,8 +34,9 @@ public class SocialInteractionService {
         private final UsersRepository usersRepository;
         private final FeedRepository feedRepository;
         private final S3Service s3Service;
-        private final WebClient tourApiWebClient;
-        private final LocalCategoryRepository localCategoryRepository;
+        @Qualifier("tourWebClient") private final WebClient tourApiWebClient;
+
+    private final LocalCategoryRepository localCategoryRepository;
         private final FeedPhotosRepository feedPhotosRepository;
 
     @Transactional
@@ -147,7 +147,7 @@ public class SocialInteractionService {
         List<String> regions=request.getRegions();
         // 1. 요청할 지역 정보(LocalCategory)들을 Flux 스트림으로 변환
 
-        return Flux.fromIterable(regions)
+        return Flux.fromIterable(Objects.requireNonNullElse(regions, Collections.emptyList()))
                 // 1. 각 지역 문자열을 파싱하고 DB에서 LocalCategory '리스트'를 조회합니다.
                 .map(raw -> {
                     String[] parts = raw.split(":", 2);

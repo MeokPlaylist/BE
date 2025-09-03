@@ -148,7 +148,7 @@ public class UserService {
                 String name = parts[1].trim();  // 예: "수원시"
                 if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
-                LocalCategory region = localCategoryRepository.findByTypeAndLocalName(type, name);
+                LocalCategory region = localCategoryRepository.findFirstByTypeAndLocalNameOrderByLocalCategoryIdAsc(type, name);
 
 
                 saveRegion.add(region);
@@ -187,8 +187,8 @@ public class UserService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        //이전에 완료 했던 사용자인지 확인
-        if(user.getCheckstatus()){
+        boolean consented = Boolean.TRUE.equals(user.getCheckstatus());
+        if(consented){
             return;
         }
 
