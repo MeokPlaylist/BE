@@ -55,3 +55,13 @@ kakao:
   local:
     base-url: https://dapi.kakao.com
     rest-api-key: YOUR_KAKAO_REST_API_KEY
+
+tourapi:
+  base-url: https://apis.data.go.kr/B551011/TarRlteTarService1
+  service-key: 57edced7cc0621ce34923583294e68b55c6e8fcc22d7c91e2048879aa9ea6202
+  mobile-os: ETC
+  mobile-app: MeokPlaylist
+  default-type: json
+  connect-timeout-ms: 2000
+  read-timeout-ms: 3000
+    

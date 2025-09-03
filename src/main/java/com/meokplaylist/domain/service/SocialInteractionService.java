@@ -1,22 +1,25 @@
 package com.meokplaylist.domain.service;
 
+import com.meokplaylist.api.dto.RecommendRestaurantRequest;
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
 import com.meokplaylist.api.dto.UserPageDto;
-import com.meokplaylist.api.dto.UserSearchDto;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
 import com.meokplaylist.domain.repository.UsersRepository;
+import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
 import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
+import com.meokplaylist.infra.category.LocalCategory;
 import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,10 +29,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SocialInteractionService {
+
+        private static final int CONTENT_TYPE_RESTAURANT = 39;
+
         private final FollowsRepository followsRepository;
         private final UsersRepository usersRepository;
         private final FeedRepository feedRepository;
         private final S3Service s3Service;
+        private final WebClient tourApiWebClient;
+        private final LocalCategoryRepository localCategoryRepository;
         private final FeedPhotosRepository feedPhotosRepository;
 
     @Transactional
@@ -135,12 +143,52 @@ public class SocialInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<UserSearchDto> searchUser(String nickname, Pageable pageable){
+    public Mono<List<String>> recommendRestaurant(RecommendRestaurantRequest request){
 
-        Slice<UserSearchDto> userList=usersRepository.findUsersByNicknamePrefix(nickname,pageable);
+        List<String> regions=request.getRegions();
+        // 1. 요청할 지역 정보(LocalCategory)들을 Flux 스트림으로 변환
 
-        return userList;
+        return Flux.fromIterable(regions)
+                // 1. 각 지역 문자열을 파싱하고 DB에서 LocalCategory '리스트'를 조회합니다.
+                .map(raw -> {
+                    String[] parts = raw.split(":", 2);
+                    if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
+                    String type = parts[0].trim();
+                    String name = parts[1].trim();
+                    if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
+                    // 결과는 List<LocalCategory> 입니다.
+                    return localCategoryRepository.findAllByTypeAndLocalName(type, name);
+                })
+
+                // 2. ✨ 여기가 핵심! ✨
+                // 스트림의 각 요소인 List<LocalCategory>를 받아서,
+                // 그 리스트를 다시 개별 LocalCategory의 스트림으로 펼쳐줍니다.
+                // 결과적으로 Flux<List<LocalCategory>>가 Flux<LocalCategory>로 변환됩니다.
+                .flatMap(localCategoryList -> Flux.fromIterable(localCategoryList))
+                // 위 라인은 .flatMap(Flux::fromIterable) 로 축약할 수 있습니다.
+
+                // 3. 이제 스트림의 각 요소는 단일 LocalCategory 객체이므로 정상적으로 처리할 수 있습니다.
+                .flatMap(localCategory -> {
+                    int areaCode = localCategory.getAreaCode();
+                    Long sigunguCode = localCategory.getSigunguCode();
+
+                    // 각 LocalCategory에 대해 비동기 API를 호출합니다.
+                    return tourApiWebClient
+                            .get()
+                            .uri(uriBuilder -> uriBuilder
+                                    .path("/areaBasedList1")
+                                    .queryParam("areaCode", areaCode)
+                                    .queryParam("sigunguCode", sigunguCode)
+                                    .queryParam("contentTypeId", CONTENT_TYPE_RESTAURANT)
+                                    .queryParam("numOfRows", 20)
+                                    .build())
+                            .retrieve()
+                            .bodyToMono(String.class); // Mono<String> 반환
+                })
+                // 4. 병렬로 처리된 모든 API 호출 결과를 최종적으로 하나의 리스트로 모읍니다.
+                .collectList();
     }
+
 
 }

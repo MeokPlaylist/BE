@@ -6,6 +6,6 @@ import org.springframework.data.domain.Slice;
 
 @Getter
 @AllArgsConstructor
-public class UserSearchResponse {
-    private Slice<UserSearchDto> userSearchslice;
+public class SearchUserResponse {
+    private Slice<SearchUserDto> userSearchslice;
 }

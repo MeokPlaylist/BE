@@ -23,5 +23,8 @@ public class LocalCategory {
     @Column
     private String localName;
 
+    private Integer areaCode;
+
+    private Long sigunguCode;
 
 }

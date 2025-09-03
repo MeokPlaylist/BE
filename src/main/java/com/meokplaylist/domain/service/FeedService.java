@@ -44,7 +44,7 @@ public class FeedService {
     @Value("${cloud.ncp.object-storage.bucket}")
     private String bucketName;
 
-    private static final Set<String> ALLOWED = Set.of("image/jpeg","image/png");
+    private static final Set<String> ALLOWED = Set.of("image/jpeg", "image/png");
 
     private final FeedRepository feedRepository;
     private final FeedPhotosRepository feedPhotosRepository;
@@ -60,7 +60,7 @@ public class FeedService {
     private final S3Service s3Service;
 
     @Transactional
-    public List<String> createFeed(FeedCreateRequest feedCreateRequest,Long userId) {
+    public List<String> createFeed(FeedCreateRequest feedCreateRequest, Long userId) {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
@@ -71,14 +71,14 @@ public class FeedService {
                 .build();
         feed = feedRepository.save(feed);
         //피드 카테고리 저장
-        if(feedCreateRequest.getCategories() !=null){
-            List<String> categories=feedCreateRequest.getCategories();
-            List<String> regions =feedCreateRequest.getRegions();
-            feedCategorySetUp(categories,regions,feed.getFeedId());
+        if (feedCreateRequest.getCategories() != null) {
+            List<String> categories = feedCreateRequest.getCategories();
+            List<String> regions = feedCreateRequest.getRegions();
+            feedCategorySetUp(categories, regions, feed.getFeedId());
         }
 
 
-        List<FeedPhotos> feedPhotos =new ArrayList<>();
+        List<FeedPhotos> feedPhotos = new ArrayList<>();
         for (FeedPhotoForm photoForm : feedCreateRequest.getPhotos()) {
 
             String storageKey = StorageKeyUtil.buildKey("feeds", userId, feed.getFeedId(), photoForm.getFileName());//key 리턴
@@ -94,12 +94,12 @@ public class FeedService {
             feedPhotos.add(photo);
 
         }
-        List<String> presignedUrlList =new ArrayList<>();
+        List<String> presignedUrlList = new ArrayList<>();
 
         feedPhotosRepository.saveAll(feedPhotos);
 
-        for (int i=0; i <feedPhotos.size(); i++){
-            String fileKey=feedPhotos.get(i).getStorageKey();
+        for (int i = 0; i < feedPhotos.size(); i++) {
+            String fileKey = feedPhotos.get(i).getStorageKey();
             String presignedUrl = s3Service.generatePutPresignedUrl(fileKey);
             presignedUrlList.add(presignedUrl);
         }
@@ -108,13 +108,13 @@ public class FeedService {
 
 
     @Transactional
-    public void feedCategorySetUp(List<String> categories,List<String> regions , Long feedId) {
+    public void feedCategorySetUp(List<String> categories, List<String> regions, Long feedId) {
         // 1. 유저 조회??
         Feed feed = feedRepository.findByFeedId(feedId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
 
 
-        List<Category> saveCategories =new ArrayList<>();
+        List<Category> saveCategories = new ArrayList<>();
 
         for (String raw : categories) {
             String[] parts = raw.split(":", 2);
@@ -123,7 +123,7 @@ public class FeedService {
             String name = parts[1].trim();  // 예: "전통적인"
             if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
-            Category foodCategory = categoryRepository.findByTypeAndName(type,name);
+            Category foodCategory = categoryRepository.findByTypeAndName(type, name);
 
             saveCategories.add(foodCategory);
         }
@@ -134,7 +134,7 @@ public class FeedService {
 
         feedCategoryRespository.saveAll(mappings);
 
-        List<LocalCategory> saveRegion =new ArrayList<>();
+        List<LocalCategory> saveRegion = new ArrayList<>();
 
 
         for (String raw : regions) {
@@ -151,7 +151,7 @@ public class FeedService {
         }
 
         List<FeedLocalCategory> mapping = saveRegion.stream()
-                .map(reg->new FeedLocalCategory(reg,feed))
+                .map(reg -> new FeedLocalCategory(reg, feed))
                 .toList();
 
         feedLocalCategoryRepository.saveAll(mapping);
@@ -191,9 +191,9 @@ public class FeedService {
 
         if (!feedIds.isEmpty()) {
             List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
-            List<LikeCountDto> likeCounts=likesRepository.countLikesByFeedIds(feedIds);
+            List<LikeCountDto> likeCounts = likesRepository.countLikesByFeedIds(feedIds);
 
-            List<CommentCountDto> commentCounts=commentsRepository.findCommentCountsByFeedIds(feedIds);
+            List<CommentCountDto> commentCounts = commentsRepository.findCommentCountsByFeedIds(feedIds);
 
             Map<Long, Long> likeMapByFeedId = likeCounts.stream()
                     .collect(Collectors.toMap(
@@ -217,11 +217,11 @@ public class FeedService {
                 for (FeedPhotos p : e.getValue()) {
                     urls.add(s3Service.generateGetPresignedUrl(p.getStorageKey()));
                 }
-                long likeCount= likeMapByFeedId.getOrDefault(e.getKey(), 0L);
-                long commnetCount=commnetMapByFeedId.getOrDefault(e.getKey(), 0L);
+                long likeCount = likeMapByFeedId.getOrDefault(e.getKey(), 0L);
+                long commnetCount = commnetMapByFeedId.getOrDefault(e.getKey(), 0L);
 
 
-                FeedMapDto feedMapDto =new FeedMapDto(urls,likeCount,commnetCount);
+                FeedMapDto feedMapDto = new FeedMapDto(urls, likeCount, commnetCount);
 
                 tmp.put(e.getKey(), feedMapDto);
             }

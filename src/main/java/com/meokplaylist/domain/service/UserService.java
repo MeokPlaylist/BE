@@ -2,6 +2,7 @@ package com.meokplaylist.domain.service;
 
 import com.meokplaylist.api.dto.Boolean.BooleanRequest;
 import com.meokplaylist.api.dto.GetFollowResponse;
+import com.meokplaylist.api.dto.SearchUserDto;
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
@@ -338,4 +339,14 @@ public class UserService {
 
         return response;
     }
+
+    @Transactional(readOnly = true)
+    public Slice<SearchUserDto> searchUser(String nickname, Pageable pageable){
+
+        Slice<SearchUserDto> userList=usersRepository.findUsersByNicknamePrefix(nickname,pageable);
+
+        return userList;
+    }
+
+
 }

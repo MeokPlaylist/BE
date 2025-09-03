@@ -1,12 +1,9 @@
 package com.meokplaylist.api.controller;
 
-import com.meokplaylist.api.dto.UserPageDto;
+import com.meokplaylist.api.dto.RecommendRestaurantRequest;
 import com.meokplaylist.api.dto.UserPageResponse;
-import com.meokplaylist.api.dto.UserSearchResponse;
 import com.meokplaylist.domain.service.SocialInteractionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -47,14 +44,12 @@ public class SocialInteractionController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/searchUser")
-    public ResponseEntity<?> searchUser(
-            @RequestParam("nickname") String nickname,
-            @PageableDefault Pageable pageable
-    ){
-        UserSearchResponse response=new UserSearchResponse(socialInteractionService.searchUser(nickname,pageable));
+    @GetMapping("/recommendRestaurant")
+    public ResponseEntity<?> recommendRestaurant(RecommendRestaurantRequest recommendRestaurantRequest){
+        socialInteractionService.recommendRestaurant(recommendRestaurantRequest);
 
-        return ResponseEntity.ok().body(response);
     }
+
+
 
 }

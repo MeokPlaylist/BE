@@ -2,6 +2,7 @@ package com.meokplaylist.api.controller;
 
 import com.meokplaylist.api.dto.Boolean.BooleanRequest;
 import com.meokplaylist.api.dto.Boolean.BooleanResponse;
+import com.meokplaylist.api.dto.SearchUserResponse;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
 import com.meokplaylist.api.dto.ThumbnailSetLocalResponse;
 import com.meokplaylist.api.dto.user.*;
@@ -55,6 +56,7 @@ public class UserController {
         BooleanResponse booleanResponse = new BooleanResponse(userService.consentUpload(booleanRequest,userId));
         return ResponseEntity.ok().body(booleanResponse);
     }
+
 
     @PostMapping("/categorySet")
     public ResponseEntity<?> categorySet(@Valid @RequestBody CategorySetUpRequest categorySetUpRequest, @AuthenticationPrincipal Long userId){
@@ -119,4 +121,14 @@ public class UserController {
 
         return ResponseEntity.ok().body(personalInfor);
     }
+
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUser(@RequestParam("nickname") String nickname, @PageableDefault Pageable pageable){
+
+        SearchUserResponse response=new SearchUserResponse(userService.searchUser(nickname,pageable));
+        return ResponseEntity.ok().body(response);
+    }
+    
+
 }
