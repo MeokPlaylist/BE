@@ -1,5 +1,7 @@
 package com.meokplaylist.domain.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meokplaylist.api.dto.RecommendRestaurantRequest;
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
 import com.meokplaylist.api.dto.UserPageDto;
@@ -36,8 +38,9 @@ public class SocialInteractionService {
         private final S3Service s3Service;
         @Qualifier("tourWebClient") private final WebClient tourApiWebClient;
 
-    private final LocalCategoryRepository localCategoryRepository;
+        private final LocalCategoryRepository localCategoryRepository;
         private final FeedPhotosRepository feedPhotosRepository;
+        private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
     public void follow(Long followingId, String followerNickname) {
@@ -160,33 +163,55 @@ public class SocialInteractionService {
                     return localCategoryRepository.findAllByTypeAndLocalName(type, name);
                 })
 
-                // 2. ✨ 여기가 핵심! ✨
-                // 스트림의 각 요소인 List<LocalCategory>를 받아서,
-                // 그 리스트를 다시 개별 LocalCategory의 스트림으로 펼쳐줍니다.
-                // 결과적으로 Flux<List<LocalCategory>>가 Flux<LocalCategory>로 변환됩니다.
+
                 .flatMap(localCategoryList -> Flux.fromIterable(localCategoryList))
-                // 위 라인은 .flatMap(Flux::fromIterable) 로 축약할 수 있습니다.
 
-                // 3. 이제 스트림의 각 요소는 단일 LocalCategory 객체이므로 정상적으로 처리할 수 있습니다.
                 .flatMap(localCategory -> {
-                    int areaCode = localCategory.getAreaCode();
-                    Long sigunguCode = localCategory.getSigunguCode();
+                    String areaCode = localCategory.getAreaCode().toString();
+                    String sigunguCode = localCategory.getSigunguCode().toString();
 
-                    // 각 LocalCategory에 대해 비동기 API를 호출합니다.
                     return tourApiWebClient
                             .get()
                             .uri(uriBuilder -> uriBuilder
                                     .path("/areaBasedList1")
-                                    .queryParam("areaCode", areaCode)
-                                    .queryParam("sigunguCode", sigunguCode)
-                                    .queryParam("contentTypeId", CONTENT_TYPE_RESTAURANT)
+                                    .queryParam("areaCd", areaCode)
+                                    .queryParam("signguCd", sigunguCode)
                                     .queryParam("numOfRows", 20)
+                                    .queryParam("baseYm","202503")
                                     .build())
                             .retrieve()
-                            .bodyToMono(String.class); // Mono<String> 반환
+                            .bodyToMono(String.class);
+                }, 10)
+
+
+                .flatMap(jsonString -> {
+                    try {
+                        // 2. 받은 문자열을 JsonNode 객체로 파싱합니다.
+                        JsonNode root = objectMapper.readTree(jsonString);
+
+                        // 3. 실제 데이터가 있는 item 배열로 이동합니다.
+                        JsonNode items = root.path("response").path("body").path("items").path("item");
+
+                        List<String> restaurantNames = new ArrayList<>();
+                        if (items.isArray()) {
+                            for (JsonNode item : items) {
+                                // 4. 카테고리가 "음식"인 경우에만 필터링합니다.
+                                if ("음식".equals(item.path("rlteCtgryLclsNm").asText())) {
+                                    // 5. 음식점 이름("rlteTatsNm")을 리스트에 추가합니다.
+                                    restaurantNames.add(item.path("rlteTatsNm").asText());
+                                }
+                            }
+                        }
+                        // 필터링된 음식점 이름 목록을 다음 스트림으로 전달합니다.
+                        return Flux.fromIterable(restaurantNames);
+
+                    } catch (Exception e) {
+                        // 파싱 오류 발생 시 에러를 전달하거나 비어있는 스트림을 반환합니다.
+                        return Flux.error(new RuntimeException("JSON parsing error", e));
+                    }
                 })
-                // 4. 병렬로 처리된 모든 API 호출 결과를 최종적으로 하나의 리스트로 모읍니다.
-                .collectList();
+                .distinct() // 혹시 모를 중복 제거
+                .collectList(); // 6. 최종적으로 모든 음식점 이름을 하나의 리스트로 합칩니다.
     }
 
 

@@ -11,13 +11,13 @@ spring:
       connection-init-sql: SET NAMES utf8mb4
 
   flyway:
-    enabled: true     # default: true
+    enabled: true    # default: true
     baseline-on-migrate: true  # 기존 테이블이 있어도 1회차부터 진행
     locations: classpath:db/migration
 
   jpa:
     hibernate:
-      ddl-auto: update  # Entity 기반으로 table 생성
+      ddl-auto: none  # Entity 기반으로 table 생성
     show-sql: true
     properties:
       hibernate:

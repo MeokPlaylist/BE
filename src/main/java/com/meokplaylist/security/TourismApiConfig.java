@@ -8,8 +8,7 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.DefaultUriBuilderFactory;
-import org.springframework.web.util.UriBuilderFactory;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
@@ -41,17 +40,16 @@ public class TourismApiConfig {
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMs)
                 .responseTimeout(Duration.ofMillis(readTimeoutMs));
 
-        // 공통 쿼리 파라미터(필수: MobileOS, MobileApp, 타입 등)와 키를 기본으로 붙여줌
         ExchangeFilterFunction addDefaultParams = (req, next) -> {
-            UriBuilderFactory factory = new DefaultUriBuilderFactory(baseUrl);
-            URI newUri = factory.builder()
-                    .path(req.url().getPath())
-                    .replaceQuery(req.url().getQuery()) // 기존 쿼리 유지
+            // 기존 요청 URI를 기반으로 새로운 URI를 만듭니다.
+            URI newUri = UriComponentsBuilder.fromUri(req.url())
                     .queryParam("MobileOS", mobileOs)
                     .queryParam("MobileApp", mobileApp)
                     .queryParam("_type", defaultType)
                     .queryParam("serviceKey", serviceKey)
-                    .build();
+                    .build(true) // 인코딩 처리를 위임
+                    .toUri();
+
             ClientRequest newReq = ClientRequest.from(req).url(newUri).build();
             return next.exchange(newReq);
         };

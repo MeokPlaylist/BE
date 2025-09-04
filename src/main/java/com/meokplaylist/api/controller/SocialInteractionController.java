@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/socialInteraction")
@@ -45,12 +47,18 @@ public class SocialInteractionController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/recommendRestaurant")
-    public ResponseEntity<?> recommendRestaurant(RecommendRestaurantRequest recommendRestaurantRequest){
-        RecommendRestaurantResponse response=new RecommendRestaurantResponse(socialInteractionService.recommendRestaurant(recommendRestaurantRequest));
-        return ResponseEntity.ok().body(response);
-    }
+    @PostMapping("/recommendRestaurant")
+    public ResponseEntity<RecommendRestaurantResponse> recommendRestaurant(
+            @RequestBody RecommendRestaurantRequest request
+    ) {
+        List<String> items = socialInteractionService
+                .recommendRestaurant(request)  // Mono<List<String>>
+                .block();                      // ✅ collectList() 쓰지 말고 block()만
 
+        RecommendRestaurantResponse body = new RecommendRestaurantResponse(items);
+        System.out.println(body);
+        return ResponseEntity.ok(body);
+    }
 
 
 }
