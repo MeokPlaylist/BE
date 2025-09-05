@@ -2,9 +2,7 @@ package com.meokplaylist.api.controller;
 
 import com.meokplaylist.api.dto.Boolean.BooleanRequest;
 import com.meokplaylist.api.dto.Boolean.BooleanResponse;
-import com.meokplaylist.api.dto.SearchUserResponse;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
-import com.meokplaylist.api.dto.ThumbnailSetLocalResponse;
 import com.meokplaylist.api.dto.user.*;
 import com.meokplaylist.domain.service.S3Service;
 import com.meokplaylist.domain.service.UserService;
@@ -129,7 +127,8 @@ public class UserController {
     @GetMapping("/search")
     public ResponseEntity<?> searchUser(@RequestParam("nickname") String nickname, @PageableDefault Pageable pageable){
 
-        SearchUserResponse response=new SearchUserResponse(userService.searchUser(nickname,pageable));
+        var response=userService.searchUser(nickname,pageable);
+
         return ResponseEntity.ok().body(response);
     }
     

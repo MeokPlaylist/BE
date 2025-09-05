@@ -1,4 +1,4 @@
-package com.meokplaylist.api.dto.feed;
+package com.meokplaylist.api.dto;
 
 import org.springframework.data.domain.Slice;
 

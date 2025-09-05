@@ -4,7 +4,7 @@ package com.meokplaylist.api.controller;
 import com.meokplaylist.api.dto.presignedUrl.PresignedPutListUrlResponse;
 import com.meokplaylist.api.dto.feed.FeedCreateRequest;
 import com.meokplaylist.api.dto.feed.MainFeedResponse;
-import com.meokplaylist.api.dto.feed.SlicedResponse;
+import com.meokplaylist.api.dto.SlicedResponse;
 import com.meokplaylist.domain.service.FeedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +38,4 @@ public class FeedController {
         var slice = feedService.mainFeedSelectSlice(userId, pageable);
         return ResponseEntity.ok(slice);
     }
-
-
-
 }
