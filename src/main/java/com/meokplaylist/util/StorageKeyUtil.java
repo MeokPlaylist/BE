@@ -10,8 +10,15 @@ public final class StorageKeyUtil {
     public static String buildKey(String topLevel, Long userId,Long feedId, String originalFilename) {
         String ext = getExtensionOrDefault(originalFilename, "bin");
         String uuid = UUID.randomUUID().toString();
-        // 예: photos/123/uuid.png
+        // 예: feed/123/1/uuid.png
         return String.format("%s/%d/%d/%s.%s", topLevel, userId,feedId ,uuid, ext);
+    }
+
+    public static String buildProfileKey(String topLevel, Long userId, String originalFilename) {
+        String ext = getExtensionOrDefault(originalFilename, "bin");
+        String uuid = UUID.randomUUID().toString();
+        // 예: photos/1/123/uuid.png
+        return String.format("%s/%d/%s.%s", topLevel, userId ,uuid, ext);
     }
 
     private static String getExtensionOrDefault(String filename, String def) {

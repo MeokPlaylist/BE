@@ -25,6 +25,7 @@ import com.meokplaylist.infra.category.UserLocalCategory;
 import com.meokplaylist.infra.user.UserConsent;
 import com.meokplaylist.infra.user.UserOauth;
 import com.meokplaylist.infra.user.Users;
+import com.meokplaylist.util.StorageKeyUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -60,6 +61,8 @@ public class UserService {
     private final UserLocalCategoryRepository userLocalCategoryRepository;
 
     private final S3Service s3Service;
+    private static final String BASE_PROFILE_FMG="https://kr.object.ncloudstorage.com/meokplaylist/%EA%B8%B0%EB%B3%B8%20%ED%94%84%EB%A1%9C%ED%95%84.png";
+    //BASE 부분 수정 필요
     private static String consentFileUrl ="https://kr.object.ncloudstorage.com/meokplaylist/%EB%A8%B9%ED%94%8C%EB%A6%AC%20%EB%8F%99%EC%9D%98%EC%84%9C%20%EB%82%B4%EC%9A%A9.txt";
 
     @Transactional(readOnly = true)
@@ -97,6 +100,26 @@ public class UserService {
         else{
             throw new BizExceptionHandler(ErrorCode.ERROR_CODE);
         }
+
+    }
+
+    @Transactional
+    public void uploadProfileImage(UserProfileSetupRequest request, Long userId){
+
+
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        String key;
+
+        if(request.fileName()==null || request.fileName().isEmpty()){
+            key=BASE_PROFILE_FMG;
+        }else{
+
+            key = StorageKeyUtil.buildProfileKey("photos", user.getUserId(), request.fileName());
+        }
+
+        user.setProfileImgKey(key);
 
     }
 

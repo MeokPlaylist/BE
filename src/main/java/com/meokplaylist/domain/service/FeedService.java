@@ -235,6 +235,7 @@ public class FeedService {
         // 엔티티 -> DTO
         List<MainFeedResponse> feedSliceDto = feeds.stream().map(feed -> new MainFeedResponse(
                 feed.getUser().getNickname(),
+                feed.getFeedId(),
                 feed.getContent(),
                 feed.getHashTag(),
                 feed.getCreatedAt(),
