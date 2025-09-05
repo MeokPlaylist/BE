@@ -1,9 +1,7 @@
 package com.meokplaylist.domain.service;
 
+import com.meokplaylist.api.dto.*;
 import com.meokplaylist.api.dto.Boolean.BooleanRequest;
-import com.meokplaylist.api.dto.GetFollowResponse;
-import com.meokplaylist.api.dto.SearchUserDto;
-import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
 import com.meokplaylist.api.dto.category.CategorySetUpRequest;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
 import com.meokplaylist.api.dto.user.*;
@@ -41,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.*;
 import static java.util.stream.Collectors.groupingBy;
 
 @Service
@@ -341,11 +338,11 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<SearchUserDto> searchUser(String nickname, Pageable pageable){
+    public SlicedResponse<SearchUserDto> searchUser(String nickname, Pageable pageable){
 
-        Slice<SearchUserDto> userList=usersRepository.findUsersByNicknamePrefix(nickname,pageable);
+        Slice<SearchUserDto> userList = usersRepository.findUsersByNicknamePrefix(nickname, pageable);
 
-        return userList;
+        return SlicedResponse.of(userList);
     }
 
 

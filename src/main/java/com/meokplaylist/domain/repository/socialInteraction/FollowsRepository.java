@@ -20,6 +20,7 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
              from Follows f
              join f.follower u
             where f.following.userId = :userId
+            order by f.createdAt desc
            """)
     Slice<Users> findFollowingsUsers(@Param("userId") Long userId, Pageable pageable);
 
@@ -29,6 +30,7 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
              from Follows f
              join f.following u
             where f.follower.userId = :userId
+            order by f.createdAt desc
            """)
     Slice<Users> findFollowersUsers(@Param("userId") Long userId, Pageable pageable);
 
@@ -37,6 +39,7 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
              from Follows f
              join f.following u
             where f.follower.nickname = :nickname
+            order by f.createdAt desc
            """)
     Slice<Users> findFollowingsOtherUser(@Param("nickname") String nickname, Pageable pageable);
 
@@ -46,6 +49,7 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
              from Follows f
              join f.follower u
             where f.following.nickname = :nickname
+            order by f.createdAt desc
            """)
     Slice<Users> findFollowersOtherUser(@Param("nickname") String nickname, Pageable pageable);
 

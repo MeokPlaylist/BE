@@ -1,5 +1,6 @@
 package com.meokplaylist.domain.service;
 
+import com.meokplaylist.api.dto.SlicedResponse;
 import com.meokplaylist.api.dto.feed.*;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.CategoryRepository;
