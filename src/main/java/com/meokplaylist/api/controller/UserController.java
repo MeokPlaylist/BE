@@ -40,8 +40,11 @@ public class UserController {
     }
 
     @PostMapping("/setupProfile")
-    public ResponseEntity<?> setupProfile(@AuthenticationPrincipal Long userId, @RequestBody UserProfileSetupRequest userProfileSetupRequest) throws IOException {
-        s3Service.uploadProfileImage(userProfileSetupRequest, userId);
+    public ResponseEntity<?> setupProfile(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody UserProfileSetupRequest userProfileSetupRequest
+    ) {
+        userService.uploadProfileImage(userProfileSetupRequest, userId);
         return ResponseEntity.ok().build();
     }
 

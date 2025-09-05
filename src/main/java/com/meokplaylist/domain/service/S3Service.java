@@ -1,11 +1,5 @@
 package com.meokplaylist.domain.service;
 
-import com.meokplaylist.api.dto.user.UserProfileSetupRequest;
-import com.meokplaylist.domain.repository.UsersRepository;
-import com.meokplaylist.exception.BizExceptionHandler;
-import com.meokplaylist.exception.ErrorCode;
-import com.meokplaylist.infra.user.Users;
-import com.meokplaylist.util.StorageKeyUtil;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -31,32 +25,13 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class S3Service {
 
-    private static final String BASE_PROFILE_FMG="https://kr.object.ncloudstorage.com/meokplaylist/%EA%B8%B0%EB%B3%B8%20%ED%94%84%EB%A1%9C%ED%95%84.png";
-
     private final S3Presigner s3Presigner;
-    private final UsersRepository usersRepository;
+
+    private static final String BASE_PROFILE_FMG="https://kr.object.ncloudstorage.com/meokplaylist/%EA%B8%B0%EB%B3%B8%20%ED%94%84%EB%A1%9C%ED%95%84.png";
 
     @Value("${cloud.ncp.object-storage.bucket}")
     private String bucketName;
 
-
-    @Transactional
-    public void uploadProfileImage(UserProfileSetupRequest request, Long userId){
-
-
-        Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-        String key;
-        if(request.fileName()==null||request.fileName().isEmpty()){
-            key=BASE_PROFILE_FMG;
-        }else{
-            /*
-            key = StorageKeyUtil.buildKey("photos", user.getUserId(), request.sequence(), request.fileName());
-
-             */
-        }
-
-    }
 
 
     private String extractKeyFromUrl(String url) {

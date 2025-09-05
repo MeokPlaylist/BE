@@ -6,6 +6,5 @@ import java.time.LocalDateTime;
 
 public record UserProfileSetupRequest(
         String fileName,
-        Integer sequence,
         LocalDateTime dayAndTime
 ) {}

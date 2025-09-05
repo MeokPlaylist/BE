@@ -52,8 +52,8 @@ public class SocialInteractionController {
             @RequestBody RecommendRestaurantRequest request
     ) {
         List<String> items = socialInteractionService
-                .recommendRestaurant(request)  // Mono<List<String>>
-                .block();                      // ✅ collectList() 쓰지 말고 block()만
+                .recommendRestaurant(request)
+                .block();
 
         RecommendRestaurantResponse body = new RecommendRestaurantResponse(items);
         System.out.println(body);
