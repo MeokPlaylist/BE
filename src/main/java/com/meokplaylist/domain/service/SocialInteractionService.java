@@ -86,6 +86,8 @@ public class SocialInteractionService {
 
         if(user.getNickname().equals(nickName)){
             isMe=true;
+            user= usersRepository.findByNickname(nickName)
+                    .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
         }
 
         long feedNum = feedRepository.countByUserUserId(user.getUserId());
