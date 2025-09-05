@@ -1,6 +1,6 @@
 package com.meokplaylist.api.controller;
 
-import com.meokplaylist.api.dto.RecommendRestaurantResponse;
+import com.meokplaylist.api.dto.RecommendRestaurantRequest;
 import com.meokplaylist.api.dto.UserPageResponse;
 import com.meokplaylist.domain.service.SocialInteractionService;
 import lombok.RequiredArgsConstructor;
@@ -47,14 +47,23 @@ public class SocialInteractionController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/recommendRestaurant")
+    @GetMapping("/initRecommendRestaurant")
     public ResponseEntity<Map<String, List<String>>> recommendRestaurant(
             @AuthenticationPrincipal Long userId
     ) {
         Map<String, List<String>> items = socialInteractionService
-                .recommendRestaurant(userId)
+                .initrecommendRestaurant(userId)
                 .block();
 
+        return ResponseEntity.ok(items);
+    }
+    @PostMapping("/recommendRestaurant")
+    public ResponseEntity<Map<String,List<String>>> recommendRestaurant(
+            @RequestBody RecommendRestaurantRequest request
+    ) {
+        Map<String, List<String>> items = socialInteractionService
+                .recommendRestaurant(request)  // Mono<List<String>>
+                .block();                      // ✅ collectList() 쓰지 말고 block()만
         return ResponseEntity.ok(items);
     }
 }

@@ -2,6 +2,7 @@ package com.meokplaylist.domain.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.meokplaylist.api.dto.RecommendRestaurantRequest;
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
 import com.meokplaylist.api.dto.UserPageDto;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
@@ -13,6 +14,7 @@ import com.meokplaylist.domain.repository.feed.FeedRepository;
 import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
+import com.meokplaylist.infra.category.LocalCategory;
 import com.meokplaylist.infra.category.UserLocalCategory;
 import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
@@ -152,12 +154,12 @@ public class SocialInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public Mono<Map<String, List<String>>> recommendRestaurant(Long userId) {
+    public Mono<Map<String, List<String>>> initrecommendRestaurant(Long userId) {
         List<UserLocalCategory> userLocalCategories = userLocalCategoryRepository.findByUserUserId(userId);
 
         return Flux.fromIterable(userLocalCategories)
                 .flatMap(userLocalCategory -> {
-                    String regionName = userLocalCategory.getLocalCategory().getLocalName();
+                    String regionName = userLocalCategory.getLocalCategory().getType() + ":" + userLocalCategory.getLocalCategory().getLocalName();
                     String areaCode = userLocalCategory.getLocalCategory().getAreaCode().toString();
                     String sigunguCode = userLocalCategory.getLocalCategory().getSigunguCode().toString();
 
@@ -202,6 +204,82 @@ public class SocialInteractionService {
                         .collect(Collectors.toMap(
                                 Map.Entry::getKey,
                                 e -> new ArrayList<>(e.getValue()) // 필요시 ArrayList<String>으로 변환
+                        ))
+                );
+    }
+
+    @Transactional(readOnly = true)
+    public Mono<Map<String, List<String>>> recommendRestaurant(RecommendRestaurantRequest request) {
+
+        List<String> regions = request.getRegions();
+
+        return Flux.fromIterable(Objects.requireNonNullElse(regions, Collections.emptyList()))
+                // 1. 지역 문자열 파싱 후 LocalCategory 조회
+                .flatMap(raw -> {
+                    String[] parts = raw.split(":", 2);
+                    if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
+                    String type = parts[0].trim();
+                    String name = parts[1].trim();
+                    if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
+
+                    List<LocalCategory> categories = localCategoryRepository.findAllByTypeAndLocalName(type, name);
+                    return Flux.fromIterable(categories)
+                            // key를 type:name 형식으로 맞춤
+                            .map(cat -> new AbstractMap.SimpleEntry<>(type + ":" + cat.getLocalName(), cat)); // (지역명, LocalCategory)
+                })
+
+                // 2. 지역별로 외부 API 호출
+                .flatMap(entry -> {
+                    String regionName = entry.getKey();       // ex) "수원시"
+                    LocalCategory localCategory = entry.getValue();
+                    String areaCode = localCategory.getAreaCode().toString();
+                    String sigunguCode = localCategory.getSigunguCode().toString();
+
+                    return tourApiWebClient
+                            .get()
+                            .uri(uriBuilder -> uriBuilder
+                                    .path("/areaBasedList1")
+                                    .queryParam("areaCd", areaCode)
+                                    .queryParam("signguCd", sigunguCode)
+                                    .queryParam("numOfRows", 20)
+                                    .queryParam("baseYm", "202503")
+                                    .build())
+                            .retrieve()
+                            .bodyToMono(String.class)
+                            .flatMapMany(jsonString -> {
+                                try {
+                                    JsonNode root = objectMapper.readTree(jsonString);
+                                    JsonNode items = root.path("response").path("body").path("items").path("item");
+
+                                    List<String> restaurantNames = new ArrayList<>();
+                                    if (items.isArray()) {
+                                        for (JsonNode item : items) {
+                                            if ("음식".equals(item.path("rlteCtgryLclsNm").asText())) {
+                                                restaurantNames.add(item.path("rlteTatsNm").asText());
+                                            }
+                                        }
+                                    }
+
+                                    // ⚡ 지역명과 매칭되는 식당들 개별 방출
+                                    return Flux.fromIterable(restaurantNames)
+                                            .map(r -> new AbstractMap.SimpleEntry<>(regionName, r));
+
+                                } catch (Exception e) {
+                                    return Flux.error(new RuntimeException("JSON parsing error", e));
+                                }
+                            });
+                }, 10)
+
+                // 3. 같은 지역 이름끼리 묶기
+                .collectMultimap(
+                        Map.Entry::getKey,   // key = 지역명
+                        Map.Entry::getValue  // value = 식당 이름
+                )
+                // 4. Map<String, Collection<String>> → Map<String, List<String>>
+                .map(m -> m.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> new ArrayList<>(e.getValue())
                         ))
                 );
     }
