@@ -1,6 +1,5 @@
 package com.meokplaylist.api.controller;
 
-import com.meokplaylist.api.dto.RecommendRestaurantRequest;
 import com.meokplaylist.api.dto.RecommendRestaurantResponse;
 import com.meokplaylist.api.dto.UserPageResponse;
 import com.meokplaylist.domain.service.SocialInteractionService;
@@ -10,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,18 +47,14 @@ public class SocialInteractionController {
         return ResponseEntity.ok().body(response);
     }
 
-    @PostMapping("/recommendRestaurant")
-    public ResponseEntity<RecommendRestaurantResponse> recommendRestaurant(
-            @RequestBody RecommendRestaurantRequest request
+    @GetMapping("/recommendRestaurant")
+    public ResponseEntity<Map<String, List<String>>> recommendRestaurant(
+            @AuthenticationPrincipal Long userId
     ) {
-        List<String> items = socialInteractionService
-                .recommendRestaurant(request)  // Mono<List<String>>
-                .block();                      // ✅ collectList() 쓰지 말고 block()만
+        Map<String, List<String>> items = socialInteractionService
+                .recommendRestaurant(userId)
+                .block();
 
-        RecommendRestaurantResponse body = new RecommendRestaurantResponse(items);
-        System.out.println(body);
-        return ResponseEntity.ok(body);
+        return ResponseEntity.ok(items);
     }
-
-
 }

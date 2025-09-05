@@ -2,17 +2,18 @@ package com.meokplaylist.domain.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.meokplaylist.api.dto.RecommendRestaurantRequest;
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
 import com.meokplaylist.api.dto.UserPageDto;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
+import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
 import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
+import com.meokplaylist.infra.category.UserLocalCategory;
 import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +36,7 @@ public class SocialInteractionService {
 
         private final FollowsRepository followsRepository;
         private final UsersRepository usersRepository;
+        private final UserLocalCategoryRepository userLocalCategoryRepository;
         private final FeedRepository feedRepository;
         private final S3Service s3Service;
         @Qualifier("tourWebClient") private final WebClient tourApiWebClient;
@@ -41,6 +44,8 @@ public class SocialInteractionService {
         private final LocalCategoryRepository localCategoryRepository;
         private final FeedPhotosRepository feedPhotosRepository;
         private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public record RegionRestaurants(String region, List<String> restaurants) {}
 
     @Transactional
     public void follow(Long followingId, String followerNickname) {
@@ -145,74 +150,57 @@ public class SocialInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public Mono<List<String>> recommendRestaurant(RecommendRestaurantRequest request){
+    public Mono<Map<String, List<String>>> recommendRestaurant(Long userId) {
+        List<UserLocalCategory> userLocalCategories = userLocalCategoryRepository.findByUserUserId(userId);
 
-        List<String> regions=request.getRegions();
-        // 1. 요청할 지역 정보(LocalCategory)들을 Flux 스트림으로 변환
+        return Flux.fromIterable(userLocalCategories)
+                .flatMap(userLocalCategory -> {
+                    String regionName = userLocalCategory.getLocalCategory().getLocalName();
+                    String areaCode = userLocalCategory.getLocalCategory().getAreaCode().toString();
+                    String sigunguCode = userLocalCategory.getLocalCategory().getSigunguCode().toString();
 
-        return Flux.fromIterable(Objects.requireNonNullElse(regions, Collections.emptyList()))
-                // 1. 각 지역 문자열을 파싱하고 DB에서 LocalCategory '리스트'를 조회합니다.
-                .map(raw -> {
-                    String[] parts = raw.split(":", 2);
-                    if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
-                    String type = parts[0].trim();
-                    String name = parts[1].trim();
-                    if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
-
-                    // 결과는 List<LocalCategory> 입니다.
-                    return localCategoryRepository.findAllByTypeAndLocalName(type, name);
-                })
-
-
-                .flatMap(localCategoryList -> Flux.fromIterable(localCategoryList))
-
-                .flatMap(localCategory -> {
-                    String areaCode = localCategory.getAreaCode().toString();
-                    String sigunguCode = localCategory.getSigunguCode().toString();
-
-                    return tourApiWebClient
-                            .get()
+                    return tourApiWebClient.get()
                             .uri(uriBuilder -> uriBuilder
                                     .path("/areaBasedList1")
                                     .queryParam("areaCd", areaCode)
                                     .queryParam("signguCd", sigunguCode)
                                     .queryParam("numOfRows", 20)
-                                    .queryParam("baseYm","202503")
+                                    .queryParam("baseYm", "202503")
                                     .build())
                             .retrieve()
-                            .bodyToMono(String.class);
-                }, 10)
+                            .bodyToMono(String.class)
+                            .flatMapMany(jsonString -> {
+                                try {
+                                    JsonNode root = objectMapper.readTree(jsonString);
+                                    JsonNode items = root.path("response").path("body").path("items").path("item");
 
+                                    List<String> restaurantNames = new ArrayList<>();
+                                    if (items.isArray()) {
+                                        for (JsonNode item : items) {
+                                            if ("음식".equals(item.path("rlteCtgryLclsNm").asText())) {
+                                                restaurantNames.add(item.path("rlteTatsNm").asText());
+                                            }
+                                        }
+                                    }
 
-                .flatMap(jsonString -> {
-                    try {
-                        // 2. 받은 문자열을 JsonNode 객체로 파싱합니다.
-                        JsonNode root = objectMapper.readTree(jsonString);
+                                    // ⚡ 핵심: 지역별로 식당 "하나씩" 흘려보내기
+                                    return Flux.fromIterable(restaurantNames)
+                                            .map(name -> new AbstractMap.SimpleEntry<>(regionName, name));
 
-                        // 3. 실제 데이터가 있는 item 배열로 이동합니다.
-                        JsonNode items = root.path("response").path("body").path("items").path("item");
-
-                        List<String> restaurantNames = new ArrayList<>();
-                        if (items.isArray()) {
-                            for (JsonNode item : items) {
-                                // 4. 카테고리가 "음식"인 경우에만 필터링합니다.
-                                if ("음식".equals(item.path("rlteCtgryLclsNm").asText())) {
-                                    // 5. 음식점 이름("rlteTatsNm")을 리스트에 추가합니다.
-                                    restaurantNames.add(item.path("rlteTatsNm").asText());
+                                } catch (Exception e) {
+                                    return Flux.error(new RuntimeException("JSON parsing error", e));
                                 }
-                            }
-                        }
-                        // 필터링된 음식점 이름 목록을 다음 스트림으로 전달합니다.
-                        return Flux.fromIterable(restaurantNames);
-
-                    } catch (Exception e) {
-                        // 파싱 오류 발생 시 에러를 전달하거나 비어있는 스트림을 반환합니다.
-                        return Flux.error(new RuntimeException("JSON parsing error", e));
-                    }
+                            });
                 })
-                .distinct() // 혹시 모를 중복 제거
-                .collectList(); // 6. 최종적으로 모든 음식점 이름을 하나의 리스트로 합칩니다.
+                .collectMultimap( // 같은 키에 값들을 자동으로 List로 묶음
+                        Map.Entry::getKey,  // regionName
+                        Map.Entry::getValue // restaurantName (String)
+                )
+                .map(m -> m.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> new ArrayList<>(e.getValue()) // 필요시 ArrayList<String>으로 변환
+                        ))
+                );
     }
-
-
 }
