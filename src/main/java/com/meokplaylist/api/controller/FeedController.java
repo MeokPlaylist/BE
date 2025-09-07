@@ -1,6 +1,8 @@
 package com.meokplaylist.api.controller;
 
 
+import com.meokplaylist.api.dto.Boolean.BooleanResponse;
+import com.meokplaylist.api.dto.feed.ModifyFeedCategoryDto;
 import com.meokplaylist.api.dto.presignedUrl.PresignedPutListUrlResponse;
 import com.meokplaylist.api.dto.feed.FeedCreateRequest;
 import com.meokplaylist.api.dto.feed.MainFeedResponse;
@@ -38,4 +40,21 @@ public class FeedController {
         var slice = feedService.mainFeedSelectSlice(userId, pageable);
         return ResponseEntity.ok(slice);
     }
+
+
+    @PostMapping("/delete")
+    public ResponseEntity<?> deleteFeed(Long feedId){
+        BooleanResponse response=new BooleanResponse(feedService.deleteFeed(feedId));
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping("/modifyCategory")
+    public ResponseEntity<?> modifyFeedCategory(ModifyFeedCategoryDto request){
+
+        BooleanResponse response=new BooleanResponse(feedService.modifyFeedCategory(request));
+
+        return ResponseEntity.ok().body(response);
+    }
+
+
 }

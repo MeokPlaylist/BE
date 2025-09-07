@@ -154,7 +154,7 @@ public class SocialInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public Mono<Map<String, List<String>>> initrecommendRestaurant(Long userId) {
+    public Mono<Map<String, List<String>>> initRecommendRestaurant(Long userId) {
         List<UserLocalCategory> userLocalCategories = userLocalCategoryRepository.findByUserUserId(userId);
 
         return Flux.fromIterable(userLocalCategories)

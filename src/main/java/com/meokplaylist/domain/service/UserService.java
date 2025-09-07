@@ -296,7 +296,7 @@ public class UserService {
 
         return slice.map(u -> new GetFollowResponse(
                 u.getNickname(),
-                u.getProfileImgKey(),
+                s3Service.generateGetPresignedUrl(u.getProfileImgKey()),
                 u.getIntroduction()
         ));
 
@@ -309,7 +309,7 @@ public class UserService {
 
         return slice.map(u -> new GetFollowResponse(
                 u.getNickname(),
-                u.getProfileImgKey(),
+                s3Service.generateGetPresignedUrl(u.getProfileImgKey()),
                 u.getIntroduction()
         ));
     }
@@ -321,7 +321,7 @@ public class UserService {
 
         return slice.map(u -> new GetFollowResponse(
                 u.getNickname(),
-                u.getProfileImgKey(),
+                s3Service.generateGetPresignedUrl(u.getProfileImgKey()),
                 u.getIntroduction()
         ));
     }
@@ -332,7 +332,7 @@ public class UserService {
 
         return slice.map(u -> new GetFollowResponse(
                 u.getNickname(),
-                u.getProfileImgKey(),
+                s3Service.generateGetPresignedUrl(u.getProfileImgKey()),
                 u.getIntroduction()
         ));
 
@@ -365,7 +365,12 @@ public class UserService {
 
         Slice<SearchUserDto> userList = usersRepository.findUsersByNicknamePrefix(nickname, pageable);
 
-        return SlicedResponse.of(userList);
+        Slice<SearchUserDto> modifiedList=userList.map(dto->{
+            s3Service.generateGetPresignedUrl(dto.getProfileImgUrl());
+            return dto;
+        });
+
+        return SlicedResponse.of(modifiedList);
     }
 
 

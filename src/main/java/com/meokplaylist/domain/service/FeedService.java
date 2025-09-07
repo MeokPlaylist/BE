@@ -249,5 +249,31 @@ public class FeedService {
         return SlicedResponse.of(sliceView);
     }
 
+    @Transactional
+    public Boolean deleteFeed(Long feedId){
+        Feed feed = feedRepository.findByFeedId(feedId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        String key="feeds"+feed.getUser().getUserId()+feed.getFeedId();
+        s3Service.deleteFile(key);
+
+        feedRepository.delete(feed);
+
+        return true;
+    }
+
+    @Transactional
+    public Boolean modifyFeedCategory(ModifyFeedCategoryDto dto){
+        Feed feed = feedRepository.findByFeedId(dto.getFeedId())
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        if (dto.getCategories() != null) {
+            List<String> categories = dto.getCategories();
+            List<String> regions = dto.getRegions();
+            feedCategorySetUp(categories, regions, feed.getFeedId());
+        }
+
+        return true;
+    }
 }
 

@@ -52,7 +52,7 @@ public class SocialInteractionController {
             @AuthenticationPrincipal Long userId
     ) {
         Map<String, List<String>> items = socialInteractionService
-                .initrecommendRestaurant(userId)
+                .initRecommendRestaurant(userId)
                 .block();
 
         return ResponseEntity.ok(items);
@@ -63,7 +63,7 @@ public class SocialInteractionController {
     ) {
         Map<String, List<String>> items = socialInteractionService
                 .recommendRestaurant(request)  // Mono<List<String>>
-                .block();                      // ✅ collectList() 쓰지 말고 block()만
+                .block();
         return ResponseEntity.ok(items);
     }
 }

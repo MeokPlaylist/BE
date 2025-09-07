@@ -9,6 +9,7 @@ import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -34,6 +35,17 @@ public class Feed {
     @CreationTimestamp
     @Column(nullable = false)
     private OffsetDateTime createdAt;
+
+    @OneToMany(mappedBy = "feed",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<FeedCategory> feedCategories = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "feed",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<FeedLocalCategory> feedLocalCategories = new ArrayList<>();
 
     @OneToMany(mappedBy="feed") private List<Likes> likes;
     @OneToMany(mappedBy="feed") private List<Comments> comments;
