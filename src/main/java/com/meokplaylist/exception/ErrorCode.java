@@ -32,6 +32,7 @@ public enum ErrorCode {
     SEQUENCE_SET_MISMATCH (483, "sequence set mismatch"),
 
     NOT_HAVE_REFRESHTOKEN  (490, "refreshToken 존재하지 않는다."),
+    DONT_HAVE_AUTHORITY  (491,"don't have authority"),
 
     // 5xx
     INTERNAL_ERROR       (551, "서버 오류");

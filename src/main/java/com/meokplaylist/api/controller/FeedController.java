@@ -3,6 +3,7 @@ package com.meokplaylist.api.controller;
 
 import com.meokplaylist.api.dto.Boolean.BooleanResponse;
 import com.meokplaylist.api.dto.feed.ModifyFeedCategoryDto;
+import com.meokplaylist.api.dto.feed.ModifyFeedContentDto;
 import com.meokplaylist.api.dto.presignedUrl.PresignedPutListUrlResponse;
 import com.meokplaylist.api.dto.feed.FeedCreateRequest;
 import com.meokplaylist.api.dto.feed.MainFeedResponse;
@@ -43,17 +44,30 @@ public class FeedController {
 
 
     @PostMapping("/delete")
-    public ResponseEntity<?> deleteFeed(Long feedId){
-        BooleanResponse response=new BooleanResponse(feedService.deleteFeed(feedId));
-        return ResponseEntity.ok().body(response);
+    public ResponseEntity<?> deleteFeed(@RequestParam("feedId") Long feedId,@AuthenticationPrincipal Long userId){
+        feedService.deleteFeed(feedId,userId);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/modifyCategory")
-    public ResponseEntity<?> modifyFeedCategory(ModifyFeedCategoryDto request){
+    public ResponseEntity<?> modifyFeedCategory(
+            @RequestBody ModifyFeedCategoryDto request,
+            @AuthenticationPrincipal Long userId
+    ){
 
-        BooleanResponse response=new BooleanResponse(feedService.modifyFeedCategory(request));
+        feedService.modifyFeedCategory(request,userId);
 
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/modifyContent")
+    public ResponseEntity<?> modifyFeedContent(
+            @RequestBody ModifyFeedContentDto request,
+            @AuthenticationPrincipal Long userId
+    ){
+        feedService.modifyFeedContent(request,userId);
+        return ResponseEntity.ok().build();
+
     }
 
 

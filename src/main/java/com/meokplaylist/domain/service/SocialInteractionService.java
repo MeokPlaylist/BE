@@ -2,9 +2,7 @@ package com.meokplaylist.domain.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.meokplaylist.api.dto.RecommendRestaurantRequest;
-import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
-import com.meokplaylist.api.dto.UserPageDto;
+import com.meokplaylist.api.dto.*;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
@@ -16,6 +14,8 @@ import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.category.LocalCategory;
 import com.meokplaylist.infra.category.UserLocalCategory;
+import com.meokplaylist.infra.feed.Feed;
+import com.meokplaylist.infra.socialInteraction.Comments;
 import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +26,16 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
+import static java.time.OffsetTime.now;
+
 @Service
 @RequiredArgsConstructor
 public class SocialInteractionService {
-
-        private static final int CONTENT_TYPE_RESTAURANT = 39;
 
         private final FollowsRepository followsRepository;
         private final UsersRepository usersRepository;
@@ -283,4 +284,30 @@ public class SocialInteractionService {
                         ))
                 );
     }
+
+    @Transactional
+    public void getFeedComment(Long feedId){
+
+        Feed feed = feedRepository.findByFeedId(feedId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        Boolean isparents=false;
+
+        List<Comments> comments=feed.getComments();
+        for(Comments comment: comments) {
+            if(comment.getParent()!=null){
+                isparents=true;
+            }
+
+            GetFeedCommentsResponse response = new GetFeedCommentsResponse(
+                    feed.getFeedId(),
+                    comment.getAuthor().getNickname(),
+                    s3Service.generateGetPresignedUrl(comment.getAuthor().getProfileImgKey()),
+                    Duration.between(comment.getCreatedAt(), now()),
+                    isparents
+            );
+
+        }
+    }
+
 }

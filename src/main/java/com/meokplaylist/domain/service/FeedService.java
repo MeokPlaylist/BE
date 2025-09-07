@@ -250,30 +250,60 @@ public class FeedService {
     }
 
     @Transactional
-    public Boolean deleteFeed(Long feedId){
+    public void deleteFeed(Long feedId,Long userId){
         Feed feed = feedRepository.findByFeedId(feedId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
 
-        String key="feeds"+feed.getUser().getUserId()+feed.getFeedId();
-        s3Service.deleteFile(key);
+        if(!feed.getUser().getUserId().equals(userId)){
+            throw new BizExceptionHandler(ErrorCode.DONT_HAVE_AUTHORITY);
+        }
+
+        String prefix="feeds"+"/"+feed.getUser().getUserId()+"/"+feed.getFeedId()+"/";
+        s3Service.deleteByPrefix(prefix);
 
         feedRepository.delete(feed);
 
-        return true;
     }
 
     @Transactional
-    public Boolean modifyFeedCategory(ModifyFeedCategoryDto dto){
+    public void modifyFeedCategory(ModifyFeedCategoryDto dto,Long userId){
         Feed feed = feedRepository.findByFeedId(dto.getFeedId())
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        if(!feed.getUser().getUserId().equals(userId)){
+            throw new BizExceptionHandler(ErrorCode.DONT_HAVE_AUTHORITY);
+        }
 
         if (dto.getCategories() != null) {
             List<String> categories = dto.getCategories();
             List<String> regions = dto.getRegions();
             feedCategorySetUp(categories, regions, feed.getFeedId());
         }
-
-        return true;
     }
+
+    @Transactional
+    public void modifyFeedContent(ModifyFeedContentDto dto,Long userId){
+
+        Feed feed = feedRepository.findByFeedId(dto.getFeedId())
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        if(!feed.getUser().getUserId().equals(userId)){
+            throw new BizExceptionHandler(ErrorCode.DONT_HAVE_AUTHORITY);
+        }
+
+        feed.setContent(dto.getContent());
+        feedRepository.save(feed);
+
+    }
+
+    @Transactional
+    public void modifyFeedmainPhoto(){
+        //일단 킵
+    }
+
+
+
+
+
 }
 
