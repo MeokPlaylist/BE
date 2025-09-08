@@ -2,6 +2,7 @@ package com.meokplaylist.domain.repository.socialInteraction;
 
 import com.meokplaylist.api.dto.feed.CommentCountDto;
 import com.meokplaylist.api.dto.feed.LikeCountDto;
+import com.meokplaylist.api.dto.socialInteraction.GetFeedCommentsDto;
 import com.meokplaylist.infra.socialInteraction.Comments;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -24,11 +25,21 @@ public interface CommentsRepository extends JpaRepository<Comments,Long> {
 
 
 
-    // 부모가 없는 1뎁스 댓글(루트)만
     @EntityGraph(attributePaths = {"author"})
-    Slice<Comments> findByFeedFeedIdAndParentIsNullOrderByCreatedAtAsc(Long feedId, Pageable pageable);
+    @Query("""
+           select new com.meokplaylist.api.dto.socialInteraction.GetFeedCommentsDto(
+               u.profileImgKey,
+               u.nickname,
+               c.createdAt,
+               c.content
+           )
+           from Comments c
+           join c.author u
+           where c.feed.feedId = :feedId
+           order by c.createdAt desc
+           """)
+    Slice<GetFeedCommentsDto> findCommentByFeedId(@Param("feedId") Long feedId, Pageable pageable);
 
-    // 특정 댓글의 대댓글
-    @EntityGraph(attributePaths = {"author"})
-    Slice<Comments> findByParentCommentIdOrderByCreatedAtAsc(Long parentId, Pageable pageable);
+
+
 }

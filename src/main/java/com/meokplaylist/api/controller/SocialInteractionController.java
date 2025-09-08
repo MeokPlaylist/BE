@@ -1,9 +1,12 @@
 package com.meokplaylist.api.controller;
 
-import com.meokplaylist.api.dto.RecommendRestaurantRequest;
+import com.meokplaylist.api.dto.socialInteraction.RecommendRestaurantRequest;
 import com.meokplaylist.api.dto.UserPageResponse;
+import com.meokplaylist.api.dto.socialInteraction.WriteFeedCommentsDto;
 import com.meokplaylist.domain.service.SocialInteractionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +24,7 @@ public class SocialInteractionController {
     @PostMapping("/follow")
     public ResponseEntity<?> follow(
             @AuthenticationPrincipal Long userId,
-            @RequestParam String nickname
+            @RequestParam("nickname") String nickname
     ){
         socialInteractionService.follow(userId,nickname);
 
@@ -31,7 +34,7 @@ public class SocialInteractionController {
     @PostMapping("/unFollow")
     public ResponseEntity<?> unFollow(
             @AuthenticationPrincipal Long userId,
-            @RequestParam String nickname
+            @RequestParam("nickname") String nickname
     ){
         socialInteractionService.unfollow(userId,nickname);
         return ResponseEntity.ok().build();
@@ -65,4 +68,24 @@ public class SocialInteractionController {
                 .block();
         return ResponseEntity.ok(items);
     }
+
+    @GetMapping("/getFeedComments")
+    public ResponseEntity<?> getFeedComments(
+            @RequestParam("feedId") Long feedId,
+            @PageableDefault Pageable pageable
+    ){
+        var slice=socialInteractionService.getFeedComments(feedId, pageable);
+
+        return ResponseEntity.ok().body(slice);
+    }
+
+    @PostMapping("/writeFeedComments")
+    public ResponseEntity<?> writeFeedComments(WriteFeedCommentsDto request){
+        socialInteractionService.writeFeedComments(request);
+
+        return ResponseEntity.ok().build();
+    }
+
+
+
 }

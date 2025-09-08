@@ -33,10 +33,11 @@ public class Comments {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private Users author;
-
+    /*
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Comments parent; // 대댓글
+    */
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
