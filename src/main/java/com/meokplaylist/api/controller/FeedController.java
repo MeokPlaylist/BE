@@ -2,11 +2,8 @@ package com.meokplaylist.api.controller;
 
 
 import com.meokplaylist.api.dto.Boolean.BooleanResponse;
-import com.meokplaylist.api.dto.feed.ModifyFeedCategoryDto;
-import com.meokplaylist.api.dto.feed.ModifyFeedContentDto;
+import com.meokplaylist.api.dto.feed.*;
 import com.meokplaylist.api.dto.presignedUrl.PresignedPutListUrlResponse;
-import com.meokplaylist.api.dto.feed.FeedCreateRequest;
-import com.meokplaylist.api.dto.feed.MainFeedResponse;
 import com.meokplaylist.api.dto.SlicedResponse;
 import com.meokplaylist.domain.service.FeedService;
 import lombok.RequiredArgsConstructor;
@@ -68,6 +65,15 @@ public class FeedController {
         feedService.modifyFeedContent(request,userId);
         return ResponseEntity.ok().build();
 
+    }
+
+    @PostMapping("/modifyMainPhoto")
+    public ResponseEntity<?> modifyMainFeedPhoto(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody ModifyMainFeedPhotoDto request
+    ){
+        BooleanResponse response=new BooleanResponse(feedService.modifyMainFeedPhoto(request,userId));
+        return ResponseEntity.ok().body(response);
     }
 
 

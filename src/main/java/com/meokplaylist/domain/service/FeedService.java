@@ -297,8 +297,34 @@ public class FeedService {
     }
 
     @Transactional
-    public void modifyFeedmainPhoto(){
-        //일단 킵
+    public Boolean modifyMainFeedPhoto(ModifyMainFeedPhotoDto dto,Long userId){
+
+        Feed feed = feedRepository.findByFeedId(dto.getFeedId())
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        if(!feed.getUser().getUserId().equals(userId)){
+            throw new BizExceptionHandler(ErrorCode.ERROR_CODE);
+        }
+
+
+        int oldSequence= dto.getOldMainFeedPhotoSequence();
+        int newSequence =dto.getNewMainFeedPhotoSequence();
+
+        if(oldSequence>20||newSequence>20){
+            throw new BizExceptionHandler(ErrorCode.SEQUENCE_SET_MISMATCH);
+        }
+
+        FeedPhotos oldFeedPhotos=feedPhotosRepository.findByFeedFeedIdAndSequence(feed.getFeedId(),oldSequence)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEEDPHOTO));
+
+        FeedPhotos newFeedPhotos=feedPhotosRepository.findByFeedFeedIdAndSequence(feed.getFeedId(),newSequence)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEEDPHOTO));
+
+        oldFeedPhotos.setSequence(newSequence);
+
+        newFeedPhotos.setSequence(oldSequence);
+
+        return true;
     }
 
 
