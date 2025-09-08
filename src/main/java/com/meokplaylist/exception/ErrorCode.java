@@ -21,8 +21,8 @@ public enum ErrorCode {
     NOT_FOUND_FEED              (457, "not found feed"),
     NOT_FOUND_USERCATEGORY      (458, "not found userCategory"),
     NOT_FOUND_ROADMAPPLACE      (459,"roadMapPlace not found"),
-    INVALID_OAUTH_TOKEN  (460,"잘못된 Token"),
-    INVALID_GOOGLEOAUTH_TOKEN  (461,"잘못된 GoogleToken"),
+    NOT_FOUND_FEEDPHOTO         (460, "feedPhoto not found "),
+    INVALID_GOOGLEOAUTH_TOKEN  (469,"잘못된 GoogleToken"),
 
     CATEGORY_NOT_FOUND    (470, "caregory not found"),
 
@@ -32,6 +32,7 @@ public enum ErrorCode {
     SEQUENCE_SET_MISMATCH (483, "sequence set mismatch"),
 
     NOT_HAVE_REFRESHTOKEN  (490, "refreshToken 존재하지 않는다."),
+    DONT_HAVE_AUTHORITY  (491,"don't have authority"),
 
     // 5xx
     INTERNAL_ERROR       (551, "서버 오류");

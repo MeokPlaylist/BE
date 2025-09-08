@@ -7,10 +7,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -47,6 +44,13 @@ public class AuthController {
     public ResponseEntity<?> emailInspect(@Valid @RequestBody AuthEmailInspectRequest authEmailInspectRequest){
 
         BooleanResponse response = new BooleanResponse(authService.emailInspect(authEmailInspectRequest));
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @GetMapping("/nicknameDuplicateCheck")
+    public ResponseEntity<?> nicknameDuplicateCheck(@RequestParam("nickname") String nickname){
+        BooleanResponse response=new BooleanResponse(authService.nicknameDuplicateCheck(nickname));
         return ResponseEntity.ok().body(response);
     }
 

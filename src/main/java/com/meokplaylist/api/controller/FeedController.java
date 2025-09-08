@@ -1,9 +1,9 @@
 package com.meokplaylist.api.controller;
 
 
+import com.meokplaylist.api.dto.Boolean.BooleanResponse;
+import com.meokplaylist.api.dto.feed.*;
 import com.meokplaylist.api.dto.presignedUrl.PresignedPutListUrlResponse;
-import com.meokplaylist.api.dto.feed.FeedCreateRequest;
-import com.meokplaylist.api.dto.feed.MainFeedResponse;
 import com.meokplaylist.api.dto.SlicedResponse;
 import com.meokplaylist.domain.service.FeedService;
 import lombok.RequiredArgsConstructor;
@@ -38,4 +38,43 @@ public class FeedController {
         var slice = feedService.mainFeedSelectSlice(userId, pageable);
         return ResponseEntity.ok(slice);
     }
+
+
+    @PostMapping("/delete")
+    public ResponseEntity<?> deleteFeed(@RequestParam("feedId") Long feedId,@AuthenticationPrincipal Long userId){
+        feedService.deleteFeed(feedId,userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/modifyCategory")
+    public ResponseEntity<?> modifyFeedCategory(
+            @RequestBody ModifyFeedCategoryDto request,
+            @AuthenticationPrincipal Long userId
+    ){
+
+        feedService.modifyFeedCategory(request,userId);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/modifyContent")
+    public ResponseEntity<?> modifyFeedContent(
+            @RequestBody ModifyFeedContentDto request,
+            @AuthenticationPrincipal Long userId
+    ){
+        feedService.modifyFeedContent(request,userId);
+        return ResponseEntity.ok().build();
+
+    }
+
+    @PostMapping("/modifyMainPhoto")
+    public ResponseEntity<?> modifyMainFeedPhoto(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody ModifyMainFeedPhotoDto request
+    ){
+        BooleanResponse response=new BooleanResponse(feedService.modifyMainFeedPhoto(request,userId));
+        return ResponseEntity.ok().body(response);
+    }
+
+
 }

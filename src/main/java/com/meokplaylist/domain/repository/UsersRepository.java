@@ -22,7 +22,7 @@ public interface UsersRepository extends JpaRepository<Users,Long>{
 
     Optional<Users> findByNickname(String nickname);
 
-    @Query("SELECT new com.meokplaylist.api.dto.SearchUserDto(u.nickname, u.introduction) " +
+    @Query("SELECT new com.meokplaylist.api.dto.SearchUserDto(u.nickname, u.introduction,u.profileImgKey) " +
             "FROM Users u " +
             "WHERE u.nickname LIKE CONCAT(:prefix, '%')")
     Slice<SearchUserDto> findUsersByNicknamePrefix(@Param("prefix") String prefix, Pageable pageable);

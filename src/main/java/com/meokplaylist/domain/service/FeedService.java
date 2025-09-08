@@ -249,5 +249,87 @@ public class FeedService {
         return SlicedResponse.of(sliceView);
     }
 
+    @Transactional
+    public void deleteFeed(Long feedId,Long userId){
+        Feed feed = feedRepository.findByFeedId(feedId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        if(!feed.getUser().getUserId().equals(userId)){
+            throw new BizExceptionHandler(ErrorCode.DONT_HAVE_AUTHORITY);
+        }
+
+        String prefix="feeds"+"/"+feed.getUser().getUserId()+"/"+feed.getFeedId()+"/";
+        s3Service.deleteByPrefix(prefix);
+
+        feedRepository.delete(feed);
+
+    }
+
+    @Transactional
+    public void modifyFeedCategory(ModifyFeedCategoryDto dto,Long userId){
+        Feed feed = feedRepository.findByFeedId(dto.getFeedId())
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        if(!feed.getUser().getUserId().equals(userId)){
+            throw new BizExceptionHandler(ErrorCode.DONT_HAVE_AUTHORITY);
+        }
+
+        if (dto.getCategories() != null) {
+            List<String> categories = dto.getCategories();
+            List<String> regions = dto.getRegions();
+            feedCategorySetUp(categories, regions, feed.getFeedId());
+        }
+    }
+
+    @Transactional
+    public void modifyFeedContent(ModifyFeedContentDto dto,Long userId){
+
+        Feed feed = feedRepository.findByFeedId(dto.getFeedId())
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        if(!feed.getUser().getUserId().equals(userId)){
+            throw new BizExceptionHandler(ErrorCode.DONT_HAVE_AUTHORITY);
+        }
+
+        feed.setContent(dto.getContent());
+        feedRepository.save(feed);
+
+    }
+
+    @Transactional
+    public Boolean modifyMainFeedPhoto(ModifyMainFeedPhotoDto dto,Long userId){
+
+        Feed feed = feedRepository.findByFeedId(dto.getFeedId())
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        if(!feed.getUser().getUserId().equals(userId)){
+            throw new BizExceptionHandler(ErrorCode.ERROR_CODE);
+        }
+
+
+        int oldSequence= dto.getOldMainFeedPhotoSequence();
+        int newSequence =dto.getNewMainFeedPhotoSequence();
+
+        if(oldSequence>20||newSequence>20){
+            throw new BizExceptionHandler(ErrorCode.SEQUENCE_SET_MISMATCH);
+        }
+
+        FeedPhotos oldFeedPhotos=feedPhotosRepository.findByFeedFeedIdAndSequence(feed.getFeedId(),oldSequence)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEEDPHOTO));
+
+        FeedPhotos newFeedPhotos=feedPhotosRepository.findByFeedFeedIdAndSequence(feed.getFeedId(),newSequence)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEEDPHOTO));
+
+        oldFeedPhotos.setSequence(newSequence);
+
+        newFeedPhotos.setSequence(oldSequence);
+
+        return true;
+    }
+
+
+
+
+
 }
 
