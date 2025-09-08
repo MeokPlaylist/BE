@@ -4,11 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meokplaylist.api.dto.*;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
+import com.meokplaylist.api.dto.socialInteraction.GetFeedCommentsDto;
+import com.meokplaylist.api.dto.socialInteraction.RecommendRestaurantRequest;
+import com.meokplaylist.api.dto.socialInteraction.WriteFeedCommentsDto;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
+import com.meokplaylist.domain.repository.socialInteraction.CommentsRepository;
 import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
@@ -20,6 +24,8 @@ import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -27,8 +33,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import static java.time.OffsetTime.now;
@@ -42,6 +48,7 @@ public class SocialInteractionService {
         private final UserLocalCategoryRepository userLocalCategoryRepository;
         private final FeedRepository feedRepository;
         private final S3Service s3Service;
+        private final CommentsRepository commentsRepository;
         @Qualifier("tourWebClient") private final WebClient tourApiWebClient;
 
         private final LocalCategoryRepository localCategoryRepository;
@@ -285,29 +292,34 @@ public class SocialInteractionService {
                 );
     }
 
-    @Transactional
-    public void getFeedComment(Long feedId){
-
+    @Transactional(readOnly = true)
+    public SlicedResponse<GetFeedCommentsDto> getFeedComments(Long feedId, Pageable pageable) {
         Feed feed = feedRepository.findByFeedId(feedId)
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
 
-        Boolean isparents=false;
+        Slice<GetFeedCommentsDto> commentsSlice =
+                commentsRepository.findCommentByFeedId(feed.getFeedId(), pageable);
 
-        List<Comments> comments=feed.getComments();
-        for(Comments comment: comments) {
-            if(comment.getParent()!=null){
-                isparents=true;
-            }
+        return SlicedResponse.of(commentsSlice);
+    }
 
-            GetFeedCommentsResponse response = new GetFeedCommentsResponse(
-                    feed.getFeedId(),
-                    comment.getAuthor().getNickname(),
-                    s3Service.generateGetPresignedUrl(comment.getAuthor().getProfileImgKey()),
-                    Duration.between(comment.getCreatedAt(), now()),
-                    isparents
-            );
+    @Transactional
+    public void writeFeedComments(WriteFeedCommentsDto dto){
 
-        }
+        Feed feed = feedRepository.findByFeedId(dto.getFeedId())
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        Users user=usersRepository.findByNickname(dto.getNickname())
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        Comments comment=new Comments(
+                feed,
+                user,
+                dto.getContent()
+        );
+
+        commentsRepository.save(comment);
+
     }
 
 }
