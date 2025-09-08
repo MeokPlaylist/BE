@@ -35,20 +35,20 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
     Slice<Users> findFollowersUsers(@Param("userId") Long userId, Pageable pageable);
 
     @Query("""
-           select f.following
+           select f.follower
              from Follows f
-             join f.following u
-            where f.follower.nickname = :nickname
+             join f.follower u
+            where f.following.nickname = :nickname
             order by f.createdAt desc
            """)
     Slice<Users> findFollowingsOtherUser(@Param("nickname") String nickname, Pageable pageable);
 
 
     @Query("""
-           select f.follower
+           select f.following
              from Follows f
-             join f.follower u
-            where f.following.nickname = :nickname
+             join f.following u
+            where f.follower.nickname = :nickname
             order by f.createdAt desc
            """)
     Slice<Users> findFollowersOtherUser(@Param("nickname") String nickname, Pageable pageable);

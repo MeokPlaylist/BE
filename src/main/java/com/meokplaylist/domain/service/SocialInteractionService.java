@@ -89,13 +89,13 @@ public class SocialInteractionService {
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
         Boolean isMe=false;
-
         if(user.getNickname().equals(nickName)){
             isMe=true;
+        }
+        if(!isMe){
             user= usersRepository.findByNickname(nickName)
                     .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
         }
-
         long feedNum = feedRepository.countByUserUserId(user.getUserId());
         long followingNum =followsRepository.countByFollowingUserId(user.getUserId());
         long followerNum =followsRepository.countByFollowerUserId(user.getUserId());

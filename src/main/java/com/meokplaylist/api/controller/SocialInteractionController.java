@@ -42,8 +42,7 @@ public class SocialInteractionController {
             @AuthenticationPrincipal Long userId,
             @RequestParam("nickname") String nickName
     ){
-        UserPageResponse response=new UserPageResponse(socialInteractionService.userPageDistinction(userId,nickName));
-
+        UserPageResponse response = new UserPageResponse(socialInteractionService.userPageDistinction(userId,nickName));
         return ResponseEntity.ok().body(response);
     }
 
