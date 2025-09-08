@@ -47,8 +47,6 @@ public class SocialInteractionService {
         private final FeedPhotosRepository feedPhotosRepository;
         private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public record RegionRestaurants(String region, List<String> restaurants) {}
-
     @Transactional
     public void follow(Long followingId, String followerNickname) {
 
