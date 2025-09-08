@@ -3,12 +3,17 @@ package com.meokplaylist.domain.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meokplaylist.api.dto.*;
+import com.meokplaylist.api.dto.feed.FeedMapDto;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
+import com.meokplaylist.api.dto.feed.MainFeedResponse;
 import com.meokplaylist.api.dto.socialInteraction.GetFeedCommentsDto;
 import com.meokplaylist.api.dto.socialInteraction.RecommendRestaurantRequest;
+import com.meokplaylist.api.dto.socialInteraction.SearchFeedResponse;
+import com.meokplaylist.api.dto.socialInteraction.earchFeedDto;
 import com.meokplaylist.api.dto.socialInteraction.WriteFeedCommentsDto;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
+import com.meokplaylist.domain.repository.category.UserCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
@@ -16,9 +21,12 @@ import com.meokplaylist.domain.repository.socialInteraction.CommentsRepository;
 import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
+import com.meokplaylist.infra.category.Category;
 import com.meokplaylist.infra.category.LocalCategory;
+import com.meokplaylist.infra.category.UserCategory;
 import com.meokplaylist.infra.category.UserLocalCategory;
 import com.meokplaylist.infra.feed.Feed;
+import com.meokplaylist.infra.feed.FeedPhotos;
 import com.meokplaylist.infra.socialInteraction.Comments;
 import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
@@ -26,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -52,6 +61,7 @@ public class SocialInteractionService {
         @Qualifier("tourWebClient") private final WebClient tourApiWebClient;
 
         private final LocalCategoryRepository localCategoryRepository;
+        private final UserCategoryRepository userCategoryRepository;
         private final FeedPhotosRepository feedPhotosRepository;
         private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -320,4 +330,49 @@ public class SocialInteractionService {
 
     }
 
+    @Transactional(readOnly = true)
+    public Map<Long, List<String>> searchFeed(Long userId, Pageable pageable){
+
+        Users user=usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        List<UserCategory> categoryList=userCategoryRepository.findByUserUserId(user.getUserId());
+        List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
+        final Map<Long, List<String>> feedUrlsAndSocialMap = Map.of();
+        if (categoryIds.isEmpty()) {
+            // 빈 결과를 slice 형태로 반환
+            Slice<String> emptySlice = new SliceImpl<>(List.of(), pageable, false);
+            return feedUrlsAndSocialMap;
+        }
+
+        Slice<Feed> slice = feedRepository.findCategoryIds(categoryIds, pageable);
+
+        List<Feed> feeds = slice.getContent();
+
+        if (feeds.isEmpty()) { //방어 코드
+            return feedUrlsAndSocialMap;
+        }
+
+        List<Long> feedIds = feeds.stream().map(Feed::getFeedId).toList();
+
+        // 사진 일괄 조회(정렬 보장)
+
+        List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
+        Map<Long, List<FeedPhotos>> photosMapByFeedId = photos.stream()
+                .collect(Collectors.groupingBy(fp -> fp.getFeed().getFeedId(), LinkedHashMap::new, Collectors.toList()));
+
+        for (var e : photosMapByFeedId.entrySet()) {
+
+            List<String> urls = new ArrayList<>(e.getValue().size());
+
+            for (FeedPhotos p : e.getValue()) {
+                urls.add(s3Service.generateGetPresignedUrl(p.getStorageKey()));
+            }
+            feedUrlsAndSocialMap.put(e.getKey(),urls);
+        }
+
+
+        return feedUrlsAndSocialMap;
+
+    }
 }
