@@ -3,7 +3,7 @@ spring:
     name: MeokPlaylist
 
   datasource:
-    url: jdbc:postgresql://dpg-d30phk7diees73876th0-a:5432/meokplaylistdb
+    url: jdbc:postgresql://dpg-d30phk7diees73876th0-a:5432/meokplaylistDb
     username: meokplaylistdb_user
     password: mJnQZQ7bs3RpY800MS9DKuLgSUSGqlqZ
     driver-class-name: org.postgresql.Driver
