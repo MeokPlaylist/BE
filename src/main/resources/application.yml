@@ -49,6 +49,9 @@ oauth:
     client-id: 614172335108-a6j4nkrudna9k8tpon4anj3jgi6ee0ts.apps.googleusercontent.com
 
 
+rsa:
+  private-key-path: /keys/private.pem
+
 kakao:
   local:
     base-url: https://dapi.kakao.com
