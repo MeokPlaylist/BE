@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface UserCategoryRepository extends JpaRepository<UserCategory, UserCategoryId> {
-  //  Optional<List<UserCategory>> findByUserUserId(Long userId);
+
     List<UserCategory> findByUserUserId(Long userId);
 
   @Query("SELECT uc.category.categoryId FROM UserCategory uc WHERE uc.user.userId = :userId")

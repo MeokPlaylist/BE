@@ -2,6 +2,7 @@ package com.meokplaylist.api.controller;
 
 import com.meokplaylist.api.dto.socialInteraction.RecommendRestaurantRequest;
 import com.meokplaylist.api.dto.UserPageResponse;
+import com.meokplaylist.api.dto.socialInteraction.SearchFeedResponse;
 import com.meokplaylist.api.dto.socialInteraction.WriteFeedCommentsDto;
 import com.meokplaylist.domain.service.SocialInteractionService;
 import lombok.RequiredArgsConstructor;
@@ -84,6 +85,16 @@ public class SocialInteractionController {
         socialInteractionService.writeFeedComments(request);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/searchFeed")
+    public ResponseEntity<?> searchFeed(
+            @AuthenticationPrincipal Long userId,
+            @PageableDefault Pageable pageable
+    ){
+        SearchFeedResponse response=new SearchFeedResponse(socialInteractionService.searchFeed(userId,pageable));
+
+        return ResponseEntity.ok().body(response);
     }
 
 

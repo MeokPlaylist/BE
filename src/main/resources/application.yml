@@ -17,7 +17,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none  # Entity 기반으로 table 생성
+      ddl-auto: update  # Entity 기반으로 table 생성
     show-sql: true
     properties:
       hibernate:
@@ -62,4 +62,9 @@ tourapi:
   default-type: json
   connect-timeout-ms: 2000
   read-timeout-ms: 3000
-    
+
+tourapi2:
+  base-url: https://apis.data.go.kr/B551011/KorPetTourService
+  service-key: 57edced7cc0621ce34923583294e68b55c6e8fcc22d7c91e2048879aa9ea6202
+
+
