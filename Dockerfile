@@ -16,7 +16,7 @@ FROM bellsoft/liberica-openjdk-alpine:23
 WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
-COPY keys/private.pem /app/keys/private.pem
+COPY keys/private.pem keys/private.pem
 
 EXPOSE 8080
 
