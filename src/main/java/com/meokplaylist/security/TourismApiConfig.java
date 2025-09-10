@@ -1,6 +1,9 @@
 package com.meokplaylist.security;
 
-import io.netty.channel.ChannelOption;
+import com.meokplaylist.api.dto.tourapi.PetTourApiProps;
+import com.meokplaylist.api.dto.tourapi.TourApiProps;
+import  io.netty.channel.ChannelOption;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,14 +18,14 @@ import reactor.netty.http.client.HttpClient;
 import java.net.URI;
 
 import java.time.Duration;
+import java.util.Map;
 
 @Configuration
+@RequiredArgsConstructor
 public class TourismApiConfig {
 
-
-    @Value("${tourapi.base-url}") private String baseUrl;
-
-    @Value("${tourapi.service-key}") private String serviceKey;
+    private final TourApiProps tourApiProps;
+    private final PetTourApiProps petTourApiProps;
 
     @Value("${tourapi.mobile-os:ETC}") private String mobileOs;
 
@@ -46,7 +49,7 @@ public class TourismApiConfig {
                     .queryParam("MobileOS", mobileOs)
                     .queryParam("MobileApp", mobileApp)
                     .queryParam("_type", defaultType)
-                    .queryParam("serviceKey", serviceKey)
+                    .queryParam("serviceKey", tourApiProps.serviceKey())
                     .build(true) // 인코딩 처리를 위임
                     .toUri();
 
@@ -55,7 +58,7 @@ public class TourismApiConfig {
         };
 
         return WebClient.builder()
-                .baseUrl(baseUrl)
+                .baseUrl(tourApiProps.baseUrl())
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .filter(addDefaultParams)
                 .filter(ExchangeFilterFunction.ofResponseProcessor(resp -> {
@@ -66,5 +69,40 @@ public class TourismApiConfig {
                 }))
                 .build();
     }
+    /*
+    @Bean("petTourWebClient")
+    public WebClient petTourApiWebClient() {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMs)
+                .responseTimeout(Duration.ofMillis(readTimeoutMs));
+
+        ExchangeFilterFunction addDefaultParams = (req, next) -> {
+            // 기존 요청 URI를 기반으로 새로운 URI를 만듭니다.
+            URI newUri = UriComponentsBuilder.fromUri(req.url())
+                    .queryParam("MobileOS", mobileOs)
+                    .queryParam("MobileApp", mobileApp)
+                    .queryParam("_type", defaultType)
+                    .queryParam("serviceKey", petTourApiProps.serviceKey())
+                    .build(true) // 인코딩 처리를 위임
+                    .toUri();
+
+            ClientRequest newReq = ClientRequest.from(req).url(newUri).build();
+            return next.exchange(newReq);
+        };
+
+        return WebClient.builder()
+                .baseUrl(petTourApiProps.baseUrl())
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .filter(addDefaultParams)
+                .filter(ExchangeFilterFunction.ofResponseProcessor(resp -> {
+                    if (resp.statusCode().isError()) {
+                        return Mono.error(new IllegalStateException("TourAPI error: " + resp.statusCode()));
+                    }
+                    return Mono.just(resp);
+                }))
+                .build();
+    }
+    */
+
 }
 

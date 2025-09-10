@@ -2,6 +2,7 @@ package com.meokplaylist.domain.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.meokplaylist.api.dto.SlicedResponse;
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
 import com.meokplaylist.api.dto.UserPageDto;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
@@ -18,7 +19,6 @@ import com.meokplaylist.domain.repository.socialInteraction.CommentsRepository;
 import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
-import com.meokplaylist.infra.category.Category;
 import com.meokplaylist.infra.category.LocalCategory;
 import com.meokplaylist.infra.category.UserCategory;
 import com.meokplaylist.infra.category.UserLocalCategory;
@@ -27,7 +27,6 @@ import com.meokplaylist.infra.feed.FeedPhotos;
 import com.meokplaylist.infra.socialInteraction.Comments;
 import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -39,12 +38,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.time.OffsetTime.now;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +52,8 @@ public class SocialInteractionService {
         private final FeedRepository feedRepository;
         private final S3Service s3Service;
         private final CommentsRepository commentsRepository;
-        @Qualifier("tourWebClient") private final WebClient tourApiWebClient;
+        private final WebClient tourApiWebClient;
+        //private final WebClient petTourApiWebClient;
 
         private final LocalCategoryRepository localCategoryRepository;
         private final UserCategoryRepository userCategoryRepository;
@@ -182,7 +179,7 @@ public class SocialInteractionService {
                                     .path("/areaBasedList1")
                                     .queryParam("areaCd", areaCode)
                                     .queryParam("signguCd", sigunguCode)
-                                    .queryParam("numOfRows", 20)
+                                    .queryParam("numOfRows", 150)
                                     .queryParam("baseYm", "202503")
                                     .build())
                             .retrieve()
@@ -255,7 +252,7 @@ public class SocialInteractionService {
                                     .path("/areaBasedList1")
                                     .queryParam("areaCd", areaCode)
                                     .queryParam("signguCd", sigunguCode)
-                                    .queryParam("numOfRows", 20)
+                                    .queryParam("numOfRows", 150)
                                     .queryParam("baseYm", "202503")
                                     .build())
                             .retrieve()
@@ -338,8 +335,7 @@ public class SocialInteractionService {
         List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
         final Map<Long, List<String>> feedUrlsAndSocialMap = Map.of();
         if (categoryIds.isEmpty()) {
-            // 빈 결과를 slice 형태로 반환
-            Slice<String> emptySlice = new SliceImpl<>(List.of(), pageable, false);
+
             return feedUrlsAndSocialMap;
         }
 
@@ -371,6 +367,11 @@ public class SocialInteractionService {
 
 
         return feedUrlsAndSocialMap;
+
+    }
+
+    @Transactional
+    public void getRestaurantWithPet(){
 
     }
 }
