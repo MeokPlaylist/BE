@@ -51,6 +51,7 @@ oauth:
 
 rsa:
   private-key-path: keys/private.pem
+  public-key-path: keys/public.pem
 
 kakao:
   local:

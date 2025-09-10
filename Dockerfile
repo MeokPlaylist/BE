@@ -17,6 +17,7 @@ WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 COPY keys/private.pem keys/private.pem
+COPY keys/public.pem keys/public.pem
 
 EXPOSE 8080
 
