@@ -3,7 +3,8 @@ spring:
     name: MeokPlaylist
 
   datasource:
-    url: jdbc:mysql://localhost:3306/noshow2025?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
+    #url: jdbc:mysql://localhost:3306/noshow2025?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
+    url:  jdbc:mysql://host.docker.internal:3306/noshow2025?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
     username: noshow2025
     password: 2025
     driver-class-name: com.mysql.cj.jdbc.Driver
