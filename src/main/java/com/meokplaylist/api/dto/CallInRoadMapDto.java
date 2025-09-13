@@ -13,5 +13,6 @@ public class CallInRoadMapDto {
     private String roadAddressName;
     private String phone;
     private String kakaoCategoryName;
+    private String photoImgUrl;
     //+애견 동반가능인지
 }

@@ -36,6 +36,7 @@ public class PlaceService {
     private final FeedPhotosRepository feedPhotosRepository;
     private final PlacesRepository placesRepository;
     private final RoadMapPlaceRepository roadMapPlaceRepository;
+    private final S3Service s3Service;
 
 
     @Transactional
@@ -136,12 +137,14 @@ public class PlaceService {
 
         for(RoadMapPlace roadMapPlace : roadMapPlaceList){
             Places place=roadMapPlace.getPlace();
+            String photoImgUrl=s3Service.generateGetPresignedUrl(roadMapPlace.getFeedPhotos().getStorageKey());
             CallInRoadMapDto response = CallInRoadMapDto.builder()
                     .name(place.getName())
                     .addressName(place.getAddressName())
                     .roadAddressName(place.getRoadAddressName())
                     .phone(place.getPhone())
                     .kakaoCategoryName(place.getKakaoCategoryName())
+                    .photoImgUrl(photoImgUrl)
                     .build();
 
             responseList.add(response);
