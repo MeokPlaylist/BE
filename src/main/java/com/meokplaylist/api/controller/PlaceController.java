@@ -1,12 +1,12 @@
 package com.meokplaylist.api.controller;
 
-import com.meokplaylist.api.dto.CallInRoadMapResponse;
-import com.meokplaylist.api.dto.PullOutKakaoPlaceResponse;
-import com.meokplaylist.api.dto.SaveRoadMapPlaceRequest;
+import com.meokplaylist.api.dto.*;
 import com.meokplaylist.domain.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,7 +31,11 @@ public class PlaceController {
 
         }
 
-
+        @GetMapping("/test")
+        public ResponseEntity<?> test(@RequestParam("category") String category,@RequestParam("x") double x, @RequestParam("y") double y){
+            Test list=new Test(placeService.findAllPlaceByCategory(category,x,y));
+            return ResponseEntity.ok().body(list);
+        }
 
 
         @GetMapping

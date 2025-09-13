@@ -16,7 +16,7 @@ public class KakaoLocalClient {
 
     private final WebClient webClient = WebClient.builder().build();
 
-    private static int RADIUS = 1000; //3m //테스트 일떄는 1km로 설정
+    private static int RADIUS = 17; // 17m로 설정 적당한 거리일듯
 
     @Value("${kakao.local.base-url}")
     private String baseUrl;
