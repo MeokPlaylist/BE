@@ -100,11 +100,13 @@ public class SocialInteractionService {
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
         Boolean isMe=false;
+        Boolean isFollowing=false;
 
         if(user.getNickname().equals(nickName)){
             isMe=true;
             user= usersRepository.findByNickname(nickName)
                     .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
         }
 
         long feedNum = feedRepository.countByUserUserId(user.getUserId());
@@ -330,7 +332,7 @@ public class SocialInteractionService {
         Users user=usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        List<UserCategory> categoryList=userCategoryRepository.findByUserUserId(user.getUserId());
+
         List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
         final Map<Long, List<String>> feedUrlsAndSocialMap = Map.of();
         if (categoryIds.isEmpty()) {
