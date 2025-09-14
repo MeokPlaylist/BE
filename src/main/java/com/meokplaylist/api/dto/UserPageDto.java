@@ -11,14 +11,17 @@ import java.util.Map;
 @AllArgsConstructor
 @Builder
 public class UserPageDto {
-    long feedNum;
-    long followingNum;
-    long followerNum;
-    String userNickname;
-    String userIntro;
-    String profileUrl;
-    Map<Integer, List<Long>> feedIdsGroupedByYear; //년도에 따른
-    Map<String, List<Long>> feedIdsGroupedByRegion; //지역별
-    Map<Long, String> urlMappedByFeedId;
-    Boolean isMe;
+    private long feedNum;
+    private long followingNum;
+    private long followerNum;
+    private String userNickname;
+    private String userIntro;
+    private String profileUrl;
+    private Map<Integer, List<Long>> feedIdsGroupedByYear; //년도에 따른
+    private Map<String, List<Long>> feedIdsGroupedByRegion; //지역별
+    private Map<Long, String> urlMappedByFeedId;
+    private Boolean isMe;
+    private Boolean isFollowing;
+    private Boolean isFollower;
+
 }

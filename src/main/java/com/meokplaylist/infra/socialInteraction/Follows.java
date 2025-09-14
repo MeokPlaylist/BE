@@ -33,12 +33,12 @@ public class Follows {
     private Long id;
 
     // 팔로우 하는 사람 (주체)
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "follower_id", nullable = false)
     private Users follower;
 
     // 팔로우 당하는 사람 (대상)
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "following_id", nullable = false)
     private Users following;
 

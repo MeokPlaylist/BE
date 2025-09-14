@@ -99,13 +99,18 @@ public class SocialInteractionService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        Boolean isMe=false;
+        Boolean isMe=true;
         Boolean isFollowing=false;
+        Boolean isFollower=false;
 
-        if(user.getNickname().equals(nickName)){
-            isMe=true;
+        if(!user.getNickname().equals(nickName)){
+            Users me=user;
+
+            isMe=false;
             user= usersRepository.findByNickname(nickName)
                     .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+            isFollowing=followsRepository.existsByFollowerUserIdAndFollowingUserId(user.getUserId(),me.getUserId());// 다른 사람이 me를 팔로우 했는지 확인
+            isFollower=followsRepository.existsByFollowerUserIdAndFollowingUserId(me.getUserId(),user.getUserId()); //내가 이 사람을 팔로우 했는지 확인
 
         }
 
@@ -160,6 +165,8 @@ public class SocialInteractionService {
                 .feedIdsGroupedByRegion(feedIdsgroupedByRegion)
                 .urlMappedByFeedId(urlMappedByFeedId)
                 .isMe(isMe)
+                .isFollowing(isFollowing)
+                .isFollower(isFollower)
                 .build();
 
         return userPageDto;
