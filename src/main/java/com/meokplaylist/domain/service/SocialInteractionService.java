@@ -8,7 +8,6 @@ import com.meokplaylist.api.dto.UserPageDto;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
 import com.meokplaylist.api.dto.socialInteraction.GetFeedCommentsDto;
 import com.meokplaylist.api.dto.socialInteraction.RecommendRestaurantRequest;
-import com.meokplaylist.api.dto.socialInteraction.SearchFeedResponse;
 import com.meokplaylist.api.dto.socialInteraction.WriteFeedCommentsDto;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
@@ -101,14 +100,18 @@ public class SocialInteractionService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        Boolean isMe=false;
-        if(user.getNickname().equals(nickName)){
-            isMe=true;
-        }
-        if(!isMe){
+        Boolean isMe=true;
+        Boolean isFollowing=false;
+        Boolean isFollower=false;
+
+        if(!user.getNickname().equals(nickName)){
+            Users me=user;
+
+            isMe=false;
             user= usersRepository.findByNickname(nickName)
                     .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
         }
+
         long feedNum = feedRepository.countByUserUserId(user.getUserId());
         long followingNum =followsRepository.countByFollowingUserId(user.getUserId());
         long followerNum =followsRepository.countByFollowerUserId(user.getUserId());
@@ -160,6 +163,8 @@ public class SocialInteractionService {
                 .feedIdsGroupedByRegion(feedIdsgroupedByRegion)
                 .urlMappedByFeedId(urlMappedByFeedId)
                 .isMe(isMe)
+                .isFollowing(isFollowing)
+                .isFollower(isFollower)
                 .build();
 
         return userPageDto;
@@ -327,54 +332,49 @@ public class SocialInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public SearchFeedResponse searchFeed(Long userId, Pageable pageable) {
+    public Map<Long, List<String>> searchFeed(Long userId, Pageable pageable){
 
-        Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+        Users user=usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
+        List<UserCategory> categoryList=userCategoryRepository.findByUserUserId(user.getUserId());
         List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
-
+        final Map<Long, List<String>> feedUrlsAndSocialMap = Map.of();
         if (categoryIds.isEmpty()) {
-            return new SearchFeedResponse(Collections.emptyList());
+
+            return feedUrlsAndSocialMap;
         }
 
         Slice<Feed> slice = feedRepository.findCategoryIds(categoryIds, pageable);
+
         List<Feed> feeds = slice.getContent();
-        if (feeds.isEmpty()) { // 방어 코드
-            return new SearchFeedResponse(Collections.emptyList());
+
+        if (feeds.isEmpty()) { //방어 코드
+            return feedUrlsAndSocialMap;
         }
 
         List<Long> feedIds = feeds.stream().map(Feed::getFeedId).toList();
 
-        // 사진 일괄 조회 (정렬 보장)
-        List<FeedPhotos> photos = feedPhotosRepository
-                .findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
+        // 사진 일괄 조회(정렬 보장)
 
+        List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
         Map<Long, List<FeedPhotos>> photosMapByFeedId = photos.stream()
-                .collect(Collectors.groupingBy(
-                        fp -> fp.getFeed().getFeedId(),
-                        LinkedHashMap::new,
-                        Collectors.toList()
-                ));
+                .collect(Collectors.groupingBy(fp -> fp.getFeed().getFeedId(), LinkedHashMap::new, Collectors.toList()));
 
-        List<Map<Long, String>> result = new ArrayList<>();
+        for (var e : photosMapByFeedId.entrySet()) {
 
-        for (var entry : photosMapByFeedId.entrySet()) {
-            Long feedId = entry.getKey();
+            List<String> urls = new ArrayList<>(e.getValue().size());
 
-            for (FeedPhotos p : entry.getValue()) {
-                String url = s3Service.generateGetPresignedUrl(p.getStorageKey());
-
-                Map<Long, String> map = new HashMap<>();
-                map.put(feedId, url);
-
-                result.add(map);
+            for (FeedPhotos p : e.getValue()) {
+                urls.add(s3Service.generateGetPresignedUrl(p.getStorageKey()));
             }
+            feedUrlsAndSocialMap.put(e.getKey(),urls);
         }
 
-        return new SearchFeedResponse(result);
-    }
 
+        return feedUrlsAndSocialMap;
+
+    }
 
     @Transactional
     public void getRestaurantWithPet(){

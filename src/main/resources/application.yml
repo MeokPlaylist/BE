@@ -2,6 +2,11 @@ spring:
   application:
     name: MeokPlaylist
 
+#  datasource:
+#    url: jdbc:postgresql://dpg-d30phk7diees73876th0-a:5432/meokplaylistdb
+#    username: meokplaylistdb_user
+#    password: mJnQZQ7bs3RpY800MS9DKuLgSUSGqlqZ
+#    driver-class-name: org.postgresql.Driver
   datasource:
     url: jdbc:mysql://localhost:3306/noshow2025?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
     username: noshow2025
@@ -9,11 +14,6 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       connection-init-sql: SET NAMES utf8mb4
-
-  flyway:
-    enabled: true    # default: true
-    baseline-on-migrate: true  # 기존 테이블이 있어도 1회차부터 진행
-    locations: classpath:db/migration
 
   jpa:
     hibernate:
@@ -23,6 +23,12 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
+
+  flyway:
+    enabled: false    # default: true
+    baseline-on-migrate: true  # 기존 테이블이 있어도 1회차부터 진행
+    locations: classpath:db/migration
+
 
   defer-datasource-initialization: true #이거 필수띠
   sql:
@@ -36,6 +42,8 @@ server:
       charset: UTF-8
       enabled: true
       force: true
+  port: ${PORT:8080}
+
 cloud:
   ncp:
     object-storage:
@@ -48,6 +56,10 @@ oauth:
   google:
     client-id: 614172335108-a6j4nkrudna9k8tpon4anj3jgi6ee0ts.apps.googleusercontent.com
 
+
+rsa:
+  private-key-path: keys/private.pem
+  public-key-path: keys/public.pem
 
 kakao:
   local:

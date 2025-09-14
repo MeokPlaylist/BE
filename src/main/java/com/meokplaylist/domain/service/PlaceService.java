@@ -36,6 +36,7 @@ public class PlaceService {
     private final FeedPhotosRepository feedPhotosRepository;
     private final PlacesRepository placesRepository;
     private final RoadMapPlaceRepository roadMapPlaceRepository;
+    private final S3Service s3Service;
 
 
     @Transactional
@@ -136,12 +137,14 @@ public class PlaceService {
 
         for(RoadMapPlace roadMapPlace : roadMapPlaceList){
             Places place=roadMapPlace.getPlace();
+            String photoImgUrl=s3Service.generateGetPresignedUrl(roadMapPlace.getFeedPhotos().getStorageKey());
             CallInRoadMapDto response = CallInRoadMapDto.builder()
                     .name(place.getName())
                     .addressName(place.getAddressName())
                     .roadAddressName(place.getRoadAddressName())
                     .phone(place.getPhone())
                     .kakaoCategoryName(place.getKakaoCategoryName())
+                    .photoImgUrl(photoImgUrl)
                     .build();
 
             responseList.add(response);
@@ -157,7 +160,7 @@ public class PlaceService {
         List<KakaoSearchResponse.Document> all = new ArrayList<>();
         Set<String> seenIds = new HashSet<>(); // 중복 방지용
 
-        for (int page = 1; page <= 45; page++) {
+        for (int page = 1; page <= 10; page++) {
             KakaoSearchResponse res = kakao.searchByCategory(category, x, y, page, PAGE_SIZE);
             if (res == null || res.documents() == null || res.documents().isEmpty()) break;
 

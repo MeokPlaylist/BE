@@ -273,6 +273,7 @@ public class FeedService {
             throw new BizExceptionHandler(ErrorCode.DONT_HAVE_AUTHORITY);
         }
 
+        feedCategoryRespository.deleteAll(feed.getFeedCategories());
         if (dto.getCategories() != null) {
             List<String> categories = dto.getCategories();
             List<String> regions = dto.getRegions();
@@ -289,7 +290,7 @@ public class FeedService {
         if(!feed.getUser().getUserId().equals(userId)){
             throw new BizExceptionHandler(ErrorCode.DONT_HAVE_AUTHORITY);
         }
-
+        //피드 content삭제후 저장해야함 안드러면 중복 저장
         feed.setContent(dto.getContent());
         feedRepository.save(feed);
 

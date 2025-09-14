@@ -46,7 +46,8 @@ public class SocialInteractionController {
             @AuthenticationPrincipal Long userId,
             @RequestParam("nickname") String nickName
     ){
-        UserPageResponse response = new UserPageResponse(socialInteractionService.userPageDistinction(userId,nickName));
+        UserPageResponse response=new UserPageResponse(socialInteractionService.userPageDistinction(userId,nickName));
+
         return ResponseEntity.ok().body(response);
     }
 
@@ -88,13 +89,15 @@ public class SocialInteractionController {
     }
 
     @GetMapping("/searchFeed")
-    public ResponseEntity<SearchFeedResponse> searchFeed(
+    public ResponseEntity<?> searchFeed(
             @AuthenticationPrincipal Long userId,
-
             @PageableDefault Pageable pageable
-    ) {
-        SearchFeedResponse response = socialInteractionService.searchFeed(userId, pageable);
-        return ResponseEntity.ok(response);
+    ){
+        SearchFeedResponse response=new SearchFeedResponse(socialInteractionService.searchFeed(userId,pageable));
+
+        return ResponseEntity.ok().body(response);
     }
+
+
 
 }
