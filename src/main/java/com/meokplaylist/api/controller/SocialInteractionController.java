@@ -88,15 +88,13 @@ public class SocialInteractionController {
     }
 
     @GetMapping("/searchFeed")
-    public ResponseEntity<?> searchFeed(
+    public ResponseEntity<SearchFeedResponse> searchFeed(
             @AuthenticationPrincipal Long userId,
+
             @PageableDefault Pageable pageable
-    ){
-        SearchFeedResponse response=new SearchFeedResponse(socialInteractionService.searchFeed(userId,pageable));
-
-        return ResponseEntity.ok().body(response);
+    ) {
+        SearchFeedResponse response = socialInteractionService.searchFeed(userId, pageable);
+        return ResponseEntity.ok(response);
     }
-
-
 
 }

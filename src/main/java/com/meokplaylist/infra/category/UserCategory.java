@@ -33,9 +33,4 @@ public class UserCategory {
         this.id = new UserCategoryId(user.getUserId(), category.getCategoryId());
     }
 
-    public UserCategory(Users user, Category category, LocalCategory localCategory) {
-        this.user = user;
-        this.category = category;
-        this.id = new UserCategoryId(user.getUserId(), category.getCategoryId());
-    }
 }

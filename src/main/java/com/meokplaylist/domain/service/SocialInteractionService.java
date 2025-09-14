@@ -8,6 +8,7 @@ import com.meokplaylist.api.dto.UserPageDto;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
 import com.meokplaylist.api.dto.socialInteraction.GetFeedCommentsDto;
 import com.meokplaylist.api.dto.socialInteraction.RecommendRestaurantRequest;
+import com.meokplaylist.api.dto.socialInteraction.SearchFeedResponse;
 import com.meokplaylist.api.dto.socialInteraction.WriteFeedCommentsDto;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
@@ -326,49 +327,54 @@ public class SocialInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public Map<Long, List<String>> searchFeed(Long userId, Pageable pageable){
+    public SearchFeedResponse searchFeed(Long userId, Pageable pageable) {
 
-        Users user=usersRepository.findByUserId(userId)
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        List<UserCategory> categoryList=userCategoryRepository.findByUserUserId(user.getUserId());
         List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
-        final Map<Long, List<String>> feedUrlsAndSocialMap = Map.of();
-        if (categoryIds.isEmpty()) {
 
-            return feedUrlsAndSocialMap;
+        if (categoryIds.isEmpty()) {
+            return new SearchFeedResponse(Collections.emptyList());
         }
 
         Slice<Feed> slice = feedRepository.findCategoryIds(categoryIds, pageable);
-
         List<Feed> feeds = slice.getContent();
-
-        if (feeds.isEmpty()) { //방어 코드
-            return feedUrlsAndSocialMap;
+        if (feeds.isEmpty()) { // 방어 코드
+            return new SearchFeedResponse(Collections.emptyList());
         }
 
         List<Long> feedIds = feeds.stream().map(Feed::getFeedId).toList();
 
-        // 사진 일괄 조회(정렬 보장)
+        // 사진 일괄 조회 (정렬 보장)
+        List<FeedPhotos> photos = feedPhotosRepository
+                .findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
 
-        List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
         Map<Long, List<FeedPhotos>> photosMapByFeedId = photos.stream()
-                .collect(Collectors.groupingBy(fp -> fp.getFeed().getFeedId(), LinkedHashMap::new, Collectors.toList()));
+                .collect(Collectors.groupingBy(
+                        fp -> fp.getFeed().getFeedId(),
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
 
-        for (var e : photosMapByFeedId.entrySet()) {
+        List<Map<Long, String>> result = new ArrayList<>();
 
-            List<String> urls = new ArrayList<>(e.getValue().size());
+        for (var entry : photosMapByFeedId.entrySet()) {
+            Long feedId = entry.getKey();
 
-            for (FeedPhotos p : e.getValue()) {
-                urls.add(s3Service.generateGetPresignedUrl(p.getStorageKey()));
+            for (FeedPhotos p : entry.getValue()) {
+                String url = s3Service.generateGetPresignedUrl(p.getStorageKey());
+
+                Map<Long, String> map = new HashMap<>();
+                map.put(feedId, url);
+
+                result.add(map);
             }
-            feedUrlsAndSocialMap.put(e.getKey(),urls);
         }
 
-
-        return feedUrlsAndSocialMap;
-
+        return new SearchFeedResponse(result);
     }
+
 
     @Transactional
     public void getRestaurantWithPet(){

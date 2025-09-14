@@ -61,6 +61,7 @@ public class UserController {
 
     @PostMapping("/categorySet")
     public ResponseEntity<?> categorySet(@Valid @RequestBody CategorySetUpRequest categorySetUpRequest, @AuthenticationPrincipal Long userId){
+        System.out.println(categorySetUpRequest);
         userService.categorySetUp(categorySetUpRequest,userId);
         return ResponseEntity.ok().build();
     }
@@ -130,6 +131,12 @@ public class UserController {
         var response=userService.searchUser(nickname,pageable);
 
         return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/getCategories")
+    public void getCategories(@AuthenticationPrincipal Long userId){
+
+
     }
     
 

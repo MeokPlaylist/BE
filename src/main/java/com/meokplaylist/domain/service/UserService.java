@@ -29,10 +29,12 @@ import com.meokplaylist.util.StorageKeyUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -131,6 +133,7 @@ public class UserService {
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
         List<String> categoryList = request.categories(); // ["분위기:전통적인", "음식:한식", ...]
+        System.out.println(categoryList);
         if (categoryList == null || categoryList.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
         List<Category> saveCategories =new ArrayList<>();
@@ -141,9 +144,9 @@ public class UserService {
             String type = parts[0].trim();  // 예: "분위기"
             String name = parts[1].trim();  // 예: "전통적인"
             if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
-
+            System.out.println(type);
+            System.out.println(name);
             Category foodCategory = categoryRepository.findByTypeAndName(type,name);
-
 
             saveCategories.add(foodCategory);
         }
@@ -373,5 +376,25 @@ public class UserService {
         return SlicedResponse.of(modifiedList);
     }
 
+    /*
+    @Transactional(readOnly = true)
+    public void getUserCategories(Long userId) {
 
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+       List<UserCategory> userCategories=userCategoryRepository.findByUserUserId(user.getUserId());
+       List<UserLocalCategory> userLocalCategories=userLocalCategoryRepository.findByUserUserId(user.getUserId());
+       List<String> userCategory=new ArrayList<>();
+
+       for(int i=0; i<userCategories.size(); i++) {
+           Category category=userCategories.get(i).getCategory();
+           String name= category.getName();
+
+       }
+
+
+    }
+    */
+    
 }
