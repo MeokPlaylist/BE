@@ -9,5 +9,5 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 public class SearchFeedResponse {
-    private List<Map<Long, String>> urlsMappedByFeedIds;
+    private Map<Long, List<String>> urlsMappedByFeedIds;
 }
