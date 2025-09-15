@@ -133,7 +133,6 @@ public class UserService {
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
         List<String> categoryList = request.categories(); // ["분위기:전통적인", "음식:한식", ...]
-        System.out.println(categoryList);
         if (categoryList == null || categoryList.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
         List<Category> saveCategories =new ArrayList<>();

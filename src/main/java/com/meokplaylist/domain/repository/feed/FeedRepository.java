@@ -65,4 +65,21 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
        """)
     List<FeedRegionMappingDto> findFeedIdsGroupedByRegion(@Param("userId") Long userId);
 
+    @Query("""
+    SELECT f as feed,
+           COUNT(DISTINCT flc.localCategory.localCategoryId) as regionMatchCount,
+           COUNT(DISTINCT fc.category.categoryId) as categoryMatchCount
+    FROM Feed f
+    LEFT JOIN f.feedCategories fc
+    LEFT JOIN f.feedLocalCategories flc
+    WHERE (:regionIds IS NULL OR flc.localCategory.localCategoryId IN :regionIds)
+      AND (:categoryIds IS NULL OR fc.category.categoryId IN :categoryIds)
+    GROUP BY f
+    ORDER BY regionMatchCount DESC, categoryMatchCount DESC
+    """)
+    List<Object[]> findFeedsByRegionAndCategoryPriority(
+            @Param("categoryIds") List<Long> categoryIds,
+            @Param("regionIds") List<Long> regionIds,
+            Pageable pageable
+    );
 }
