@@ -34,8 +34,6 @@ spring:
   sql:
     init:
       mode: always
-
-
 server:
   servlet:
     encoding:

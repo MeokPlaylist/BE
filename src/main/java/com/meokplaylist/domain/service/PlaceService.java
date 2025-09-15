@@ -176,8 +176,25 @@ public class PlaceService {
             // 방어: 마지막 페이지가 size 미만이면 더 없음
             if (res.documents().size() < PAGE_SIZE) break;
         }
-
         return all;
     }
 
+    public KakaoSearchResponse.Document findPlaceByCategory(double lat, double lng) {
+        // 카테고리: 음식점(FD6), 카페(CE7)
+        List<String> categories = List.of("FD6", "CE7");
+
+        for (String category : categories) {
+            // 1페이지(가장 가까운 결과)만 조회
+            KakaoSearchResponse res = kakao.searchByCategory(category, lng, lat, 1, 1);
+            System.out.println(res);
+            System.out.println(res.documents().get(0));
+            if (res != null && res.documents() != null && !res.documents().isEmpty()) {
+                // 1개만 가져오므로 바로 리턴
+                return res.documents().get(0);
+            }
+        }
+
+        // 음식점/카페 아무것도 없으면 null
+        return null;
+    }
 }

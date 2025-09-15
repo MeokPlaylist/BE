@@ -23,5 +23,5 @@ public record KakaoSearchResponse(
             @JsonProperty("place_url") String placeUrl,
             @JsonProperty("category_group_code") String categoryGroupCode,
             @JsonProperty("category_group_name") String categoryGroupName
-    ) {}
+    ){}
 }

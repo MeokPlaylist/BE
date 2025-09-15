@@ -1,6 +1,7 @@
 package com.meokplaylist.api.controller;
 
 import com.meokplaylist.api.dto.*;
+import com.meokplaylist.api.dto.place.PlaceSearchRequest;
 import com.meokplaylist.domain.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,10 +32,10 @@ public class PlaceController {
 
         }
 
-        @GetMapping("/test")
-        public ResponseEntity<?> test(@RequestParam("category") String category,@RequestParam("x") double x, @RequestParam("y") double y){
-            Test list=new Test(placeService.findAllPlaceByCategory(category,x,y));
-            return ResponseEntity.ok().body(list);
+        @PostMapping("/search")
+        public ResponseEntity<?> searchPlace(@RequestBody PlaceSearchRequest placeSearchRequest){
+            KakaoSearchResponse.Document place = placeService.findPlaceByCategory(placeSearchRequest.getLat(), placeSearchRequest.getLng());
+            return ResponseEntity.ok().body(place);
         }
 
 
