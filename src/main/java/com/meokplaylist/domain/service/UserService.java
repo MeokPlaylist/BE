@@ -376,25 +376,6 @@ public class UserService {
         return SlicedResponse.of(modifiedList);
     }
 
-    /*
-    @Transactional(readOnly = true)
-    public void getUserCategories(Long userId) {
 
-        Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-
-       List<UserCategory> userCategories=userCategoryRepository.findByUserUserId(user.getUserId());
-       List<UserLocalCategory> userLocalCategories=userLocalCategoryRepository.findByUserUserId(user.getUserId());
-       List<String> userCategory=new ArrayList<>();
-
-       for(int i=0; i<userCategories.size(); i++) {
-           Category category=userCategories.get(i).getCategory();
-           String name= category.getName();
-
-       }
-
-
-    }
-    */
     
 }

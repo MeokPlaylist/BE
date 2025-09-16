@@ -6,17 +6,17 @@ import com.meokplaylist.api.dto.SlicedResponse;
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
 import com.meokplaylist.api.dto.UserPageDto;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
-import com.meokplaylist.api.dto.socialInteraction.GetFeedCommentsDto;
-import com.meokplaylist.api.dto.socialInteraction.RecommendRestaurantRequest;
-import com.meokplaylist.api.dto.socialInteraction.WriteFeedCommentsDto;
+import com.meokplaylist.api.dto.socialInteraction.*;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
+import com.meokplaylist.domain.repository.place.PlacesRepository;
 import com.meokplaylist.domain.repository.socialInteraction.CommentsRepository;
 import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
+import com.meokplaylist.domain.repository.socialInteraction.FavoritePlaceRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.category.LocalCategory;
@@ -24,14 +24,14 @@ import com.meokplaylist.infra.category.UserCategory;
 import com.meokplaylist.infra.category.UserLocalCategory;
 import com.meokplaylist.infra.feed.Feed;
 import com.meokplaylist.infra.feed.FeedPhotos;
+import com.meokplaylist.infra.place.Places;
+import com.meokplaylist.infra.place.FavoritePlace;
 import com.meokplaylist.infra.socialInteraction.Comments;
 import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -45,20 +45,22 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SocialInteractionService {
+    private final UsersRepository usersRepository;
+    private final FollowsRepository followsRepository;
+    private final UserLocalCategoryRepository userLocalCategoryRepository;
+    private final FeedRepository feedRepository;
+    private final PlacesRepository placesRepository;
 
-        private final FollowsRepository followsRepository;
-        private final UsersRepository usersRepository;
-        private final UserLocalCategoryRepository userLocalCategoryRepository;
-        private final FeedRepository feedRepository;
-        private final S3Service s3Service;
-        private final CommentsRepository commentsRepository;
-        private final WebClient tourApiWebClient;
-        //private final WebClient petTourApiWebClient;
+    private final CommentsRepository commentsRepository;
+    private final WebClient tourApiWebClient;
+    private final FavoritePlaceRepository favoritePlaceRepository;
+    private final LocalCategoryRepository localCategoryRepository;
+    private final UserCategoryRepository userCategoryRepository;
+    private final FeedPhotosRepository feedPhotosRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-        private final LocalCategoryRepository localCategoryRepository;
-        private final UserCategoryRepository userCategoryRepository;
-        private final FeedPhotosRepository feedPhotosRepository;
-        private final ObjectMapper objectMapper = new ObjectMapper();
+    private final S3Service s3Service;
+    private final PlaceService placeService;
 
     @Transactional
     public void follow(Long followingId, String followerNickname) {
@@ -376,8 +378,56 @@ public class SocialInteractionService {
 
     }
 
-    @Transactional
-    public void getRestaurantWithPet(){
 
+    @Transactional
+    public void SaveFavoritePlace(Long userId, SaveFavoritePlaceDto dto) {
+
+        Places place=placesRepository.findByLatitudeAndLongitude(dto.getX(), dto.getY());
+        if(place==null){
+           place = placeService.searchPlace(dto.getY(),dto.getX());
+        }
+
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        if (favoritePlaceRepository.existsByUserIdAndPlaceId(user.getUserId(), place.getId())) {
+            throw new BizExceptionHandler(ErrorCode.EXIST_OBJECT);
+        }
+
+        FavoritePlace savedPlace = new FavoritePlace();
+        savedPlace.setUser(user);
+        savedPlace.setPlace(place);
+
+        favoritePlaceRepository.save(savedPlace);
     }
+
+    @Transactional
+    public void removePlace(Long userId, RemoveFaovoritePlaceDto dto) {
+
+        Users user=usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        double x=dto.getX();
+        double y= dto.getY();
+
+        FavoritePlace favoritePlace =favoritePlaceRepository.findByUserIdAndPlaceLongitudeAndPlaceLatitude(userId,x,y)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE));
+
+        favoritePlaceRepository.delete(favoritePlace);
+    }
+
+    public List<GetFavoritePlacesDto.Coordinate> getFavoritePlaces(Long userId) {
+
+        Users user=usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        return favoritePlaceRepository.findAllByUserId(userId).stream()
+                .map(fp->new GetFavoritePlacesDto.Coordinate(
+                        fp.getPlace().getLatitude(),
+                        fp.getPlace().getLongitude()
+                ))
+                .toList();
+    }
+
+
 }

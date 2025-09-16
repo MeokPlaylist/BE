@@ -1,12 +1,14 @@
 package com.meokplaylist.api.controller;
 
 import com.meokplaylist.api.dto.*;
+import com.meokplaylist.api.dto.place.CallInRoadMapResponse;
+import com.meokplaylist.api.dto.place.SaveRoadMapPlaceRequest;
+import com.meokplaylist.api.dto.place.SearchPlaceDto;
+import com.meokplaylist.api.dto.place.SearchPlaceResponse;
 import com.meokplaylist.domain.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,13 +34,13 @@ public class PlaceController {
         }
 
         @GetMapping("/test")
-        public ResponseEntity<?> test(@RequestParam("category") String category,@RequestParam("x") double x, @RequestParam("y") double y){
+        public ResponseEntity<?> test(@RequestParam("category") String category,@RequestParam("y") double y, @RequestParam("x") double x){
             Test list=new Test(placeService.findAllPlaceByCategory(category,x,y));
             return ResponseEntity.ok().body(list);
         }
 
 
-        @GetMapping
+        @GetMapping("/callInRoadMap")
         public ResponseEntity<?> callInRoadMapPlace(@RequestParam("feedId") Long feedId){
 
             CallInRoadMapResponse response =new CallInRoadMapResponse(placeService.callInRoadMap(feedId));
@@ -46,6 +48,13 @@ public class PlaceController {
             return ResponseEntity.ok().body(response);
         }
 
+        @GetMapping("/search")
+        public ResponseEntity<?> searchPlace(
+                @RequestBody SearchPlaceDto request
+        ){
+            SearchPlaceResponse response=new SearchPlaceResponse(placeService.searchPlaceList( request.getY(),request.getX()));
+            return ResponseEntity.ok().body(response);
+        }
 
 
 

@@ -1,9 +1,7 @@
 package com.meokplaylist.api.controller;
 
-import com.meokplaylist.api.dto.socialInteraction.RecommendRestaurantRequest;
+import com.meokplaylist.api.dto.socialInteraction.*;
 import com.meokplaylist.api.dto.UserPageResponse;
-import com.meokplaylist.api.dto.socialInteraction.SearchFeedResponse;
-import com.meokplaylist.api.dto.socialInteraction.WriteFeedCommentsDto;
 import com.meokplaylist.domain.service.SocialInteractionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -97,6 +95,32 @@ public class SocialInteractionController {
 
         return ResponseEntity.ok().body(response);
     }
+
+    @PostMapping("/saveFavorite")
+    public ResponseEntity<?> SaveFavoritePlace(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody SaveFavoritePlaceDto request
+    ){
+        socialInteractionService.SaveFavoritePlace(userId,request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/removeFavorite")
+    public ResponseEntity<?> removeFavoritePlace(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody RemoveFaovoritePlaceDto request
+            ){
+        socialInteractionService.removePlace(userId,request);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/getFavorite")
+    public ResponseEntity<?> getFavoritePlaces(@AuthenticationPrincipal Long userId){
+        GetFavoritePlaceResponse response =new GetFavoritePlaceResponse(socialInteractionService.getFavoritePlaces(userId));
+
+        return ResponseEntity.ok().body(response);
+    }
+
 
 
 

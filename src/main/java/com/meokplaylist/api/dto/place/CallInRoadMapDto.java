@@ -1,7 +1,6 @@
-package com.meokplaylist.api.dto;
+package com.meokplaylist.api.dto.place;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 
 @Getter

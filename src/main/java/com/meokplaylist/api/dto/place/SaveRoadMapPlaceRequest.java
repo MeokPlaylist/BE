@@ -1,9 +1,9 @@
-package com.meokplaylist.api.dto;
+package com.meokplaylist.api.dto.place;
 
+import com.meokplaylist.api.dto.KakaoSearchResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.List;
 import java.util.Map;
 
 @Getter
