@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FavoritePlaceRepository extends JpaRepository<FavoritePlace, Long> {
-    boolean existsByUserIdAndPlaceId(Long userId, Long placeId);
-    List<FavoritePlace> findAllByUserId(Long userId);
+    boolean existsByUserUserIdAndPlaceId(Long userId, Long placeId);
+    List<FavoritePlace> findAllByUserUserId(Long userId);
 
-    Optional<FavoritePlace> findByUserIdAndPlaceLongitudeAndPlaceLatitude(Long userId, double x, double y);
+    Optional<FavoritePlace> findByUserUserIdAndPlaceLongitudeAndPlaceLatitude(Long userId, double x, double y);
 }

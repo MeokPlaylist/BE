@@ -390,7 +390,7 @@ public class SocialInteractionService {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        if (favoritePlaceRepository.existsByUserIdAndPlaceId(user.getUserId(), place.getId())) {
+        if (favoritePlaceRepository.existsByUserUserIdAndPlaceId(user.getUserId(), place.getId())) {
             throw new BizExceptionHandler(ErrorCode.EXIST_OBJECT);
         }
 
@@ -410,7 +410,7 @@ public class SocialInteractionService {
         double x=dto.getX();
         double y= dto.getY();
 
-        FavoritePlace favoritePlace =favoritePlaceRepository.findByUserIdAndPlaceLongitudeAndPlaceLatitude(userId,x,y)
+        FavoritePlace favoritePlace =favoritePlaceRepository.findByUserUserIdAndPlaceLongitudeAndPlaceLatitude(userId,x,y)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE));
 
         favoritePlaceRepository.delete(favoritePlace);
@@ -421,7 +421,7 @@ public class SocialInteractionService {
         Users user=usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        return favoritePlaceRepository.findAllByUserId(userId).stream()
+        return favoritePlaceRepository.findAllByUserUserId(userId).stream()
                 .map(fp->new GetFavoritePlacesDto.Coordinate(
                         fp.getPlace().getLatitude(),
                         fp.getPlace().getLongitude()

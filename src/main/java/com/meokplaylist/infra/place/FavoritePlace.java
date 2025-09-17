@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.data.annotation.Id;
 
 import java.time.OffsetDateTime;
 
@@ -19,6 +18,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FavoritePlace {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
