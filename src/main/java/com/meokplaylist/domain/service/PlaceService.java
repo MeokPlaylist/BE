@@ -147,6 +147,7 @@ public class PlaceService {
                     .phone(place.getPhone())
                     .kakaoCategoryName(place.getKakaoCategoryName())
                     .photoImgUrl(photoImgUrl)
+                    .dateTime(roadMapPlace.getFeedPhotos().getDayAndTime())
                     .build();
 
             responseList.add(response);
