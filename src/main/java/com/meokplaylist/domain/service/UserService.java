@@ -29,6 +29,7 @@ import com.meokplaylist.util.StorageKeyUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,10 +37,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -364,7 +362,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public SlicedResponse<SearchUserDto> searchUser(String nickname, Pageable pageable){
-
+        if (nickname == null || nickname.isBlank()) {
+            Slice<SearchUserDto> emptySlice = new SliceImpl<>(Collections.emptyList(), pageable, false);
+            return SlicedResponse.of(emptySlice);
+        }
         Slice<SearchUserDto> userList = usersRepository.findUsersByNicknamePrefix(nickname, pageable);
 
         Slice<SearchUserDto> modifiedList=userList.map(dto->{
@@ -374,26 +375,5 @@ public class UserService {
 
         return SlicedResponse.of(modifiedList);
     }
-
-    /*
-    @Transactional(readOnly = true)
-    public void getUserCategories(Long userId) {
-
-        Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-
-       List<UserCategory> userCategories=userCategoryRepository.findByUserUserId(user.getUserId());
-       List<UserLocalCategory> userLocalCategories=userLocalCategoryRepository.findByUserUserId(user.getUserId());
-       List<String> userCategory=new ArrayList<>();
-
-       for(int i=0; i<userCategories.size(); i++) {
-           Category category=userCategories.get(i).getCategory();
-           String name= category.getName();
-
-       }
-
-
-    }
-    */
     
 }
