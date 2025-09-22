@@ -19,25 +19,26 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthLoginRequest authLoginRequest){
-        String jwt =authService.login(authLoginRequest);
-        AuthJwtResponse response =new AuthJwtResponse(jwt);
-        return ResponseEntity.ok().body(response);
+        JwtTokenPair pair = authService.login(authLoginRequest);
+        return ResponseEntity.ok().body(pair);
     }
 
-    @PostMapping("/socialLogin")
-    public ResponseEntity<?> socialLogin(@Valid @RequestBody AuthSocialLoginRequest authSocialLoginRequest) throws Exception {
-        return switch (authSocialLoginRequest.provider()){
-            case "kakao" -> ResponseEntity.ok(authService.loginWithKakao(authSocialLoginRequest.token()));
-            case "google" -> ResponseEntity.ok(authService.loginWithGoogle(authSocialLoginRequest.token()));
-            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown provider");
-        };
+    @PostMapping("/socialLogin/google")
+    public ResponseEntity<?> socialLogin(@Valid @RequestBody AuthGoogleLoginRequest authGoogleLoginRequest) throws Exception {
+        JwtTokenPair pair = authService.loginWithGoogle(authGoogleLoginRequest.idToken());
+        return ResponseEntity.ok().body(pair);
+    }
+
+    @PostMapping("/socialLogin/kakao")
+    public ResponseEntity<?> socialLogin(@Valid @RequestBody AuthKakaoLoginRequest authKakaoLoginRequest) throws Exception {
+        JwtTokenPair pair = authService.loginWithKakao(authKakaoLoginRequest.accessToken(), authKakaoLoginRequest.refreshToken());
+        return ResponseEntity.ok().body(pair);
     }
 
     @PostMapping("/signUp")
     public ResponseEntity<?> signUp(@Valid @RequestBody AuthSignUpRequest authSignUpRequest) {
-        String jwt = authService.signUp(authSignUpRequest);
-        AuthJwtResponse response =new AuthJwtResponse(jwt);
-        return ResponseEntity.ok().body(response);
+        JwtTokenPair pair = authService.signUp(authSignUpRequest);
+        return ResponseEntity.ok().body(pair);
     }
 
     @PostMapping("/emailInspect")

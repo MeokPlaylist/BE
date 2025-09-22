@@ -34,11 +34,11 @@ public class UserOauth {
     @Column(name = "provider_uid", nullable = false)
     private String providerUid;
 
-    @Column(name = "access_token", columnDefinition = "TEXT")
-    private String accessToken;
+    @Column(name = "social_access_token", columnDefinition = "TEXT")
+    private String socialAccessToken;
 
-    @Column(name = "refresh_token", columnDefinition = "TEXT")
-    private String refreshToken;
+    @Column(name = "social_refresh_token", columnDefinition = "TEXT")
+    private String socialRefreshToken;
 
     @Column(name = "token_exp")
     private OffsetDateTime tokenExp;

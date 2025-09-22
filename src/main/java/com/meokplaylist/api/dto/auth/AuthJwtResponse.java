@@ -1,10 +1,10 @@
 package com.meokplaylist.api.dto.auth;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
-@Data
-@AllArgsConstructor
-public class AuthJwtResponse {
-    private String jwt;
+public record AuthJwtResponse(
+        String accessToken,
+        String refreshToken
+) {
+    public static AuthJwtResponse of(JwtTokenPair pair) {
+        return new AuthJwtResponse(pair.accessToken(), pair.refreshToken());
+    }
 }
