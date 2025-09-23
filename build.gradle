@@ -55,13 +55,3 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-tasks.register("copyPrivate", Copy) {
-    from("submodule-data")
-    include("*.yml")
-    into("$buildDir/resources/main")
-    //tml 파일 끌고 오는것
-}
-
-tasks.named("processResources") {
-    dependsOn("copyPrivate")
-}
