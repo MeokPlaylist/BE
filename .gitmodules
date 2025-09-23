@@ -1,0 +1,3 @@
+[submodule "submodule-data"]
+	path = submodule-data
+	url = rhalswns0303@gmail.com:minjun04/submodule-data.git
