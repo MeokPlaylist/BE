@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: MeokPlaylist
+
+  config:
+    import: optional:file:submodule-data/application.yml
+
+#  datasource:
+#    url: jdbc:postgresql://dpg-d30phk7diees73876th0-a:5432/meokplaylistdb
+#    username: meokplaylistdb_user
+#    password: mJnQZQ7bs3RpY800MS9DKuLgSUSGqlqZ
+#    driver-class-name: org.postgresql.Driver
+  datasource:
+    url: jdbc:mysql://localhost:3306/noshow2025?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
+    username: noshow2025
+    password: 2025
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-init-sql: SET NAMES utf8mb4
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # Entity 기반으로 table 생성
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+  flyway:
+    enabled: false    # default: true
+    baseline-on-migrate: true  # 기존 테이블이 있어도 1회차부터 진행
+    locations: classpath:db/migration
+
+
+  defer-datasource-initialization: true #이거 필수띠
+  sql:
+    init:
+      mode: always
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  port: ${PORT:8080}
+
+rsa:
+  private-key-path: keys/private.pem
+  public-key-path: keys/public.pem
+
+
