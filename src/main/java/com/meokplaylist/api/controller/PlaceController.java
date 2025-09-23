@@ -34,16 +34,6 @@ public class PlaceController {
 
         }
 
-        @GetMapping("/test")
-        public ResponseEntity<?> test(@RequestParam("category") String category,@RequestParam("y") double y, @RequestParam("x") double x){
-            Test list=new Test(placeService.findAllPlaceByCategory(category,x,y));
-            return ResponseEntity.ok().body(list);
-//        @PostMapping("/search")
-//        public ResponseEntity<?> searchPlace(@RequestBody PlaceSearchRequest placeSearchRequest){
-//            KakaoSearchResponse.Document place = placeService.findPlaceByCategory(placeSearchRequest.getLat(), placeSearchRequest.getLng());
-//            return ResponseEntity.ok().body(place);
-        }
-
 
         @GetMapping("/callInRoadMap")
         public ResponseEntity<?> callInRoadMapPlace(@RequestParam("feedId") Long feedId){
