@@ -6,7 +6,7 @@ WORKDIR /app
 
 COPY . .
 RUN chmod +x gradlew
-RUN git submodule update --init --recursive
+
 RUN ./gradlew clean build -x test
 
 # Run stage
