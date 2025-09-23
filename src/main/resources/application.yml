@@ -50,7 +50,7 @@ server:
   port: ${PORT:8080}
 
 rsa:
-  private-key-path: keys/private.pem
-  public-key-path: keys/public.pem
+  private-key-path: classpath:keys/private.pem
+  public-key-path: classpath:keys/public.pem
 
 

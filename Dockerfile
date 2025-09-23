@@ -6,8 +6,8 @@ WORKDIR /app
 
 COPY . .
 RUN chmod +x gradlew
+RUN git submodule update --init --recursive
 RUN ./gradlew clean build -x test
-
 
 # Run stage
 
@@ -16,8 +16,6 @@ FROM bellsoft/liberica-openjdk-alpine:23
 WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
-COPY keys/private.pem keys/private.pem
-COPY keys/public.pem keys/public.pem
 
 EXPOSE 8080
 
