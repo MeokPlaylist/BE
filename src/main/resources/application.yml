@@ -26,6 +26,7 @@ spring:
     properties:
       hibernate:
         #dialect: org.hibernate.dialect.MySQL8Dialect
+        #로컬 테스트 용
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
