@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,17 +22,16 @@ import java.io.InputStream;
 @Configuration
 public class RsaKeyConfig {
 
-    // Option A: 경로(예: keys/private.pem 또는 classpath:keys/private.pem 또는 /etc/keys/private.pem)
-    @Value("${rsa.private-key-path:}")
+    @Value("${rsa.private-key-path}")
     private String privateKeyPath;
 
-    @Value("${rsa.public-key-path:}")
+    @Value("${rsa.public-key-path}")
     private String publicKeyPath;
 
     @Bean
     public RSAPrivateKey rsaPrivateKey() throws Exception {
-        ClassPathResource resource = new ClassPathResource(privateKeyPath);
-        String privateKeyPEM = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8)
+        byte[] keyBytes = readKeyBytes(privateKeyPath);
+        String privateKeyPEM = new String(keyBytes, StandardCharsets.UTF_8)
                 .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")
                 .replaceAll("\\s+", "");
@@ -42,8 +43,8 @@ public class RsaKeyConfig {
 
     @Bean
     public RSAPublicKey rsaPublicKey() throws Exception {
-        ClassPathResource resource = new ClassPathResource(publicKeyPath);
-        String publicKeyPEM = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8)
+        byte[] keyBytes = readKeyBytes(publicKeyPath);
+        String publicKeyPEM = new String(keyBytes, StandardCharsets.UTF_8)
                 .replace("-----BEGIN PUBLIC KEY-----", "")
                 .replace("-----END PUBLIC KEY-----", "")
                 .replaceAll("\\s+", "");
@@ -51,5 +52,17 @@ public class RsaKeyConfig {
         byte[] decoded = Base64.getDecoder().decode(publicKeyPEM);
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decoded);
         return (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(keySpec);
+    }
+
+    private byte[] readKeyBytes(String path) throws IOException {
+        InputStream is;
+        if (path.startsWith("/")) {
+            // 운영 환경: 파일 시스템 경로 (예: /etc/secrets/private.pem)
+            is = new FileInputStream(path);
+        } else {
+            // 로컬 환경: classpath 리소스 (예: classpath:keys/private.pem)
+            is = new ClassPathResource(path).getInputStream();
+        }
+        return is.readAllBytes();
     }
 }
