@@ -7,7 +7,7 @@ spring:
     #서브 모듈에 있는 yml 파일 경로 알려주는것
 
   datasource:
-    url: jdbc:postgresql://dpg-d30phk7diees73876th0-a:5432/meokplaylistdb
+    url: jdbc:postgresql://dpg-d30phk7diees73876th0-a.oregon-postgres.render.com:5432/meokplaylistdb
     username: meokplaylistdb_user
     password: mJnQZQ7bs3RpY800MS9DKuLgSUSGqlqZ
     driver-class-name: org.postgresql.Driver
@@ -50,7 +50,7 @@ server:
   port: ${PORT:8080}
 
 rsa:
-  private-key-path: classpath:keys/private.pem
-  public-key-path: classpath:keys/public.pem
+  private-key-path: keys/private.pem
+  public-key-path: keys/public.pem
 
 
