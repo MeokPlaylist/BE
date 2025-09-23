@@ -18,7 +18,6 @@ import reactor.netty.http.client.HttpClient;
 import java.net.URI;
 
 import java.time.Duration;
-import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
@@ -36,6 +35,7 @@ public class TourismApiConfig {
     @Value("${tourapi.connect-timeout-ms:2000}") private int connectTimeoutMs;
 
     @Value("${tourapi.read-timeout-ms:3000}") private int readTimeoutMs;
+
 
     @Bean("tourWebClient")
     public WebClient tourApiWebClient() {
