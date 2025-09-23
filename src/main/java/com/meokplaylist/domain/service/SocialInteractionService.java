@@ -6,35 +6,32 @@ import com.meokplaylist.api.dto.SlicedResponse;
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
 import com.meokplaylist.api.dto.UserPageDto;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
-import com.meokplaylist.api.dto.socialInteraction.GetFeedCommentsDto;
-import com.meokplaylist.api.dto.socialInteraction.RecommendRestaurantRequest;
-import com.meokplaylist.api.dto.socialInteraction.SearchFeedDto;
-import com.meokplaylist.api.dto.socialInteraction.WriteFeedCommentsDto;
+import com.meokplaylist.api.dto.socialInteraction.*;
 import com.meokplaylist.domain.repository.UsersRepository;
-import com.meokplaylist.domain.repository.category.CategoryRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
+import com.meokplaylist.domain.repository.place.PlacesRepository;
 import com.meokplaylist.domain.repository.socialInteraction.CommentsRepository;
 import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
+import com.meokplaylist.domain.repository.socialInteraction.FavoritePlaceRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
-import com.meokplaylist.infra.category.Category;
 import com.meokplaylist.infra.category.LocalCategory;
 import com.meokplaylist.infra.category.UserCategory;
 import com.meokplaylist.infra.category.UserLocalCategory;
 import com.meokplaylist.infra.feed.Feed;
 import com.meokplaylist.infra.feed.FeedPhotos;
+import com.meokplaylist.infra.place.Places;
+import com.meokplaylist.infra.place.FavoritePlace;
 import com.meokplaylist.infra.socialInteraction.Comments;
 import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -48,21 +45,22 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SocialInteractionService {
+    private final UsersRepository usersRepository;
+    private final FollowsRepository followsRepository;
+    private final UserLocalCategoryRepository userLocalCategoryRepository;
+    private final FeedRepository feedRepository;
+    private final PlacesRepository placesRepository;
 
-        private final FollowsRepository followsRepository;
-        private final UsersRepository usersRepository;
-        private final UserLocalCategoryRepository userLocalCategoryRepository;
-        private final FeedRepository feedRepository;
-        private final S3Service s3Service;
-        private final CommentsRepository commentsRepository;
-        private final WebClient tourApiWebClient;
-        private  final CategoryRepository categoryRepository;
-    //private final WebClient petTourApiWebClient;
+    private final CommentsRepository commentsRepository;
+    private final WebClient tourApiWebClient;
+    private final FavoritePlaceRepository favoritePlaceRepository;
+    private final LocalCategoryRepository localCategoryRepository;
+    private final UserCategoryRepository userCategoryRepository;
+    private final FeedPhotosRepository feedPhotosRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-        private final LocalCategoryRepository localCategoryRepository;
-        private final UserCategoryRepository userCategoryRepository;
-        private final FeedPhotosRepository feedPhotosRepository;
-        private final ObjectMapper objectMapper = new ObjectMapper();
+    private final S3Service s3Service;
+    private final PlaceService placeService;
 
     @Transactional
     public void follow(Long followingId, String followerNickname) {
@@ -336,96 +334,100 @@ public class SocialInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public List<Map<Long,String>> searchFeed(SearchFeedDto searchFeedDto, Pageable pageable){
-        //food Category 처리
-        List<String> categoryStringList= searchFeedDto.getCategories();
-        System.out.println("111111111111111"+categoryStringList);
-        List<Category> categories = new ArrayList<>();
-        for (String raw : categoryStringList) {
-            String[] parts = raw.split(":", 2);
-            if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // "분류:이름" 형식 아니면 에러
-            String type = parts[0].trim();  // 예: "분위기"
-            String name = parts[1].trim();  // 예: "전통적인"
-            if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
-            System.out.println(type);
-            System.out.println(name);
-            Category foodCategory = categoryRepository.findByTypeAndName(type,name);
+    public Map<Long, List<String>> searchFeed(Long userId, Pageable pageable){
 
-            categories.add(foodCategory);
+        Users user=usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        List<UserCategory> categoryList=userCategoryRepository.findByUserUserId(user.getUserId());
+        List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
+        final Map<Long, List<String>> feedUrlsAndSocialMap = Map.of();
+        if (categoryIds.isEmpty()) {
+
+            return feedUrlsAndSocialMap;
         }
 
-        List<Long> categoryIds = categories.stream()
-                .map(Category::getCategoryId) // Category -> categoryId(Long)
-                .toList();
-        //region Category 처리
-        List<String> regionStringList = searchFeedDto.getRegions();
-        System.out.println("123123123123"+regionStringList);
-        List<LocalCategory> regions =new ArrayList<>();
+        Slice<Feed> slice = feedRepository.findCategoryIds(categoryIds, pageable);
 
-        for (String raw : regionStringList) {
-            String[] parts = raw.split(":", 2);
-            if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // "분류:이름" 형식 아니면 에러
-            String type = parts[0].trim();  // 예: "경기도"
-            String name = parts[1].trim();  // 예: "수원시"
-            if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
+        List<Feed> feeds = slice.getContent();
 
-            LocalCategory region = localCategoryRepository.findFirstByTypeAndLocalNameOrderByLocalCategoryIdAsc(type, name);
-
-
-            regions.add(region);
+        if (feeds.isEmpty()) { //방어 코드
+            return feedUrlsAndSocialMap;
         }
-        List<Long> regionIds = regions.stream()
-                .map(LocalCategory::getLocalCategoryId) // Category -> categoryId(Long)
-                .toList();
-        System.out.println("11111222222"+regionIds);
-        // === Feed 조회 ===
-
-        if (categoryIds.isEmpty() && regionIds.isEmpty()) {
-            return List.of();
-        }
-
-        // JPA IN 절에서 []는 무조건 false → null로 치환해서 조건 무시하게 함
-        List<Object[]> results = feedRepository.findFeedsByRegionAndCategoryPriority(
-                categoryIds.isEmpty() ? null : categoryIds,
-                regionIds.isEmpty() ? null : regionIds,
-                pageable
-        );
-
-        List<Feed> feeds = results.stream()
-                .map(r -> (Feed) r[0])
-                .toList();
 
         List<Long> feedIds = feeds.stream().map(Feed::getFeedId).toList();
 
-        // FeedPhotos 조회
-        List<FeedPhotos> photos =
-                feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
+        // 사진 일괄 조회(정렬 보장)
 
+        List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
         Map<Long, List<FeedPhotos>> photosMapByFeedId = photos.stream()
-                .collect(Collectors.groupingBy(fp -> fp.getFeed().getFeedId(),
-                        LinkedHashMap::new,
-                        Collectors.toList()));
+                .collect(Collectors.groupingBy(fp -> fp.getFeed().getFeedId(), LinkedHashMap::new, Collectors.toList()));
 
-// List<Map<Long,String>> 변환
-        List<Map<Long, String>> urlsMappedByFeedIds = new ArrayList<>();
+        for (var e : photosMapByFeedId.entrySet()) {
 
-        for (Feed feed : feeds) {
-            List<FeedPhotos> feedPhotoList = photosMapByFeedId.getOrDefault(feed.getFeedId(), List.of());
+            List<String> urls = new ArrayList<>(e.getValue().size());
 
-            if (!feedPhotoList.isEmpty()) {
-                FeedPhotos firstPhoto = feedPhotoList.get(0); // 맨 첫 번째 사진
-                String url = s3Service.generateGetPresignedUrl(firstPhoto.getStorageKey());
-                urlsMappedByFeedIds.add(Map.of(feed.getFeedId(), url));
+            for (FeedPhotos p : e.getValue()) {
+                urls.add(s3Service.generateGetPresignedUrl(p.getStorageKey()));
             }
+            feedUrlsAndSocialMap.put(e.getKey(),urls);
         }
 
-        System.out.println(urlsMappedByFeedIds);
-        return urlsMappedByFeedIds;
+
+        return feedUrlsAndSocialMap;
+
     }
 
 
     @Transactional
-    public void getRestaurantWithPet(){
+    public void SaveFavoritePlace(Long userId, SaveFavoritePlaceDto dto) {
 
+        Places place=placesRepository.findByLatitudeAndLongitude(dto.getX(), dto.getY());
+        if(place==null){
+           place = placeService.searchPlace(dto.getY(),dto.getX());
+        }
+
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        if (favoritePlaceRepository.existsByUserUserIdAndPlaceId(user.getUserId(), place.getId())) {
+            throw new BizExceptionHandler(ErrorCode.EXIST_OBJECT);
+        }
+
+        FavoritePlace savedPlace = new FavoritePlace();
+        savedPlace.setUser(user);
+        savedPlace.setPlace(place);
+
+        favoritePlaceRepository.save(savedPlace);
     }
+
+    @Transactional
+    public void removePlace(Long userId, RemoveFaovoritePlaceDto dto) {
+
+        Users user=usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        double x=dto.getX();
+        double y= dto.getY();
+
+        FavoritePlace favoritePlace =favoritePlaceRepository.findByUserUserIdAndPlaceLongitudeAndPlaceLatitude(userId,x,y)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE));
+
+        favoritePlaceRepository.delete(favoritePlace);
+    }
+
+    public List<GetFavoritePlacesDto.Coordinate> getFavoritePlaces(Long userId) {
+
+        Users user=usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        return favoritePlaceRepository.findAllByUserUserId(userId).stream()
+                .map(fp->new GetFavoritePlacesDto.Coordinate(
+                        fp.getPlace().getLatitude(),
+                        fp.getPlace().getLongitude()
+                ))
+                .toList();
+    }
+
+
 }

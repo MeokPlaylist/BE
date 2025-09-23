@@ -1,8 +1,9 @@
-package com.meokplaylist.api.dto;
+package com.meokplaylist.api.dto.place;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -14,5 +15,6 @@ public class CallInRoadMapDto {
     private String phone;
     private String kakaoCategoryName;
     private String photoImgUrl;
+    private LocalDateTime dateTime;
     //+애견 동반가능인지
 }

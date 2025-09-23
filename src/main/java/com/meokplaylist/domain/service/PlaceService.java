@@ -1,8 +1,10 @@
 package com.meokplaylist.domain.service;
 
-import com.meokplaylist.api.dto.CallInRoadMapDto;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.meokplaylist.api.dto.place.CallInRoadMapDto;
 import com.meokplaylist.api.dto.KakaoSearchResponse;
-import com.meokplaylist.api.dto.SaveRoadMapPlaceRequest;
+import com.meokplaylist.api.dto.place.SaveRoadMapPlaceRequest;
+import com.meokplaylist.api.dto.place.SearchPlaceDto;
 import com.meokplaylist.domain.repository.place.PlacesRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
@@ -145,6 +147,7 @@ public class PlaceService {
                     .phone(place.getPhone())
                     .kakaoCategoryName(place.getKakaoCategoryName())
                     .photoImgUrl(photoImgUrl)
+                    .dateTime(roadMapPlace.getFeedPhotos().getDayAndTime())
                     .build();
 
             responseList.add(response);
@@ -176,6 +179,7 @@ public class PlaceService {
             // 방어: 마지막 페이지가 size 미만이면 더 없음
             if (res.documents().size() < PAGE_SIZE) break;
         }
+
         return all;
     }
 
@@ -196,5 +200,54 @@ public class PlaceService {
 
         // 음식점/카페 아무것도 없으면 null
         return null;
+    }
+    public List<KakaoSearchResponse.Document> searchPlaceList(double x,double y) {
+        List<KakaoSearchResponse.Document> all = new ArrayList<>();
+        Set<String> seenIds = new HashSet<>(); // 중복 방지용
+        String category="FD6";
+
+        for (int page = 1; page <= 10; page++) {
+            KakaoSearchResponse res = kakao.searchByCategory(category, x, y, page, PAGE_SIZE);
+            if (res == null || res.documents() == null || res.documents().isEmpty()) break;
+
+            for (KakaoSearchResponse.Document doc : res.documents()) {
+                if (seenIds.add(doc.id())) {
+                    all.add(doc);
+                }
+            }
+
+            // 끝 페이지면 종료
+            if (res.meta() != null && res.meta().isEnd()) break;
+
+            // 방어: 마지막 페이지가 size 미만이면 더 없음
+            if (res.documents().size() < PAGE_SIZE) break;
+        }
+
+        return all;
+    }
+
+    public Places searchPlace(double x,double y) {
+
+        String category="FD6";
+
+        KakaoSearchResponse res = kakao.searchByCategory(category, x, y, 0, 5);
+        if (res == null || res.documents() == null || res.documents().isEmpty()) {
+            throw new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE);
+        }
+
+        KakaoSearchResponse.Document first = res.documents().get(0);
+
+        Places place = new Places(
+                Long.parseLong(first.id()),   // 카카오 place_id
+                first.placeName(),
+                first.addressName(),
+                first.roadAddressName(),
+                first.placeUrl(),
+                first.phone(),
+                first.categoryGroupCode(),
+                first.categoryGroupName()
+        );
+
+        return place;
     }
 }

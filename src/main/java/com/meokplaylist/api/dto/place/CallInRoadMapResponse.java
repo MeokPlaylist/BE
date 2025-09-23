@@ -1,4 +1,4 @@
-package com.meokplaylist.api.dto;
+package com.meokplaylist.api.dto.place;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.meokplaylist.api.dto;
+package com.meokplaylist.api.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,4 +9,5 @@ public class GetFollowResponse {
     private String nickname;
     private String profileImgKey;
     private String introduction;
+    private Boolean relation;
 }

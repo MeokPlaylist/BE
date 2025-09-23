@@ -56,6 +56,10 @@ public interface FollowsRepository extends JpaRepository<Follows, Long> {
 
     boolean existsByFollowerUserIdAndFollowingUserId(Long followerId, Long followingId);
 
+    @Query("select f.follower.userId from Follows f " +
+            "where f.following.userId = :meId and f.follower.userId in :targetIds")
+    List<Long> findAllFollowerIdsByFollowingId(@Param("meId") Long meId, @Param("targetIds") List<Long> targetIds);
+
     @Modifying
     void deleteByFollowerUserIdAndFollowingUserId(Long followerId, Long followingId);
 
