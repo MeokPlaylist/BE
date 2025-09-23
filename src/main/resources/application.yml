@@ -6,18 +6,18 @@ spring:
     import: optional:file:submodule-data/application.yml
     #서브 모듈에 있는 yml 파일 경로 알려주는것
 
-#  datasource:
-#    url: jdbc:postgresql://dpg-d30phk7diees73876th0-a:5432/meokplaylistdb
-#    username: meokplaylistdb_user
-#    password: mJnQZQ7bs3RpY800MS9DKuLgSUSGqlqZ
-#    driver-class-name: org.postgresql.Driver
   datasource:
-    url: jdbc:mysql://localhost:3306/noshow2025?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
-    username: noshow2025
-    password: 2025
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      connection-init-sql: SET NAMES utf8mb4
+    url: jdbc:postgresql://dpg-d30phk7diees73876th0-a:5432/meokplaylistdb
+    username: meokplaylistdb_user
+    password: mJnQZQ7bs3RpY800MS9DKuLgSUSGqlqZ
+    driver-class-name: org.postgresql.Driver
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/noshow2025?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
+#    username: noshow2025
+#    password: 2025
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    hikari:
+#      connection-init-sql: SET NAMES utf8mb4
 
   jpa:
     hibernate:
