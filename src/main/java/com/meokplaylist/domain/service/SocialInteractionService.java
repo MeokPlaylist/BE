@@ -416,6 +416,7 @@ public class SocialInteractionService {
         favoritePlaceRepository.delete(favoritePlace);
     }
 
+    @Transactional
     public List<GetFavoritePlacesDto.Coordinate> getFavoritePlaces(Long userId) {
 
         Users user=usersRepository.findByUserId(userId)
@@ -428,6 +429,5 @@ public class SocialInteractionService {
                 ))
                 .toList();
     }
-
 
 }
