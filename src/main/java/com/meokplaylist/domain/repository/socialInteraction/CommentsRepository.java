@@ -41,5 +41,6 @@ public interface CommentsRepository extends JpaRepository<Comments,Long> {
     Slice<GetFeedCommentsDto> findCommentByFeedId(@Param("feedId") Long feedId, Pageable pageable);
 
 
+    long countCommentByFeedFeedId(Long feedId);
 
 }

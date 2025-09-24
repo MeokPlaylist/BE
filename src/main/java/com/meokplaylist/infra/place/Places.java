@@ -33,6 +33,8 @@ public class Places {
     private String kakaoCategoryGroup; //음식점, 카페 -> 카카오에서 재공하는것
     private String kakaoCategoryName; //음식점 -> 한식 -> 김밥 //해봐야 어떻게 나오는지 알듯
 
+
+
     public Places(Long id,String name, String addressName, String roadAddressName, String kakaoMapUrl, String phone, String kakaoCategoryGroup, String kakaoCategoryName) {
         this.id=id;
         this.name = name;

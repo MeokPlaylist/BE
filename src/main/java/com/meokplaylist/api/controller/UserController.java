@@ -16,6 +16,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequiredArgsConstructor
@@ -132,11 +134,6 @@ public class UserController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/getCategories")
-    public void getCategories(@AuthenticationPrincipal Long userId){
-
-
-    }
     
 
 }

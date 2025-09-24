@@ -2,6 +2,7 @@ package com.meokplaylist.domain.repository.socialInteraction;
 
 
 import com.meokplaylist.api.dto.feed.LikeCountDto;
+import com.meokplaylist.api.dto.socialInteraction.CheckUserLikeFeedDto;
 import com.meokplaylist.infra.socialInteraction.Likes;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,4 +18,20 @@ public interface LikesRepository extends JpaRepository<Likes,Long> {
             "where f.feedId in :feedIds " +
             "group by f.feedId")
     List<LikeCountDto> countLikesByFeedIds(@Param("feedIds") List<Long> feedIds);
+
+    long countLikesByFeedFeedId(Long feedId);
+
+    Boolean findByFeedFeedIdAndUserUserId(Long feedId,Long userId);
+
+    @Query("""
+    select new com.meokplaylist.api.dto.socialInteraction.CheckUserLikeFeedDto(
+        f.feedId,
+        case when count(l) > 0 then true else false end
+    )
+    from Feed f
+    left join f.likes l on l.user.userId = :userId
+    where f.feedId in :feedIds
+    group by f.feedId
+    """)
+    List<CheckUserLikeFeedDto> findByFeedIdsAndUserId(@Param(("feedIds")) List<Long> feedId, @Param("userId") Long userId);
 }

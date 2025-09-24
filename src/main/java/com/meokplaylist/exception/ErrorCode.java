@@ -23,7 +23,9 @@ public enum ErrorCode {
     NOT_FOUND_FEEDPHOTO         (460, "feedPhoto not found "),
     INVALID_GOOGLEOAUTH_TOKEN  (469,"잘못된 GoogleToken"),
 
-    CATEGORY_NOT_FOUND    (470, "caregory not found"),
+    NOT_FOUND_PLACE    (470, "not found place"),
+
+    EXIST_OBJECT    (475,"exist object"),
 
     FAILED_TO_UPLOAD_FILE   (480, "failed_to_upload_file"),
     INVALID_PLACE_PAYLOAD   (481,"invalid place payload"),

@@ -35,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -131,6 +130,7 @@ public class UserService {
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
         List<String> categoryList = request.categories(); // ["분위기:전통적인", "음식:한식", ...]
+        System.out.println(categoryList);
         if (categoryList == null || categoryList.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
         List<Category> saveCategories =new ArrayList<>();
@@ -294,11 +294,25 @@ public class UserService {
     public Slice<GetFollowResponse> getMyFollowings(Long userId, Pageable pageable) {
         Slice<Users> slice = followsRepository.findFollowingsUsers(userId, pageable);
 
-        return slice.map(u -> new GetFollowResponse(
+        List<Long> followingIds = slice.getContent().stream()
+                .map(Users::getUserId)
+                .toList();
+
+        List<Long> theyFollowMeIds = followsRepository.findAllFollowerIdsByFollowingId(userId, followingIds);
+
+        Set<Long> theyFollowMeSet = new HashSet<>(theyFollowMeIds);
+
+        return slice.map(u ->{
+            boolean isfollowing = theyFollowMeSet.contains(u.getUserId());
+
+
+              return new GetFollowResponse(
                 u.getNickname(),
                 s3Service.generateGetPresignedUrl(u.getProfileImgKey()),
-                u.getIntroduction()
-        ));
+                u.getIntroduction(),
+                isfollowing
+            );
+         });
 
     }
 
@@ -307,19 +321,34 @@ public class UserService {
     public Slice<GetFollowResponse> getMyFollowers(Long userId, Pageable pageable) {
         Slice<Users> slice = followsRepository.findFollowersUsers(userId, pageable);
 
-        return slice.map(u -> new GetFollowResponse(
-                u.getNickname(),
-                s3Service.generateGetPresignedUrl(u.getProfileImgKey()),
-                u.getIntroduction()
-        ));
+        List<Long> followingIds = slice.getContent().stream()
+                .map(Users::getUserId)
+                .toList();
+
+        List<Long> theyFollowMeIds = followsRepository.findAllFollowerIdsByFollowingId(userId, followingIds);
+
+        Set<Long> theyFollowMeSet = new HashSet<>(theyFollowMeIds);
+
+        return slice.map(u ->{
+            boolean isfollower = theyFollowMeSet.contains(u.getUserId());
+
+
+            return new GetFollowResponse(
+                    u.getNickname(),
+                    s3Service.generateGetPresignedUrl(u.getProfileImgKey()),
+                    u.getIntroduction(),
+                    isfollower
+            );
+        });
+
     }
 
 
     @Transactional(readOnly = true)
-    public Slice<GetFollowResponse> getOtherUserFollowers(String nickname, Pageable pageable) {
+    public Slice<GetOtherFollowResponse> getOtherUserFollowers(String nickname, Pageable pageable) {
         Slice<Users> slice = followsRepository.findFollowersOtherUser(nickname, pageable);
 
-        return slice.map(u -> new GetFollowResponse(
+        return slice.map(u -> new GetOtherFollowResponse(
                 u.getNickname(),
                 s3Service.generateGetPresignedUrl(u.getProfileImgKey()),
                 u.getIntroduction()
@@ -327,16 +356,17 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<GetFollowResponse> getOtherUserFollowings(String nickname, Pageable pageable) {
+    public Slice<GetOtherFollowResponse> getOtherUserFollowings(String nickname, Pageable pageable) {
         Slice<Users> slice = followsRepository.findFollowingsOtherUser(nickname, pageable);
 
-        return slice.map(u -> new GetFollowResponse(
+        return slice.map(u -> new GetOtherFollowResponse(
                 u.getNickname(),
                 s3Service.generateGetPresignedUrl(u.getProfileImgKey()),
                 u.getIntroduction()
         ));
 
     }
+
     @Transactional(readOnly = true)
     public PersonalInforResponse getPersonalInfor(Long userId){
         Users user = usersRepository.findByUserId(userId)
@@ -375,5 +405,7 @@ public class UserService {
 
         return SlicedResponse.of(modifiedList);
     }
+
+
     
 }

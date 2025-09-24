@@ -2,6 +2,7 @@ package com.meokplaylist.domain.service;
 
 import com.meokplaylist.api.dto.SlicedResponse;
 import com.meokplaylist.api.dto.feed.*;
+import com.meokplaylist.api.dto.socialInteraction.CheckUserLikeFeedDto;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.CategoryRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import java.util.stream.Collectors;
@@ -189,11 +191,19 @@ public class FeedService {
         // 사진 일괄 조회(정렬 보장)
         final Map<Long, FeedMapDto> feedUrlsAndSocialMap;
 
+        Map<Long, Boolean> likeBooleanMapByFeedId;
         if (!feedIds.isEmpty()) {
             List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
             List<LikeCountDto> likeCounts = likesRepository.countLikesByFeedIds(feedIds);
 
             List<CommentCountDto> commentCounts = commentsRepository.findCommentCountsByFeedIds(feedIds);
+            List<CheckUserLikeFeedDto> feedLike = likesRepository.findByFeedIdsAndUserId(feedIds, userId);
+
+            likeBooleanMapByFeedId = feedLike.stream()
+                    .collect(Collectors.toMap(
+                            CheckUserLikeFeedDto::getFeedId,
+                            CheckUserLikeFeedDto::getIslike
+                    ));
 
             Map<Long, Long> likeMapByFeedId = likeCounts.stream()
                     .collect(Collectors.toMap(
@@ -228,6 +238,7 @@ public class FeedService {
 
             feedUrlsAndSocialMap = tmp;
         } else {
+            likeBooleanMapByFeedId = null;
             feedUrlsAndSocialMap = Collections.emptyMap();
         }
 
@@ -239,6 +250,7 @@ public class FeedService {
                 feed.getHashTag(),
                 feed.getCreatedAt(),
                 feedUrlsAndSocialMap.get(feed.getFeedId()).getPhotoUrls(),
+                likeBooleanMapByFeedId,
                 feedUrlsAndSocialMap.get(feed.getFeedId()).getLikeCoount(),
                 feedUrlsAndSocialMap.get(feed.getFeedId()).getCommetCount()
         )).toList();
@@ -327,7 +339,45 @@ public class FeedService {
         return true;
     }
 
+    @Transactional
+    public GetDetailInforDto getDetailInfo(Long userId, Long feedId){
+        usersRepository.findByUserId(userId)
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
+        Feed feed = feedRepository.findByFeedId(feedId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        Users feedUser=feed.getUser();
+        List<String> feedPhotoStorageKey = feed.getFeedPhotos().stream()
+                .map(FeedPhotos::getStorageKey) // FeedPhoto 객체에서 storageKey만 추출
+                .toList();
+
+        List<String> feedPhotoUrls=new ArrayList<>(feedPhotoStorageKey.size());
+
+        for(String storagekey:feedPhotoStorageKey){
+            String url=s3Service.generateGetPresignedUrl(storagekey);
+            feedPhotoUrls.add(url);
+        }
+
+
+        Long likeNum=likesRepository.countLikesByFeedFeedId(feed.getFeedId());
+        Long commentNum=commentsRepository.countCommentByFeedFeedId(feed.getFeedId());
+        Boolean feedLike=likesRepository.findByFeedFeedIdAndUserUserId(feedId,userId);
+
+        GetDetailInforDto response = new GetDetailInforDto(
+                feedUser.getNickname(),
+                feed.getContent(),
+                feed.getHashTag(),
+                feed.getCreatedAt(),
+                feedPhotoUrls,
+                feed.getFeedCategories(),
+                feedLike,
+                likeNum,
+                commentNum
+        );
+
+        return response;
+    }
 
 
 }

@@ -76,5 +76,14 @@ public class FeedController {
         return ResponseEntity.ok().body(response);
     }
 
+    @GetMapping("/getDetailInfor")
+    public ResponseEntity<?> getFeedDetailInfor(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam("feedId") Long feedId
+    ){
+        GetDetailInforResponse response =new GetDetailInforResponse(feedService.getDetailInfo(userId,feedId));
+
+        return ResponseEntity.ok().body(response);
+    }
 
 }
