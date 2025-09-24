@@ -124,6 +124,23 @@ public class SocialInteractionController {
         return ResponseEntity.ok().body(response);
     }
 
+    @PostMapping("/feedLike")
+    public ResponseEntity<?> feedLike(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam("/feedId") Long feedId
+    ){
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/feedUnLike")
+    public ResponseEntity<?> feedUnLike(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam("/feedId") Long feedId
+    ){
+
+        return ResponseEntity.ok().build();
+    }
 
 
 }
