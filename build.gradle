@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.flywaydb:flyway-core:11.10.0'
+    implementation 'org.flywaydb:flyway-core:11.11.0'
 	implementation 'org.flywaydb:flyway-mysql'
 
 	implementation "com.google.api-client:google-api-client:2.5.0"
