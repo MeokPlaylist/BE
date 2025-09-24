@@ -1,8 +1,7 @@
 -- OAuth Providers
 INSERT INTO oauth_providers (name) VALUES
 ('google'),
-('kakao')
-ON CONFLICT (name) DO NOTHING;
+('kakao');
 -- Category - mood
 INSERT INTO category (type, name) VALUES
 ('moods', 'TRADITIONAL'),
@@ -11,8 +10,8 @@ INSERT INTO category (type, name) VALUES
 ('moods', 'HEALING'),
 ('moods', 'GOODVIEW'),
 ('moods', 'ACTIVITY'),      -- 활기찬
-('moods', 'LOCAL')      -- 로컬
-ON CONFLICT (name) DO NOTHING;
+('moods', 'LOCAL');      -- 로컬
+
 
 -- Category - food
 INSERT INTO category (type, name) VALUES
@@ -30,8 +29,7 @@ INSERT INTO category (type, name) VALUES
 ('foods', 'ASIAN'),           -- 아시안
 ('foods', 'DOSIRAK'),         -- 도시락
 ('foods', 'LATE_NIGHT'),      -- 야식
-('foods', 'JJIM_TANG')      -- 찜 / 탕
-ON CONFLICT (name) DO NOTHING;
+('foods', 'JJIM_TANG');      -- 찜 / 탕
 
 -- Category - companion (같이하는 동반자)
 INSERT INTO category (type, name) VALUES
@@ -41,8 +39,8 @@ INSERT INTO category (type, name) VALUES
 ('companions', 'FAMILY'),       -- 가족
 ('companions', 'GROUP'),        -- 단체
 ('companions', 'WITH_PET'),     -- 반려동물과 함께
-('companions', 'ALUMNI')      -- 동호회
-ON CONFLICT (name) DO NOTHING;
+('companions', 'ALUMNI');      -- 동호회
+
 
 INSERT INTO local_category (type, local_name, area_code, sigungu_code) VALUES
 -- Seoul
@@ -80,5 +78,5 @@ INSERT INTO local_category (type, local_name, area_code, sigungu_code) VALUES
 -- Gangwon
 ('Gangwon', 'Chuncheon-si', 51, 51110), ('Gangwon', 'Wonju-si', 51, 51130), ('Gangwon', 'Gangneung-si', 51, 51150), ('Gangwon', 'Donghae-si', 51, 51170), ('Gangwon', 'Taebaek-si', 51, 51190), ('Gangwon', 'Sokcho-si', 51, 51210), ('Gangwon', 'Samcheok-si', 51, 51230), ('Gangwon', 'Hongcheon-gun', 51, 51720), ('Gangwon', 'Hoengseong-gun', 51, 51730), ('Gangwon', 'Yeongwol-gun', 51, 51750), ('Gangwon', 'Pyeongchang-gun', 51, 51760), ('Gangwon', 'Jeongseon-gun', 51, 51770), ('Gangwon', 'Cheorwon-gun', 51, 51780), ('Gangwon', 'Hwacheon-gun', 51, 51790), ('Gangwon', 'Yanggu-gun', 51, 51800), ('Gangwon', 'Inje-gun', 51, 51810), ('Gangwon', 'Goseong-gun', 51, 51820), ('Gangwon', 'Yangyang-gun', 51, 51830),
 -- Jeonbuk
-('Jeonbuk', 'Jeonju-si', 52, 52111), ('Jeonbuk', 'Jeonju-si', 52, 52113), ('Jeonbuk', 'Gunsan-si', 52, 52130), ('Jeonbuk', 'Iksan-si', 52, 52140), ('Jeonbuk', 'Jeongeup-si', 52, 52180), ('Jeonbuk', 'Namwon-si', 52, 52190), ('Jeonbuk', 'Gimje-si', 52, 52210), ('Jeonbuk', 'Wanju-gun', 52, 52710), ('Jeonbuk', 'Jinan-gun', 52, 52720), ('Jeonbuk', 'Muju-gun', 52, 52730), ('Jeonbuk', 'Jangsu-gun', 52, 52740), ('Jeonbuk', 'Imsil-gun', 52, 52750), ('Jeonbuk', 'Sunchang-gun', 52, 52770), ('Jeonbuk', 'Gochang-gun', 52, 52790), ('Jeonbuk', 'Buan-gun', 52, 52800)
-ON CONFLICT (local_name) DO NOTHING;
+('Jeonbuk', 'Jeonju-si', 52, 52111), ('Jeonbuk', 'Jeonju-si', 52, 52113), ('Jeonbuk', 'Gunsan-si', 52, 52130), ('Jeonbuk', 'Iksan-si', 52, 52140), ('Jeonbuk', 'Jeongeup-si', 52, 52180), ('Jeonbuk', 'Namwon-si', 52, 52190), ('Jeonbuk', 'Gimje-si', 52, 52210), ('Jeonbuk', 'Wanju-gun', 52, 52710), ('Jeonbuk', 'Jinan-gun', 52, 52720), ('Jeonbuk', 'Muju-gun', 52, 52730), ('Jeonbuk', 'Jangsu-gun', 52, 52740), ('Jeonbuk', 'Imsil-gun', 52, 52750), ('Jeonbuk', 'Sunchang-gun', 52, 52770), ('Jeonbuk', 'Gochang-gun', 52, 52790), ('Jeonbuk', 'Buan-gun', 52, 52800);
+
