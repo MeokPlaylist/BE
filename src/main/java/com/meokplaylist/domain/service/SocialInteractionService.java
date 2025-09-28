@@ -8,8 +8,8 @@ import com.meokplaylist.api.dto.UserPageDto;
 import com.meokplaylist.api.dto.feed.FeedRegionMappingDto;
 import com.meokplaylist.api.dto.socialInteraction.*;
 import com.meokplaylist.domain.repository.UsersRepository;
+import com.meokplaylist.domain.repository.category.CategoryRepository;
 import com.meokplaylist.domain.repository.category.LocalCategoryRepository;
-import com.meokplaylist.domain.repository.category.UserCategoryRepository;
 import com.meokplaylist.domain.repository.category.UserLocalCategoryRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
@@ -19,8 +19,8 @@ import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
 import com.meokplaylist.domain.repository.socialInteraction.FavoritePlaceRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
+import com.meokplaylist.infra.category.Category;
 import com.meokplaylist.infra.category.LocalCategory;
-import com.meokplaylist.infra.category.UserCategory;
 import com.meokplaylist.infra.category.UserLocalCategory;
 import com.meokplaylist.infra.feed.Feed;
 import com.meokplaylist.infra.feed.FeedPhotos;
@@ -55,7 +55,7 @@ public class SocialInteractionService {
     private final WebClient tourApiWebClient;
     private final FavoritePlaceRepository favoritePlaceRepository;
     private final LocalCategoryRepository localCategoryRepository;
-    private final UserCategoryRepository userCategoryRepository;
+    private final CategoryRepository categoryRepository;
     private final FeedPhotosRepository feedPhotosRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -334,50 +334,82 @@ public class SocialInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public Map<Long, List<String>> searchFeed(Long userId, Pageable pageable){
+    public List<Map<Long,String>> searchFeed(SearchFeedDto searchFeedDto, Pageable pageable){
+        //food Category 처리
+        List<String> categoryStringList= searchFeedDto.getCategories();
+        System.out.println("111111111111111"+categoryStringList);
+        List<Category> categories = new ArrayList<>();
+        for (String raw : categoryStringList) {
+            String[] parts = raw.split(":", 2);
+            if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // "분류:이름" 형식 아니면 에러
+            String type = parts[0].trim();  // 예: "분위기"
+            String name = parts[1].trim();  // 예: "전통적인"
+            if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
+            System.out.println(type);
+            System.out.println(name);
+            Category foodCategory = categoryRepository.findByTypeAndName(type,name);
 
-        Users user=usersRepository.findByUserId(userId)
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-
-        List<UserCategory> categoryList=userCategoryRepository.findByUserUserId(user.getUserId());
-        List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
-        final Map<Long, List<String>> feedUrlsAndSocialMap = Map.of();
-        if (categoryIds.isEmpty()) {
-
-            return feedUrlsAndSocialMap;
+            categories.add(foodCategory);
         }
 
-        Slice<Feed> slice = feedRepository.findCategoryIds(categoryIds, pageable);
+        List<Long> categoryIds = categories.stream()
+                .map(Category::getCategoryId) // Category -> categoryId(Long)
+                .toList();
+        //region Category 처리
+        List<String> regionStringList = searchFeedDto.getRegions();
+        List<LocalCategory> regions =new ArrayList<>();
 
-        List<Feed> feeds = slice.getContent();
+        for (String raw : regionStringList) {
+            String[] parts = raw.split(":", 2);
+            if (parts.length != 2) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT); // "분류:이름" 형식 아니면 에러
+            String type = parts[0].trim();  // 예: "경기도"
+            String name = parts[1].trim();  // 예: "수원시"
+            if (type.isEmpty() || name.isEmpty()) throw new BizExceptionHandler(ErrorCode.INVALID_INPUT);
 
-        if (feeds.isEmpty()) { //방어 코드
-            return feedUrlsAndSocialMap;
+            LocalCategory region = localCategoryRepository.findFirstByTypeAndLocalNameOrderByLocalCategoryIdAsc(type, name);
+            regions.add(region);
         }
+        List<Long> regionIds = regions.stream()
+                .map(LocalCategory::getLocalCategoryId) // Category -> categoryId(Long)
+                .toList();
+
+        // === Feed 조회 ===
+        if (categoryIds.isEmpty() && regionIds.isEmpty()) {
+            return List.of();
+        }
+
+        // JPA IN 절에서 []는 무조건 false → null로 치환해서 조건 무시하게 함
+        List<Object[]> results = feedRepository.findFeedsByRegionAndCategoryPriority(
+                categoryIds.isEmpty() ? null : categoryIds,
+                regionIds.isEmpty() ? null : regionIds,
+                pageable
+        );
+
+        List<Feed> feeds = results.stream()
+                .map(r -> (Feed) r[0])
+                .toList();
 
         List<Long> feedIds = feeds.stream().map(Feed::getFeedId).toList();
 
-        // 사진 일괄 조회(정렬 보장)
-
+        // FeedPhotos 조회
         List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
         Map<Long, List<FeedPhotos>> photosMapByFeedId = photos.stream()
-                .collect(Collectors.groupingBy(fp -> fp.getFeed().getFeedId(), LinkedHashMap::new, Collectors.toList()));
+                .collect(Collectors.groupingBy(fp -> fp.getFeed().getFeedId(),
+                LinkedHashMap::new,
+                Collectors.toList()));
 
-        for (var e : photosMapByFeedId.entrySet()) {
-
-            List<String> urls = new ArrayList<>(e.getValue().size());
-
-            for (FeedPhotos p : e.getValue()) {
-                urls.add(s3Service.generateGetPresignedUrl(p.getStorageKey()));
-            }
-            feedUrlsAndSocialMap.put(e.getKey(),urls);
+        // List<Map<Long,String>> 변환
+        List<Map<Long, String>> urlsMappedByFeedIds = new ArrayList<>();
+        for (Feed feed : feeds) {
+            List<FeedPhotos> feedPhotoList = photosMapByFeedId.getOrDefault(feed.getFeedId(), List.of());
+            if (!feedPhotoList.isEmpty()) {
+                FeedPhotos firstPhoto = feedPhotoList.get(0); // 맨 첫 번째 사진
+                String url = s3Service.generateGetPresignedUrl(firstPhoto.getStorageKey());
+                urlsMappedByFeedIds.add(Map.of(feed.getFeedId(), url)); }
         }
-
-
-        return feedUrlsAndSocialMap;
-
+        System.out.println(urlsMappedByFeedIds);
+        return urlsMappedByFeedIds;
     }
-
 
     @Transactional
     public void SaveFavoritePlace(Long userId, SaveFavoritePlaceDto dto) {

@@ -43,16 +43,9 @@ public class PlaceController {
             return ResponseEntity.ok().body(response);
         }
 
-        @GetMapping("/search")
-        public ResponseEntity<?> searchPlace(
-                @RequestBody SearchPlaceDto request
-        ){
-            SearchPlaceResponse response=new SearchPlaceResponse(placeService.searchPlaceList( request.getY(),request.getX()));
-            return ResponseEntity.ok().body(response);
+        @PostMapping("/search")
+        public ResponseEntity<?> searchPlace(@RequestBody PlaceSearchRequest placeSearchRequest){
+            KakaoSearchResponse.Document place = placeService.findPlaceByCategory(placeSearchRequest.getLat(), placeSearchRequest.getLng());
+            return ResponseEntity.ok().body(place);
         }
-
-
-
-
-
 }

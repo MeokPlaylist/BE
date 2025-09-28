@@ -201,30 +201,6 @@ public class PlaceService {
         // 음식점/카페 아무것도 없으면 null
         return null;
     }
-    public List<KakaoSearchResponse.Document> searchPlaceList(double x,double y) {
-        List<KakaoSearchResponse.Document> all = new ArrayList<>();
-        Set<String> seenIds = new HashSet<>(); // 중복 방지용
-        String category="FD6";
-
-        for (int page = 1; page <= 10; page++) {
-            KakaoSearchResponse res = kakao.searchByCategory(category, x, y, page, PAGE_SIZE);
-            if (res == null || res.documents() == null || res.documents().isEmpty()) break;
-
-            for (KakaoSearchResponse.Document doc : res.documents()) {
-                if (seenIds.add(doc.id())) {
-                    all.add(doc);
-                }
-            }
-
-            // 끝 페이지면 종료
-            if (res.meta() != null && res.meta().isEnd()) break;
-
-            // 방어: 마지막 페이지가 size 미만이면 더 없음
-            if (res.documents().size() < PAGE_SIZE) break;
-        }
-
-        return all;
-    }
 
     public Places searchPlace(double x,double y) {
 

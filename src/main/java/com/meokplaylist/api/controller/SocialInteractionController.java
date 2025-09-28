@@ -89,15 +89,16 @@ public class SocialInteractionController {
         return ResponseEntity.ok().build();
     }
 
-//    @GetMapping("/searchFeed")
-//    public ResponseEntity<?> searchFeed(
-//            @AuthenticationPrincipal Long userId,
-//            @PageableDefault Pageable pageable
-//    ){
-//        SearchFeedResponse response=new SearchFeedResponse(socialInteractionService.searchFeed(userId,pageable));
-//
-//        return ResponseEntity.ok().body(response);
-//    }
+    @PostMapping("/searchFeed")
+    public ResponseEntity<?> searchFeed(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody SearchFeedDto searchFeedDto,
+            @PageableDefault Pageable pageable
+    ){
+        SearchFeedResponse response=new SearchFeedResponse(socialInteractionService.searchFeed(searchFeedDto, pageable));
+
+        return ResponseEntity.ok().body(response);
+    }
 
     @PostMapping("/saveFavorite")
     public ResponseEntity<?> SaveFavoritePlace(
@@ -123,7 +124,4 @@ public class SocialInteractionController {
 
         return ResponseEntity.ok().body(response);
     }
-
-
-
 }

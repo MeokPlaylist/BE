@@ -3,12 +3,11 @@ package com.meokplaylist.api.controller;
 import com.meokplaylist.api.dto.Boolean.BooleanResponse;
 import com.meokplaylist.api.dto.auth.*;
 import com.meokplaylist.domain.service.AuthService;
+import com.meokplaylist.domain.service.JwtTokenService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @AllArgsConstructor
@@ -16,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthController {
 
     private AuthService authService;
+    private JwtTokenService jwtTokenService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthLoginRequest authLoginRequest){
@@ -48,13 +48,15 @@ public class AuthController {
         return ResponseEntity.ok().body(response);
     }
 
-
     @GetMapping("/nicknameDuplicateCheck")
     public ResponseEntity<?> nicknameDuplicateCheck(@RequestParam("nickname") String nickname){
         BooleanResponse response=new BooleanResponse(authService.nicknameDuplicateCheck(nickname));
         return ResponseEntity.ok().body(response);
     }
 
-
-
+    @PostMapping("reissue")
+    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request ){
+        String accessToken = jwtTokenService.reissueAccessToken(request.refreshToken());
+        return ResponseEntity.ok().body(accessToken);
+    }
 }
