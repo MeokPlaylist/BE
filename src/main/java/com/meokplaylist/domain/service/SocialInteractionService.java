@@ -2,6 +2,7 @@ package com.meokplaylist.domain.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.meokplaylist.api.dto.KakaoSearchResponse;
 import com.meokplaylist.api.dto.SlicedResponse;
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
 import com.meokplaylist.api.dto.UserPageDto;
@@ -414,18 +415,45 @@ public class SocialInteractionService {
     @Transactional
     public void SaveFavoritePlace(Long userId, SaveFavoritePlaceDto dto) {
 
-        Places place=placesRepository.findByLatitudeAndLongitude(dto.getX(), dto.getY());
-        if(place==null){
-           place = placeService.searchPlace(dto.getY(),dto.getX());
+        // 좌표로 DB에 이미 등록된 Place가 있는지 먼저 확인
+        Places place = placesRepository.findByLatitudeAndLongitude(dto.getLat(), dto.getLng());
+
+        if (place == null) {
+            // Kakao API 호출해서 Document 받아오기
+            KakaoSearchResponse.Document doc = placeService.findPlaceByCategory(dto.getLat(), dto.getLng());
+
+            if (doc == null) {
+                throw new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE);
+            }
+
+            // Document → Places 매핑
+            place = new Places(
+                    Long.parseLong(doc.id()),
+                    doc.placeName(),
+                    doc.addressName(),
+                    doc.roadAddressName(),
+                    doc.placeUrl(),
+                    dto.getLat(),     // 위도
+                    dto.getLng(),     // 경도
+                    doc.phone(),
+                    doc.categoryGroupCode(),
+                    doc.categoryGroupName()
+            );
+
+            // DB에 저장 (캐싱 목적)
+            placesRepository.save(place);
         }
 
+        // 사용자 조회
         Users user = usersRepository.findById(userId)
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
+        // 이미 찜한 장소인지 확인
         if (favoritePlaceRepository.existsByUserUserIdAndPlaceId(user.getUserId(), place.getId())) {
             throw new BizExceptionHandler(ErrorCode.EXIST_OBJECT);
         }
 
+        // 즐겨찾기 등록
         FavoritePlace savedPlace = new FavoritePlace();
         savedPlace.setUser(user);
         savedPlace.setPlace(place);
@@ -434,15 +462,12 @@ public class SocialInteractionService {
     }
 
     @Transactional
-    public void removePlace(Long userId, RemoveFaovoritePlaceDto dto) {
+    public void removePlace(Long userId, RemoveFavoritePlaceDto dto) {
 
-        Users user=usersRepository.findByUserId(userId)
-                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+        double lat = dto.getLat();
+        double lng = dto.getLng();
 
-        double x=dto.getX();
-        double y= dto.getY();
-
-        FavoritePlace favoritePlace =favoritePlaceRepository.findByUserUserIdAndPlaceLongitudeAndPlaceLatitude(userId,x,y)
+        FavoritePlace favoritePlace =favoritePlaceRepository.findByUserUserIdAndPlaceLatitudeAndPlaceLongitude(userId,lat,lng)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE));
 
         favoritePlaceRepository.delete(favoritePlace);

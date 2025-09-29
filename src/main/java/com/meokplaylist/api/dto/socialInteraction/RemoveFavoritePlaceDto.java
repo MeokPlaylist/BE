@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class RemoveFaovoritePlaceDto {
-    private double x;
-    private double y;
+public class RemoveFavoritePlaceDto {
+    private double lat;
+    private double lng;
 }

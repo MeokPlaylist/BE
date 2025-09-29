@@ -201,29 +201,4 @@ public class PlaceService {
         // 음식점/카페 아무것도 없으면 null
         return null;
     }
-
-    public Places searchPlace(double x,double y) {
-
-        String category="FD6";
-
-        KakaoSearchResponse res = kakao.searchByCategory(category, x, y, 0, 5);
-        if (res == null || res.documents() == null || res.documents().isEmpty()) {
-            throw new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE);
-        }
-
-        KakaoSearchResponse.Document first = res.documents().get(0);
-
-        Places place = new Places(
-                Long.parseLong(first.id()),   // 카카오 place_id
-                first.placeName(),
-                first.addressName(),
-                first.roadAddressName(),
-                first.placeUrl(),
-                first.phone(),
-                first.categoryGroupCode(),
-                first.categoryGroupName()
-        );
-
-        return place;
-    }
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 @Data  
 @AllArgsConstructor
 public class SaveFavoritePlaceDto {
-    private double x;
-    private double y;
+    private double lat;
+    private double lng;
 
 }
