@@ -56,7 +56,7 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
 
     @Query("""
        SELECT new com.meokplaylist.api.dto.feed.FeedRegionMappingDto(
-           CONCAT(lc.type, ':', lc.localName)
+           CONCAT(CONCAT(lc.type, ':'), lc.localName), f.feedId
        )
        FROM Feed f
        LEFT JOIN FeedLocalCategory flc ON flc.feed = f
