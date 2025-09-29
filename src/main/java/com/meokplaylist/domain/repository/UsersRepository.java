@@ -24,7 +24,7 @@ public interface UsersRepository extends JpaRepository<Users,Long>{
 
     @Query("SELECT new com.meokplaylist.api.dto.SearchUserDto(u.nickname, u.introduction,u.profileImgKey) " +
             "FROM Users u " +
-            "WHERE u.nickname LIKE CONCAT(:prefix, '%')")
+            "WHERE u.nickname LIKE :prefix || '%'")
     Slice<SearchUserDto> findUsersByNicknamePrefix(@Param("prefix") String prefix, Pageable pageable);
 
 
