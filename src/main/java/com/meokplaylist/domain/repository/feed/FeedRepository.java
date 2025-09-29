@@ -40,7 +40,7 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
         FROM Feed f
         JOIN FeedCategory fc ON fc.feed = f
         WHERE fc.category.id IN :categoryIds
-        GROUP BY f.id
+        GROUP BY f.id, f.createdAt, f.user.userId
         ORDER BY COUNT(fc.id) DESC, MAX(f.createdAt) DESC, f.id DESC
     """)
     Slice<Feed> findCategoryIds(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
@@ -48,7 +48,7 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
     @Query("select f.feedId from Feed f where f.user.userId = :userId")
     List<Long> findFeedIdsByUserUserId(@Param("userId") Long userId);
 
-    @Query("SELECT YEAR(f.createdAt), f.feedId " +
+    @Query("SELECT EXTRACT(YEAR FROM f.createdAt), f.feedId " +
             "FROM Feed f " +
             "WHERE f.user.userId = :userId " +
             "ORDER BY f.createdAt DESC")
@@ -56,7 +56,7 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
 
     @Query("""
        SELECT new com.meokplaylist.api.dto.feed.FeedRegionMappingDto(
-           CONCAT(lc.type, CONCAT(':', lc.localName)),f.feedId
+           CONCAT(lc.type, ':', lc.localName)
        )
        FROM Feed f
        LEFT JOIN FeedLocalCategory flc ON flc.feed = f
@@ -74,7 +74,7 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
     LEFT JOIN f.feedLocalCategories flc
     WHERE (:regionIds IS NULL OR flc.localCategory.localCategoryId IN :regionIds)
       AND (:categoryIds IS NULL OR fc.category.categoryId IN :categoryIds)
-    GROUP BY f
+    GROUP BY f.id
     ORDER BY regionMatchCount DESC, categoryMatchCount DESC
     """)
     List<Object[]> findFeedsByRegionAndCategoryPriority(
