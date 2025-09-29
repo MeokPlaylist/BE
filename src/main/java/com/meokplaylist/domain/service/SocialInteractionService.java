@@ -31,6 +31,7 @@ import com.meokplaylist.infra.socialInteraction.Comments;
 import com.meokplaylist.infra.socialInteraction.Follows;
 import com.meokplaylist.infra.user.Users;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -487,4 +488,15 @@ public class SocialInteractionService {
                 .toList();
     }
 
+    @Transactional
+    public void feedLike(Long userId, Long feedId){
+
+        Users user=usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+    }
+
+    @Transactional
+    public void FeedUnLike(){
+
+    }
 }

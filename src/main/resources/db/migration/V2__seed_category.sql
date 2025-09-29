@@ -1,20 +1,20 @@
 -- OAuth Providers
-INSERT IGNORE INTO oauth_providers (name) VALUES
+INSERT INTO oauth_providers (name) VALUES
 ('google'),
 ('kakao');
-
 -- Category - mood
-INSERT IGNORE INTO category (type, name) VALUES
+INSERT INTO category (type, name) VALUES
 ('moods', 'TRADITIONAL'),
 ('moods', 'UNIQUE'),
 ('moods', 'EMOTIONAL'),
 ('moods', 'HEALING'),
 ('moods', 'GOODVIEW'),
 ('moods', 'ACTIVITY'),      -- 활기찬
-('moods', 'LOCAL');         -- 로컬
+('moods', 'LOCAL');      -- 로컬
+
 
 -- Category - food
-INSERT IGNORE INTO category (type, name) VALUES
+INSERT INTO category (type, name) VALUES
 ('foods', 'BUNSIK'),          -- 분식
 ('foods', 'CAFE_DESSERT'),    -- 카페 / 디저트
 ('foods', 'CHICKEN'),         -- 치킨
@@ -29,19 +29,20 @@ INSERT IGNORE INTO category (type, name) VALUES
 ('foods', 'ASIAN'),           -- 아시안
 ('foods', 'DOSIRAK'),         -- 도시락
 ('foods', 'LATE_NIGHT'),      -- 야식
-('foods', 'JJIM_TANG');       -- 찜 / 탕
+('foods', 'JJIM_TANG');      -- 찜 / 탕
 
 -- Category - companion (같이하는 동반자)
-INSERT IGNORE INTO category (type, name) VALUES
+INSERT INTO category (type, name) VALUES
 ('companions', 'ALONE'),        -- 혼자
 ('companions', 'FRIEND'),       -- 친구
 ('companions', 'COUPLE'),       -- 연인
 ('companions', 'FAMILY'),       -- 가족
 ('companions', 'GROUP'),        -- 단체
 ('companions', 'WITH_PET'),     -- 반려동물과 함께
-('companions', 'ALUMNI');       -- 동호회
+('companions', 'ALUMNI');      -- 동호회
 
-INSERT IGNORE INTO local_category (type, local_name, area_code, sigungu_code) VALUES
+
+INSERT INTO local_category (type, local_name, area_code, sigungu_code) VALUES
 -- Seoul
 ('Seoul', 'Jongno-gu', 11, 11110), ('Seoul', 'Jung-gu', 11, 11140), ('Seoul', 'Yongsan-gu', 11, 11170), ('Seoul', 'Seongdong-gu', 11, 11200), ('Seoul', 'Gwangjin-gu', 11, 11215), ('Seoul', 'Dongdaemun-gu', 11, 11230), ('Seoul', 'Jungnang-gu', 11, 11260), ('Seoul', 'Seongbuk-gu', 11, 11290), ('Seoul', 'Gangbuk-gu', 11, 11305), ('Seoul', 'Dobong-gu', 11, 11320), ('Seoul', 'Nowon-gu', 11, 11350), ('Seoul', 'Eunpyeong-gu', 11, 11380), ('Seoul', 'Seodaemun-gu', 11, 11410),
 ('Seoul', 'Mapo-gu', 11, 11440), ('Seoul', 'Yangcheon-gu', 11, 11470), ('Seoul', 'Gangseo-gu', 11, 11500), ('Seoul', 'Guro-gu', 11, 11530), ('Seoul', 'Geumcheon-gu', 11, 11545), ('Seoul', 'Yeongdeungpo-gu', 11, 11560), ('Seoul', 'Dongjak-gu', 11, 11590), ('Seoul', 'Gwanak-gu', 11, 11620), ('Seoul', 'Seocho-gu', 11, 11650), ('Seoul', 'Gangnam-gu', 11, 11680), ('Seoul', 'Songpa-gu', 11, 11710), ('Seoul', 'Gangdong-gu', 11, 11740),
