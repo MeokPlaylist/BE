@@ -60,7 +60,6 @@ public class UserController {
         return ResponseEntity.ok().body(booleanResponse);
     }
 
-
     @PostMapping("/categorySet")
     public ResponseEntity<?> categorySet(@Valid @RequestBody CategorySetUpRequest categorySetUpRequest, @AuthenticationPrincipal Long userId){
         userService.categorySetUp(categorySetUpRequest,userId);

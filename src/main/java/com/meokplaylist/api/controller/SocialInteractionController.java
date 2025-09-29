@@ -89,58 +89,14 @@ public class SocialInteractionController {
         return ResponseEntity.ok().build();
     }
 
-//    @GetMapping("/searchFeed")
-//    public ResponseEntity<?> searchFeed(
-//            @AuthenticationPrincipal Long userId,
-//            @PageableDefault Pageable pageable
-//    ){
-//        SearchFeedResponse response=new SearchFeedResponse(socialInteractionService.searchFeed(userId,pageable));
-//
-//        return ResponseEntity.ok().body(response);
-//    }
-
-    @PostMapping("/saveFavorite")
-    public ResponseEntity<?> SaveFavoritePlace(
+    @PostMapping("/searchFeed")
+    public ResponseEntity<?> searchFeed(
             @AuthenticationPrincipal Long userId,
-            @RequestBody SaveFavoritePlaceDto request
+            @RequestBody SearchFeedDto searchFeedDto,
+            @PageableDefault Pageable pageable
     ){
-        socialInteractionService.SaveFavoritePlace(userId,request);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/removeFavorite")
-    public ResponseEntity<?> removeFavoritePlace(
-            @AuthenticationPrincipal Long userId,
-            @RequestBody RemoveFaovoritePlaceDto request
-            ){
-        socialInteractionService.removePlace(userId,request);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/getFavorite")
-    public ResponseEntity<?> getFavoritePlaces(@AuthenticationPrincipal Long userId){
-        GetFavoritePlaceResponse response =new GetFavoritePlaceResponse(socialInteractionService.getFavoritePlaces(userId));
+        SearchFeedResponse response=new SearchFeedResponse(socialInteractionService.searchFeed(searchFeedDto, pageable));
 
         return ResponseEntity.ok().body(response);
     }
-
-    @PostMapping("/feedLike")
-    public ResponseEntity<?> feedLike(
-            @AuthenticationPrincipal Long userId,
-            @RequestParam("/feedId") Long feedId
-    ){
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/feedUnLike")
-    public ResponseEntity<?> feedUnLike(
-            @AuthenticationPrincipal Long userId,
-            @RequestParam("/feedId") Long feedId
-    ){
-
-        return ResponseEntity.ok().build();
-    }
-
-
 }
