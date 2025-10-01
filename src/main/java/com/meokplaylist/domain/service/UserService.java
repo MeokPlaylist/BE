@@ -103,23 +103,25 @@ public class UserService {
     }
 
     @Transactional
-    public void uploadProfileImage(UserProfileSetupRequest request, Long userId){
+    public UserProfileSetupResponse uploadProfileImage(UserProfileSetupRequest request, Long userId){
 
 
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
-        String key;
-
+        String url;
+        String key = "";
         if(request.fileName()==null || request.fileName().isEmpty()){
-            key=BASE_PROFILE_FMG;
+            url=BASE_PROFILE_FMG;
         }else{
 
             key = StorageKeyUtil.buildProfileKey("photos", user.getUserId(), request.fileName());
+            url=s3Service.generateGetPresignedUrl(key);
         }
 
         user.setProfileImgKey(key);
 
+        return new UserProfileSetupResponse(url);
     }
 
     //유저 카테고리 설정
@@ -252,7 +254,7 @@ public class UserService {
                 ));
 
         Map<Integer, List<Long>> feedIdsgroupedByYear = feedIdsGroupedByYear.stream()
-                .collect(Collectors.groupingBy(
+                .collect(groupingBy(
                         row -> (Integer) row[0],   // 연도
                         LinkedHashMap::new,        // 순서 유지
                         Collectors.mapping(row -> (Long) row[1], Collectors.toList())
@@ -266,7 +268,7 @@ public class UserService {
                     ));
             //지역별 feed 매핑
             Map<String, List<Long>> feedIdsgroupedByRegion = firstRegionByFeedId.entrySet().stream()
-                    .collect(Collectors.groupingBy(
+                    .collect(groupingBy(
                             Map.Entry::getValue,
                             Collectors.mapping(Map.Entry::getKey,
                                     Collectors.toList())
