@@ -7,6 +7,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class PresignedPutListUrlResponse {
+public class PresignedPutListUrlAndFeedIdResponse {
     private List<String> presignedPutUrls;
+    private Long feedId;
 }

@@ -3,7 +3,7 @@ package com.meokplaylist.api.controller;
 
 import com.meokplaylist.api.dto.Boolean.BooleanResponse;
 import com.meokplaylist.api.dto.feed.*;
-import com.meokplaylist.api.dto.presignedUrl.PresignedPutListUrlResponse;
+import com.meokplaylist.api.dto.presignedUrl.PresignedPutListUrlAndFeedIdResponse;
 import com.meokplaylist.api.dto.SlicedResponse;
 import com.meokplaylist.domain.service.FeedService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class FeedController {
             @AuthenticationPrincipal Long userId,
             @RequestBody FeedCreateRequest feedCreateRequest
     ) {
-        PresignedPutListUrlResponse presignedPutUrls =new PresignedPutListUrlResponse(feedService.createFeed(feedCreateRequest, userId));
+        PresignedPutListUrlAndFeedIdResponse presignedPutUrls =feedService.createFeed(feedCreateRequest, userId);
 
         return ResponseEntity.ok().body(presignedPutUrls);
     }
