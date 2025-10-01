@@ -42,8 +42,8 @@ public class UserController {
             @AuthenticationPrincipal Long userId,
             @RequestBody UserProfileSetupRequest userProfileSetupRequest
     ) {
-        userService.uploadProfileImage(userProfileSetupRequest, userId);
-        return ResponseEntity.ok().build();
+        UserProfileSetupResponse response=userService.uploadProfileImage(userProfileSetupRequest, userId);
+        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("/setupDetailInfo")
