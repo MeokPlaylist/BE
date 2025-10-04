@@ -32,7 +32,8 @@ public class FeedController {
 
     @GetMapping("/main")
     public ResponseEntity<SlicedResponse<MainFeedResponse>> mainFeeds(
-            @AuthenticationPrincipal Long userId,
+           // @AuthenticationPrincipal Long userId,
+            @RequestParam("userId") Long userId,
             @PageableDefault(size = 2) Pageable pageable
     ) {
         var slice = feedService.mainFeedSelectSlice(userId, pageable);
