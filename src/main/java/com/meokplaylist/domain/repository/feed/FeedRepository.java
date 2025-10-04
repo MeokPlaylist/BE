@@ -40,8 +40,8 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
         FROM Feed f
         JOIN FeedCategory fc ON fc.feed = f
         WHERE fc.category.id IN :categoryIds
-        GROUP BY f.id, f.createdAt, f.user.userId
-        ORDER BY COUNT(fc.id) DESC, MAX(f.createdAt) DESC, f.id DESC
+        GROUP BY f
+        ORDER BY COUNT(fc.id) DESC, MAX(f.createdAt) DESC
     """)
     Slice<Feed> findCategoryIds(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
 
