@@ -240,7 +240,6 @@ public class FeedService {
             likeBooleanMapByFeedId = null;
             feedUrlsAndSocialMap = Collections.emptyMap();
         }
-
         // 엔티티 -> DTO
         List<MainFeedResponse> feedSliceDto = feeds.stream().map(feed -> new MainFeedResponse(
                 feed.getUser().getNickname(),
@@ -249,7 +248,7 @@ public class FeedService {
                 feed.getHashTag(),
                 feed.getCreatedAt(),
                 feedUrlsAndSocialMap.get(feed.getFeedId()).getPhotoUrls(),
-                likeBooleanMapByFeedId,
+                likeBooleanMapByFeedId.get(feed.getFeedId()),
                 feedUrlsAndSocialMap.get(feed.getFeedId()).getLikeCoount(),
                 feedUrlsAndSocialMap.get(feed.getFeedId()).getCommetCount()
         )).toList();
