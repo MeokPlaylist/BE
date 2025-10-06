@@ -115,8 +115,8 @@ public class UserService {
             url=BASE_PROFILE_FMG;
         }else{
 
-            key = StorageKeyUtil.buildProfileKey("photos", user.getUserId(), request.fileName());
-            url=s3Service.generateGetPresignedUrl(key);
+            key = StorageKeyUtil.buildProfileKey("profile", user.getUserId(), request.fileName());
+            url=s3Service.generatePutPresignedUrl(key);
         }
 
         user.setProfileImgKey(key);

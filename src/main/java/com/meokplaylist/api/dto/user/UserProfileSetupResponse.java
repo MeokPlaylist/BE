@@ -6,5 +6,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class UserProfileSetupResponse {
-        private String profileGetPresignedUrl;
+        private String profilePutPresignedUrl;
 }
