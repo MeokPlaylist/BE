@@ -30,7 +30,7 @@ public class PlaceController {
         }
 
         @PostMapping("saveRoadMap")
-        public ResponseEntity<?> saveRoadMapPlace(SaveRoadMapPlaceRequest saveRoadMapPlaceRequest){
+        public ResponseEntity<?> saveRoadMapPlace(@RequestBody SaveRoadMapPlaceRequest saveRoadMapPlaceRequest){
 
             placeService.saveRoadMapPlace(saveRoadMapPlaceRequest);
 
