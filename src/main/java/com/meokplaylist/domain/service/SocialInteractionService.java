@@ -339,7 +339,6 @@ public class SocialInteractionService {
     public List<Map<Long,String>> searchFeed(SearchFeedDto searchFeedDto, Pageable pageable){
         //food Category 처리
         List<String> categoryStringList= searchFeedDto.getCategories();
-        System.out.println("111111111111111"+categoryStringList);
         List<Category> categories = new ArrayList<>();
         for (String raw : categoryStringList) {
             String[] parts = raw.split(":", 2);

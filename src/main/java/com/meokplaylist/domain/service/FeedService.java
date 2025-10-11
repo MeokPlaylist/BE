@@ -2,6 +2,7 @@ package com.meokplaylist.domain.service;
 
 import com.meokplaylist.api.dto.SlicedResponse;
 import com.meokplaylist.api.dto.feed.*;
+import com.meokplaylist.api.dto.presignedUrl.PresignedPutListUrlAndFeedIdResponse;
 import com.meokplaylist.api.dto.socialInteraction.CheckUserLikeFeedDto;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.category.CategoryRepository;
@@ -31,10 +32,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
 
-import java.time.OffsetDateTime;
 import java.util.*;
 
 import java.util.stream.Collectors;
@@ -62,7 +61,7 @@ public class FeedService {
     private final S3Service s3Service;
 
     @Transactional
-    public List<String> createFeed(FeedCreateRequest feedCreateRequest, Long userId) {
+    public PresignedPutListUrlAndFeedIdResponse createFeed(FeedCreateRequest feedCreateRequest, Long userId) {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
 
@@ -105,7 +104,7 @@ public class FeedService {
             String presignedUrl = s3Service.generatePutPresignedUrl(fileKey);
             presignedUrlList.add(presignedUrl);
         }
-        return presignedUrlList;
+        return new PresignedPutListUrlAndFeedIdResponse(presignedUrlList,feed.getFeedId());
     }
 
 
@@ -241,7 +240,6 @@ public class FeedService {
             likeBooleanMapByFeedId = null;
             feedUrlsAndSocialMap = Collections.emptyMap();
         }
-
         // 엔티티 -> DTO
         List<MainFeedResponse> feedSliceDto = feeds.stream().map(feed -> new MainFeedResponse(
                 feed.getUser().getNickname(),
@@ -250,7 +248,7 @@ public class FeedService {
                 feed.getHashTag(),
                 feed.getCreatedAt(),
                 feedUrlsAndSocialMap.get(feed.getFeedId()).getPhotoUrls(),
-                likeBooleanMapByFeedId,
+                likeBooleanMapByFeedId.get(feed.getFeedId()),
                 feedUrlsAndSocialMap.get(feed.getFeedId()).getLikeCoount(),
                 feedUrlsAndSocialMap.get(feed.getFeedId()).getCommetCount()
         )).toList();

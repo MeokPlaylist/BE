@@ -17,7 +17,7 @@ public record MainFeedResponse(
         OffsetDateTime createdAt,
         List<String> feedPhotoUrl,
 
-        Map<Long, Boolean> likeBooleanMapByFeedId ,
+        boolean isLiked ,
 
         long likeCount,
         long commentCount
@@ -26,7 +26,7 @@ public record MainFeedResponse(
     public static MainFeedResponse of(
             Feed feed,
             List<String> photoUrls,
-            Map<Long, Boolean> likeBooleanMapByFeedId,
+            boolean isLiked,
             long likeCount,
             long commentCount
     ) {
@@ -37,7 +37,7 @@ public record MainFeedResponse(
                 feed.getHashTag(),      // 컬렉션 매핑에 맞춰 조정
                 feed.getCreatedAt(),     // LocalDateTime이면 컨버전해서 넣어도 OK
                 photoUrls,
-                likeBooleanMapByFeedId,
+                isLiked,
                 likeCount,
                 commentCount
         );
