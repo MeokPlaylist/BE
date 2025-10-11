@@ -36,14 +36,19 @@ public interface FeedRepository extends JpaRepository<Feed,Long> {
 
     @EntityGraph(attributePaths = {"user"})
     @Query("""
-        SELECT f
-        FROM Feed f
-        JOIN FeedCategory fc ON fc.feed = f
+    SELECT f
+    FROM Feed f
+    WHERE f.id IN (
+        SELECT fc.feed.id
+        FROM FeedCategory fc
         WHERE fc.category.id IN :categoryIds
-        GROUP BY f.id
-        ORDER BY COUNT(fc.id) DESC, MAX(f.createdAt) DESC, f.id DESC
+        GROUP BY fc.feed.id
+        ORDER BY COUNT(fc.id) DESC, MAX(fc.feed.createdAt) DESC, fc.feed.id DESC
+    )
+    ORDER BY f.createdAt DESC
     """)
     Slice<Feed> findCategoryIds(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
+
 
     @Query("select f.feedId from Feed f where f.user.userId = :userId")
     List<Long> findFeedIdsByUserUserId(@Param("userId") Long userId);
