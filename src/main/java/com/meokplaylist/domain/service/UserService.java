@@ -240,7 +240,7 @@ public class UserService {
         long followerNum =followsRepository.countByFollowerUserId(user.getUserId());
         String userNickname=user.getNickname();
         String userIntro=user.getIntroduction();
-        String profileUrl=s3Service.generatePutPresignedUrl(user.getProfileImgKey());
+        String profileUrl=s3Service.generateGetPresignedUrl(user.getProfileImgKey());
 
         List<Object[]>  feedIdsGroupedByYear = feedRepository.findFeedIdsGroupedByYear(user.getUserId());
         List<FeedRegionMappingDto> feedIdsGroupedByRegion = feedRepository.findFeedIdsGroupedByRegion(user.getUserId());
