@@ -2,9 +2,7 @@ package com.meokplaylist.infra.feed;
 
 import com.meokplaylist.infra.category.LocalCategory;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(  name = "feed_local_category",
@@ -15,6 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FeedLocalCategory {
 
     @Id
