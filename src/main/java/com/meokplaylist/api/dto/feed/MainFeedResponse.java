@@ -10,7 +10,7 @@ import java.util.Map;
 
 public record MainFeedResponse(
         String nickName,
-
+        String profileUrl,
         Long feedId,
         String content,
         List<String> hashTag,
@@ -25,6 +25,7 @@ public record MainFeedResponse(
 ) {
     public static MainFeedResponse of(
             Feed feed,
+            String profileUrl,
             List<String> photoUrls,
             boolean isLiked,
             long likeCount,
@@ -32,6 +33,7 @@ public record MainFeedResponse(
     ) {
         return new MainFeedResponse(
                 feed.getUser().getNickname(),
+                profileUrl,
                 feed.getFeedId(),
                 feed.getContent(),
                 feed.getHashTag(),      // 컬렉션 매핑에 맞춰 조정

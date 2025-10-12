@@ -159,42 +159,36 @@ public class FeedService {
 
     }
 
-
     @Transactional(readOnly = true)
     public SlicedResponse<MainFeedResponse> mainFeedSelectSlice(Long userId, Pageable pageable) {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
-
 
         Slice<Feed> slice = feedRepository.findFollowingFeeds(user.getUserId(), pageable);
 
         if (slice.getContent().isEmpty()) {
             List<Long> categoryIds = userCategoryRepository.findCategoryIdsByUserId(user.getUserId());
             if (categoryIds.isEmpty()) {
-                // 빈 결과를 slice 형태로 반환
                 Slice<MainFeedResponse> emptySlice = new SliceImpl<>(List.of(), pageable, false);
                 return SlicedResponse.of(emptySlice);
             }
             slice = feedRepository.findCategoryIds(categoryIds, pageable);
         }
 
-        // 이번 페이지의 feedId 수집
         List<Feed> feeds = slice.getContent();
-
-        if (feeds.isEmpty()) { //방어 코드
+        if (feeds.isEmpty()) {
             return SlicedResponse.of(new SliceImpl<>(List.of(), pageable, false));
         }
 
         List<Long> feedIds = feeds.stream().map(Feed::getFeedId).toList();
 
-        // 사진 일괄 조회(정렬 보장)
+        // 사진, 좋아요, 댓글, 유저 좋아요 여부 조회
         final Map<Long, FeedMapDto> feedUrlsAndSocialMap;
-
         Map<Long, Boolean> likeBooleanMapByFeedId;
+
         if (!feedIds.isEmpty()) {
             List<FeedPhotos> photos = feedPhotosRepository.findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(feedIds);
             List<LikeCountDto> likeCounts = likesRepository.countLikesByFeedIds(feedIds);
-
             List<CommentCountDto> commentCounts = commentsRepository.findCommentCountsByFeedIds(feedIds);
             List<CheckUserLikeFeedDto> feedLike = likesRepository.findByFeedIdsAndUserId(feedIds, userId);
 
@@ -210,15 +204,18 @@ public class FeedService {
                             LikeCountDto::getLikeCount
                     ));
 
-            Map<Long, Long> commnetMapByFeedId = commentCounts.stream()
+            Map<Long, Long> commentMapByFeedId = commentCounts.stream()
                     .collect(Collectors.toMap(
                             CommentCountDto::getFeedId,
                             CommentCountDto::getCommentCount
                     ));
 
-
             Map<Long, List<FeedPhotos>> photosMapByFeedId = photos.stream()
-                    .collect(Collectors.groupingBy(fp -> fp.getFeed().getFeedId(), LinkedHashMap::new, Collectors.toList()));
+                    .collect(Collectors.groupingBy(
+                            fp -> fp.getFeed().getFeedId(),
+                            LinkedHashMap::new,
+                            Collectors.toList()
+                    ));
 
             Map<Long, FeedMapDto> tmp = new HashMap<>(photosMapByFeedId.size());
             for (var e : photosMapByFeedId.entrySet()) {
@@ -226,35 +223,48 @@ public class FeedService {
                 for (FeedPhotos p : e.getValue()) {
                     urls.add(s3Service.generateGetPresignedUrl(p.getStorageKey()));
                 }
+
                 long likeCount = likeMapByFeedId.getOrDefault(e.getKey(), 0L);
-                long commnetCount = commnetMapByFeedId.getOrDefault(e.getKey(), 0L);
+                long commentCount = commentMapByFeedId.getOrDefault(e.getKey(), 0L);
 
-
-                FeedMapDto feedMapDto = new FeedMapDto(urls, likeCount, commnetCount);
-
+                FeedMapDto feedMapDto = new FeedMapDto(urls, likeCount, commentCount);
                 tmp.put(e.getKey(), feedMapDto);
             }
-
             feedUrlsAndSocialMap = tmp;
         } else {
-            likeBooleanMapByFeedId = null;
+            likeBooleanMapByFeedId = new HashMap<>();
             feedUrlsAndSocialMap = Collections.emptyMap();
         }
-        // 엔티티 -> DTO
-        List<MainFeedResponse> feedSliceDto = feeds.stream().map(feed -> new MainFeedResponse(
-                feed.getUser().getNickname(),
-                feed.getFeedId(),
-                feed.getContent(),
-                feed.getHashTag(),
-                feed.getCreatedAt(),
-                feedUrlsAndSocialMap.get(feed.getFeedId()).getPhotoUrls(),
-                likeBooleanMapByFeedId.get(feed.getFeedId()),
-                feedUrlsAndSocialMap.get(feed.getFeedId()).getLikeCoount(),
-                feedUrlsAndSocialMap.get(feed.getFeedId()).getCommetCount()
-        )).toList();
+
+        //  각 Feed의 작성자 프로필 URL 포함
+        List<MainFeedResponse> feedSliceDto = feeds.stream().map(feed -> {
+            String profileUrl = null;
+            if (feed.getUser() != null && feed.getUser().getProfileImgKey() != null) {
+                profileUrl = s3Service.generateGetPresignedUrl(feed.getUser().getProfileImgKey());
+            }
+
+            FeedMapDto mapDto = feedUrlsAndSocialMap.get(feed.getFeedId());
+            List<String> photoUrls = mapDto != null ? mapDto.getPhotoUrls() : List.of();
+
+            boolean isLiked = likeBooleanMapByFeedId.getOrDefault(feed.getFeedId(), false);
+            long likeCount = mapDto != null ? mapDto.getLikeCoount() : 0L;
+            long commentCount = mapDto != null ? mapDto.getCommetCount() : 0L;
+
+            return new MainFeedResponse(
+                    feed.getUser().getNickname(),
+                    profileUrl,
+                    feed.getFeedId(),
+                    feed.getContent(),
+                    feed.getHashTag(),
+                    feed.getCreatedAt(),
+                    photoUrls,
+                    isLiked,
+                    likeCount,
+                    commentCount
+            );
+        }).toList();
 
         Slice<MainFeedResponse> sliceView = new SliceImpl<>(feedSliceDto, pageable, slice.hasNext());
-
         return SlicedResponse.of(sliceView);
     }
 
