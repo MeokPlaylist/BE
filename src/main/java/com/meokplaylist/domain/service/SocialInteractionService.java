@@ -18,6 +18,7 @@ import com.meokplaylist.domain.repository.place.PlacesRepository;
 import com.meokplaylist.domain.repository.socialInteraction.CommentsRepository;
 import com.meokplaylist.domain.repository.socialInteraction.FollowsRepository;
 import com.meokplaylist.domain.repository.socialInteraction.FavoritePlaceRepository;
+import com.meokplaylist.domain.repository.socialInteraction.LikesRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.category.Category;
@@ -29,6 +30,7 @@ import com.meokplaylist.infra.place.Places;
 import com.meokplaylist.infra.place.FavoritePlace;
 import com.meokplaylist.infra.socialInteraction.Comments;
 import com.meokplaylist.infra.socialInteraction.Follows;
+import com.meokplaylist.infra.socialInteraction.Likes;
 import com.meokplaylist.infra.user.Users;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.User;
@@ -52,6 +54,7 @@ public class SocialInteractionService {
     private final UserLocalCategoryRepository userLocalCategoryRepository;
     private final FeedRepository feedRepository;
     private final PlacesRepository placesRepository;
+    private final LikesRepository likesRepository;
 
     private final CommentsRepository commentsRepository;
     private final WebClient tourApiWebClient;
@@ -490,12 +493,25 @@ public class SocialInteractionService {
     @Transactional
     public void feedLike(Long userId, Long feedId){
 
-        Users user=usersRepository.findByUserId(userId)
+        Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        Feed feed = feedRepository.findByFeedId(feedId)
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        Likes like = Likes.builder()
+                .feed(feed)
+                .user(user)
+                .build();
+
+        likesRepository.save(like);
     }
 
     @Transactional
-    public void FeedUnLike(){
+    public void unlike(Long feedId, Long userId) {
+        Likes like = likesRepository.findByFeedFeedIdAndUserUserId(feedId, userId)
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.LIKE_NOT_FOUND));
 
+        likesRepository.delete(like);
     }
 }

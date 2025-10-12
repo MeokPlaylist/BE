@@ -10,8 +10,11 @@ import org.springframework.data.repository.query.Param;
 
 
 import java.util.List;
+import java.util.Optional;
 
 public interface LikesRepository extends JpaRepository<Likes,Long> {
+
+    Optional<Likes> findByFeedFeedIdAndUserUserId(Long feedId, Long userId);
 
     @Query("select new com.meokplaylist.api.dto.feed.LikeCountDto(f.feedId, count(l)) " +
             "from Feed f left join f.likes l " +

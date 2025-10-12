@@ -24,6 +24,7 @@ public enum ErrorCode {
     INVALID_GOOGLEOAUTH_TOKEN  (469,"잘못된 GoogleToken"),
 
     NOT_FOUND_PLACE    (470, "not found place"),
+    LIKE_NOT_FOUND(471,"not found like"),
 
     EXIST_OBJECT    (475,"exist object"),
 

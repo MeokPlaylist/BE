@@ -8,5 +8,5 @@ import lombok.Data;
 public class SearchUserDto {
     private String nickname;
     private String introduction;
-    private String profileImgUrl;
+    private String profileUrl;
 }

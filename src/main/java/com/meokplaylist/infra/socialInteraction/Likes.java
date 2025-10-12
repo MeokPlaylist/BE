@@ -3,12 +3,10 @@ package com.meokplaylist.infra.socialInteraction;
 import com.meokplaylist.infra.feed.Feed;
 import com.meokplaylist.infra.user.Users;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import software.amazon.eventstream.MessageDecoder;
 
 import java.time.OffsetDateTime;
 
@@ -27,6 +25,7 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Likes {
 
     @Id
