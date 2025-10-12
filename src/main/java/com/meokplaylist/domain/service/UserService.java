@@ -407,21 +407,26 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public SlicedResponse<SearchUserDto> searchUser(String nickname, Pageable pageable){
+    public SlicedResponse<SearchUserDto> searchUser(String nickname, Pageable pageable) {
         if (nickname == null || nickname.isBlank()) {
             Slice<SearchUserDto> emptySlice = new SliceImpl<>(Collections.emptyList(), pageable, false);
             return SlicedResponse.of(emptySlice);
         }
         Slice<SearchUserDto> userList = usersRepository.findUsersByNicknamePrefix(nickname, pageable);
 
-        Slice<SearchUserDto> modifiedList=userList.map(dto->{
-            s3Service.generateGetPresignedUrl(dto.getProfileUrl());
+        Slice<SearchUserDto> modifiedList = userList.map(dto -> {
+            // Users 엔티티 조회 (nickname으로 찾기)
+            Users user = usersRepository.findByNickname(dto.getNickname())
+                    .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+            // S3 presigned URL 생성
+            String presignedUrl = s3Service.generateGetPresignedUrl(user.getProfileImgKey());
+
+            // SearchUserDto 안에 URL을 저장할 필드가 있다면 세팅
+            dto.setProfileUrl(presignedUrl);
             return dto;
         });
-
+        // Slice → SlicedResponse 변환해서 반환
         return SlicedResponse.of(modifiedList);
     }
-
-
-    
 }
