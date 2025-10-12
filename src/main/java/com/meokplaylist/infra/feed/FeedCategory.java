@@ -20,7 +20,6 @@ public class FeedCategory {
 
     @ManyToOne
     @JoinColumn(name = "feed_id")
-    @JsonIgnore  //임시방편으로 Json 직렬화를 위해  선언 원래라면 엔터티 자체를 반환하지 않고 새로 dto 만들어야 함
     private Feed feed;
 
     @ManyToOne

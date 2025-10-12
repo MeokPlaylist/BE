@@ -50,7 +50,7 @@ public class FeedService {
     private final FeedRepository feedRepository;
     private final FeedPhotosRepository feedPhotosRepository;
     private final FeedLocalCategoryRepository feedLocalCategoryRepository;
-    private final FeedCategoryRespository feedCategoryRespository;
+    private final FeedCategoryRespository feedCategoryRepository;
     private final LocalCategoryRepository localCategoryRepository;
     private final CategoryRepository categoryRepository;
     private final UsersRepository usersRepository;
@@ -133,7 +133,7 @@ public class FeedService {
                 .map(cat -> new FeedCategory(cat, feed))   // user는 앞에서 조회된 Users ??
                 .toList();
 
-        feedCategoryRespository.saveAll(mappings);
+        feedCategoryRepository.saveAll(mappings);
 
         List<LocalCategory> saveRegion = new ArrayList<>();
 
@@ -283,7 +283,7 @@ public class FeedService {
             throw new BizExceptionHandler(ErrorCode.DONT_HAVE_AUTHORITY);
         }
 
-        feedCategoryRespository.deleteAll(feed.getFeedCategories());
+        feedCategoryRepository.deleteAll(feed.getFeedCategories());
         if (dto.getCategories() != null) {
             List<String> categories = dto.getCategories();
             List<String> regions = dto.getRegions();
@@ -356,7 +356,20 @@ public class FeedService {
             String url=s3Service.generateGetPresignedUrl(storagekey);
             feedPhotoUrls.add(url);
         }
+        // 4. 카테고리 조회
+        List<String> categoryNames = feedCategoryRepository.findByFeedFeedId(feedId).stream()
+                .map(fc -> fc.getCategory().getName())
+                .toList();
 
+        // 5. 지역 카테고리 조회
+        List<String> localCategoryNames = feedLocalCategoryRepository.findByFeedFeedId(feedId).stream()
+                .map(fl -> fl.getLocalCategory().getType() + ":" + fl.getLocalCategory().getLocalName())
+                .toList();
+
+        // 6. 하나의 리스트로 합치기
+        List<String> mergedCategories = new ArrayList<>();
+        mergedCategories.addAll(categoryNames);
+        mergedCategories.addAll(localCategoryNames);
 
         Long likeNum=likesRepository.countLikesByFeedFeedId(feed.getFeedId());
         Long commentNum=commentsRepository.countCommentByFeedFeedId(feed.getFeedId());
@@ -368,7 +381,7 @@ public class FeedService {
                 feed.getHashTag(),
                 feed.getCreatedAt(),
                 feedPhotoUrls,
-                feed.getFeedCategories(),
+                mergedCategories,
                 feedLike,
                 likeNum,
                 commentNum

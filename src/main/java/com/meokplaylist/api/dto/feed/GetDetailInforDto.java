@@ -16,7 +16,7 @@ public class GetDetailInforDto {
      private List<String> hashTag;
      private OffsetDateTime createdAt;
      private List<String> feedPhotoUrl;
-     private List<FeedCategory> feedCategories;
+     private List<String> feedCategories;
      private Boolean feedLike;
      private long likeCount;
      private long commentCount;
