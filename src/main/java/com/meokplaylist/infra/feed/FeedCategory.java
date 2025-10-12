@@ -4,13 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.meokplaylist.infra.category.Category;
 import com.meokplaylist.infra.category.LocalCategory;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class FeedCategory {
 
@@ -28,11 +27,6 @@ public class FeedCategory {
 
 
     public FeedCategory(Category category, Feed feed) {
-        this.feed = feed;
-        this.category = category;
-    }
-
-    public FeedCategory(Feed feed, Category category, LocalCategory localCategory) {
         this.feed = feed;
         this.category = category;
     }
