@@ -415,7 +415,7 @@ public class UserService {
         Slice<SearchUserDto> userList = usersRepository.findUsersByNicknamePrefix(nickname, pageable);
 
         Slice<SearchUserDto> modifiedList=userList.map(dto->{
-            s3Service.generateGetPresignedUrl(dto.getProfileImgUrl());
+            s3Service.generateGetPresignedUrl(dto.getProfileUrl());
             return dto;
         });
 
