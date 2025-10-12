@@ -229,6 +229,20 @@ public class UserService {
         }
 
     }
+    @Transactional
+    public MyProfileResponse getMyProfile(Long userId){
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+        String userNickname=user.getNickname();
+        String userIntro=user.getIntroduction();
+        String profileUrl=s3Service.generateGetPresignedUrl(user.getProfileImgKey());
+        MyProfileResponse myProfileResponse = MyProfileResponse.builder()
+                .userNickname(userNickname)
+                .userIntro(userIntro)
+                .profileUrl(profileUrl)
+                .build();
+        return  myProfileResponse;
+    }
 
     @Transactional(readOnly = true)
     public MypageResponse mypageLoad(Long userId){

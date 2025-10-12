@@ -38,6 +38,11 @@ public class UserController {
         BooleanResponse booleanResponse =new BooleanResponse(userService.newPassword(newPasswordRequest));
         return ResponseEntity.ok().body(booleanResponse);
     }
+    @GetMapping("/getMyProfile")
+    public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal Long userId){
+        MyProfileResponse myProfileResponse = userService.getMyProfile(userId);
+        return ResponseEntity.ok().body(myProfileResponse);
+    }
 
     @PostMapping("/setupProfile")
     public ResponseEntity<?> setupProfile(
