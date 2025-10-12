@@ -21,7 +21,14 @@ public interface LikesRepository extends JpaRepository<Likes,Long> {
 
     long countLikesByFeedFeedId(Long feedId);
 
-    Boolean findByFeedFeedIdAndUserUserId(Long feedId,Long userId);
+    @Query("""
+    SELECT CASE WHEN COUNT(l) > 0 THEN TRUE ELSE FALSE END
+    FROM Likes l
+    WHERE l.feed.feedId = :feedId
+      AND l.user.userId = :userId
+    """)
+    Boolean existsByFeedFeedIdAndUserUserId(Long feedId, Long userId);
+
 
     @Query("""
     select new com.meokplaylist.api.dto.socialInteraction.CheckUserLikeFeedDto(

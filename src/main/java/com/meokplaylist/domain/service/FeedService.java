@@ -360,7 +360,7 @@ public class FeedService {
 
         Long likeNum=likesRepository.countLikesByFeedFeedId(feed.getFeedId());
         Long commentNum=commentsRepository.countCommentByFeedFeedId(feed.getFeedId());
-        Boolean feedLike=likesRepository.findByFeedFeedIdAndUserUserId(feedId,userId);
+        Boolean feedLike = likesRepository.existsByFeedFeedIdAndUserUserId(feedId, userId);
 
         GetDetailInforDto response = new GetDetailInforDto(
                 feedUser.getNickname(),
@@ -376,7 +376,5 @@ public class FeedService {
 
         return response;
     }
-
-
 }
 
