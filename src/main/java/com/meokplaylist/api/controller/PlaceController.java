@@ -31,17 +31,6 @@ public class PlaceController {
 
         }
 
-
-
-
-        @GetMapping("/callInRoadMap")
-        public ResponseEntity<?> callInRoadMapPlace(@RequestParam("feedId") Long feedId){
-
-            CallInRoadMapResponse response =new CallInRoadMapResponse(placeService.callInRoadMap(feedId));
-
-            return ResponseEntity.ok().body(response);
-        }
-
         @PostMapping("/search")
         public ResponseEntity<?> searchPlace(@RequestBody PlaceSearchRequest placeSearchRequest){
             KakaoSearchResponse.Document place = placeService.findPlaceByCategory(placeSearchRequest.getLat(), placeSearchRequest.getLng());
