@@ -64,7 +64,7 @@ public class RoadMapService {
 
         List<RoadMapCandidateDto> candidateDtos = new ArrayList<>();
         // FeedPhotos를 dayAndTime 기준으로 정렬
-        List<FeedPhotos> photos = feedPhotosRepository.findByFeedId(feedId).stream()
+        List<FeedPhotos> photos = feedPhotosRepository.findByFeed_FeedId(feedId).stream()
                 .sorted(Comparator.comparing(photo -> {
                     // dayAndTime이 String이면 LocalDateTime으로 변환
                     if (photo.getDayAndTime() instanceof LocalDateTime dt) return dt;

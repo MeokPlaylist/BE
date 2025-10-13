@@ -20,7 +20,7 @@ public interface FeedPhotosRepository extends JpaRepository<FeedPhotos, Long> {
             "ORDER BY p.feed.createdAt DESC")
     List<UrlMappedByFeedIdDto> findByFeedFeedId(@Param("feedIds") List<Long> feedIds);
 
-    List<FeedPhotos> findByFeedId(Long feedId);
+    List<FeedPhotos> findByFeed_FeedId(Long feedId);
 
     List<FeedPhotos> findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(List<Long> feedId);
 
