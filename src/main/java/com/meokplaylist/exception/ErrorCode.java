@@ -25,6 +25,7 @@ public enum ErrorCode {
 
     NOT_FOUND_PLACE    (470, "not found place"),
     LIKE_NOT_FOUND(471,"not found like"),
+    NOT_FOUND_ROADMAP(472,"not found roadmap" ),
 
     EXIST_OBJECT    (475,"exist object"),
 

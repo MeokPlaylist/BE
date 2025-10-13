@@ -8,6 +8,7 @@ import com.meokplaylist.api.dto.socialInteraction.GetFavoritePlaceResponse;
 import com.meokplaylist.api.dto.socialInteraction.RemoveFavoritePlaceDto;
 import com.meokplaylist.api.dto.socialInteraction.SaveFavoritePlaceDto;
 import com.meokplaylist.domain.service.PlaceService;
+import com.meokplaylist.domain.service.RoadMapService;
 import com.meokplaylist.domain.service.SocialInteractionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/place")
 public class PlaceController {
         private final PlaceService placeService;
+        private final RoadMapService roadMapService;
         private final SocialInteractionService socialInteractionService;
 
         @GetMapping("/pullOutKakao")
@@ -29,14 +31,7 @@ public class PlaceController {
 
         }
 
-        @PostMapping("saveRoadMap")
-        public ResponseEntity<?> saveRoadMapPlace(@RequestBody SaveRoadMapPlaceRequest saveRoadMapPlaceRequest){
 
-            placeService.saveRoadMapPlace(saveRoadMapPlaceRequest);
-
-            return ResponseEntity.ok().build();
-
-        }
 
 
         @GetMapping("/callInRoadMap")

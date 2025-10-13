@@ -2,6 +2,7 @@ package com.meokplaylist.domain.repository.feed;
 
 
 import com.meokplaylist.api.dto.UrlMappedByFeedIdDto;
+import com.meokplaylist.infra.feed.Feed;
 import com.meokplaylist.infra.feed.FeedPhotos;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +19,8 @@ public interface FeedPhotosRepository extends JpaRepository<FeedPhotos, Long> {
             "WHERE p.feed.feedId in :feedIds AND p.sequence = 1 " +
             "ORDER BY p.feed.createdAt DESC")
     List<UrlMappedByFeedIdDto> findByFeedFeedId(@Param("feedIds") List<Long> feedIds);
+
+    List<FeedPhotos> findByFeedId(Long feedId);
 
     List<FeedPhotos> findAllByFeedFeedIdInOrderByFeedFeedIdAscSequenceAsc(List<Long> feedId);
 

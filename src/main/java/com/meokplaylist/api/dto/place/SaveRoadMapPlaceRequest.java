@@ -10,5 +10,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class SaveRoadMapPlaceRequest {
     private Long feedId;
-    private Map<Integer, KakaoSearchResponse.Document> saveRoadMapPlaceInfor;
+    private String title;
+    private Map<Long, Long> saveRoadMapPlaceInfor;
 }
