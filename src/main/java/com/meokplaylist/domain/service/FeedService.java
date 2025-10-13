@@ -232,7 +232,6 @@ public class FeedService {
             }
             feedUrlsAndSocialMap = tmp;
         } else {
-            likeBooleanMapByFeedId = new HashMap<>();
             feedUrlsAndSocialMap = Collections.emptyMap();
         }
 
@@ -246,7 +245,7 @@ public class FeedService {
             FeedMapDto mapDto = feedUrlsAndSocialMap.get(feed.getFeedId());
             List<String> photoUrls = mapDto != null ? mapDto.getPhotoUrls() : List.of();
 
-            boolean isLiked = likeBooleanMapByFeedId.getOrDefault(feed.getFeedId(), false);
+            boolean isLiked = likesRepository.existsByFeedFeedIdAndUserUserId(feed.getFeedId(), userId);
             long likeCount = mapDto != null ? mapDto.getLikeCoount() : 0L;
             long commentCount = mapDto != null ? mapDto.getCommetCount() : 0L;
 
