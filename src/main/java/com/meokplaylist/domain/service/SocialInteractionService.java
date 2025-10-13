@@ -508,7 +508,7 @@ public class SocialInteractionService {
     }
 
     @Transactional
-    public void unlike(Long feedId, Long userId) {
+    public void feedUnLike(Long userId, Long feedId) {
         Likes like = likesRepository.findByFeedFeedIdAndUserUserId(feedId, userId)
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.LIKE_NOT_FOUND));
 
