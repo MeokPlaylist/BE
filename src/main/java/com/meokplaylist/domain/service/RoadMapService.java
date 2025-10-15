@@ -101,8 +101,6 @@ public class RoadMapService {
             // Kakao에서 장소 후보 전부 가져오기
             List<KakaoSearchResponse.Document> docs = placeService.findAllPlaceByCategory(lat, lng);
 
-            if (docs.isEmpty()) continue;
-
             // Places 캐싱
             List<Places> candidatePlaces = new ArrayList<>();
             for (KakaoSearchResponse.Document doc : docs) {
