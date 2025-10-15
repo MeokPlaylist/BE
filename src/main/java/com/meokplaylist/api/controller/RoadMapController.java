@@ -1,5 +1,6 @@
 package com.meokplaylist.api.controller;
 
+import com.meokplaylist.api.dto.place.SaveRoadMapPlaceRequest;
 import com.meokplaylist.api.dto.roadmap.RoadMapCandidateDto;
 import com.meokplaylist.domain.service.RoadMapService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,12 @@ public class RoadMapController {
     public ResponseEntity<?> createRoadMap(@RequestParam("feedId")Long feedId, @AuthenticationPrincipal Long userId){
         List<RoadMapCandidateDto> response = roadMapService.createRoadMap(feedId, userId);
         return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping("/save")
+    public ResponseEntity<?> saveRoadMap (@RequestBody SaveRoadMapPlaceRequest request){
+        roadMapService.saveRoadMapPlace(request);
+        return ResponseEntity.ok().build();
     }
 
 }
