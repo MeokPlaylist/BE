@@ -65,7 +65,7 @@ public class PlaceService {
         Set<String> seenIds = new HashSet<>(); // 중복 방지용
 
         for (int page = 1; page <= 10; page++) {
-            KakaoSearchResponse res = kakao.searchByCategory(category, lat, lng, page, PAGE_SIZE);
+            KakaoSearchResponse res = kakao.searchByCategory(category, lng, lat, page, PAGE_SIZE);
             if (res == null || res.documents() == null || res.documents().isEmpty()) break;
 
             for (KakaoSearchResponse.Document doc : res.documents()) {
