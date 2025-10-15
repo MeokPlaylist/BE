@@ -140,6 +140,7 @@ public class RoadMapService {
                             .toList()
             ));
         }
+        System.out.println(candidateDtos);
         return candidateDtos;
     }
 
