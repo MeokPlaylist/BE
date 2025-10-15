@@ -102,7 +102,7 @@ public class RoadMapService {
             List<String> categories = List.of("FD6", "CE7");
             List<KakaoSearchResponse.Document> docs = new ArrayList<>();
             for (String category : categories) {
-                docs.addAll(placeService.findAllPlaceByCategory(category, lat, lng));
+                docs.addAll(placeService.findAllPlaceByCategory(lat, lng));
             }
             if (docs.isEmpty()) continue;
 
