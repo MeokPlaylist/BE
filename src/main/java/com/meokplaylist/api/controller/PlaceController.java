@@ -23,13 +23,13 @@ public class PlaceController {
         private final RoadMapService roadMapService;
         private final SocialInteractionService socialInteractionService;
 
-        @GetMapping("/pullOutKakao")
-        public ResponseEntity<?> pullOutKakao(@RequestParam("feedId") Long feedId) {
-
-            PullOutKakaoPlaceResponse response=new PullOutKakaoPlaceResponse(placeService.pullOutKakaoPlace(feedId));
-            return ResponseEntity.ok().body(response);
-
-        }
+//        @GetMapping("/pullOutKakao")
+//        public ResponseEntity<?> pullOutKakao(@RequestParam("feedId") Long feedId) {
+//
+//            PullOutKakaoPlaceResponse response=new PullOutKakaoPlaceResponse(placeService.pullOutKakaoPlace(feedId));
+//            return ResponseEntity.ok().body(response);
+//
+//        }
 
         @PostMapping("/search")
         public ResponseEntity<?> searchPlace(@RequestBody PlaceSearchRequest placeSearchRequest){
