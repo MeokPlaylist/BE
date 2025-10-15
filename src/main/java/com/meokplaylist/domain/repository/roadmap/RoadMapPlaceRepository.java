@@ -8,7 +8,5 @@ import java.util.List;
 
 public interface RoadMapPlaceRepository extends JpaRepository<RoadMapPlace,Long> {
 
-    List<RoadMapPlace> findAllByFeedPhotosFeedFeedIdOrderByFeedPhotos_SequenceAsc(Long feedId);
-
     List<RoadMapPlace> findAllByRoadMap(RoadMap roadMap);
 }

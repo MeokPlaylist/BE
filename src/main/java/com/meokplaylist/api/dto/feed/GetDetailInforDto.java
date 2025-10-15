@@ -13,6 +13,7 @@ public class GetDetailInforDto {
 
      private String nickName;
      private String content;
+     private String profileUrl;
      private List<String> hashTag;
      private OffsetDateTime createdAt;
      private List<String> feedPhotoUrl;

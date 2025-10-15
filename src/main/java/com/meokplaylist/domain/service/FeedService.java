@@ -383,10 +383,11 @@ public class FeedService {
         Long likeNum=likesRepository.countLikesByFeedFeedId(feed.getFeedId());
         Long commentNum=commentsRepository.countCommentByFeedFeedId(feed.getFeedId());
         Boolean feedLike = likesRepository.existsByFeedFeedIdAndUserUserId(feedId, userId);
-
+        String profileUrl = s3Service.generateGetPresignedUrl(feedUser.getProfileImgKey());
         GetDetailInforDto response = new GetDetailInforDto(
                 feedUser.getNickname(),
                 feed.getContent(),
+                profileUrl,
                 feed.getHashTag(),
                 feed.getCreatedAt(),
                 feedPhotoUrls,
