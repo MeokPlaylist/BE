@@ -4,6 +4,8 @@ import com.meokplaylist.infra.feed.Feed;
 import com.meokplaylist.infra.user.Users;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -36,11 +38,13 @@ public class RoadMap {
     @OneToMany(mappedBy = "roadMap", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RoadMapPlace> places = new ArrayList<>();
 
-    @Column(nullable = false, updatable = false)
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
 
-    @Column(nullable = false)
-    private OffsetDateTime updatedAt = OffsetDateTime.now();
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 
     public void addPlace(RoadMapPlace place) {
         places.add(place);
