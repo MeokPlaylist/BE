@@ -99,11 +99,8 @@ public class RoadMapService {
             int dayIndex = (int) ChronoUnit.DAYS.between(firstDay, currentDate) + 1;
 
             // Kakao에서 장소 후보 전부 가져오기
-            List<String> categories = List.of("FD6", "CE7");
-            List<KakaoSearchResponse.Document> docs = new ArrayList<>();
-            for (String category : categories) {
-                docs.addAll(placeService.findAllPlaceByCategory(lat, lng));
-            }
+            List<KakaoSearchResponse.Document> docs = placeService.findAllPlaceByCategory(lat, lng);
+
             if (docs.isEmpty()) continue;
 
             // Places 캐싱
