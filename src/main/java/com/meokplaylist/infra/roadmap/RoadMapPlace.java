@@ -28,6 +28,12 @@ public class RoadMapPlace {
     @JoinColumn(name = "place_id")
     private Places place;
 
+    @Column(name = "custom_place_name")
+    private String customPlaceName;
+
+    @Column(name = "custom_address")
+    private String customAddress;
+
     // 원본 피드 사진 (선택적, 자동 생성용)
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_photo_id")

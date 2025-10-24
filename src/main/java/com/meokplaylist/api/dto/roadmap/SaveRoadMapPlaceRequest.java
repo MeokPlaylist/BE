@@ -1,15 +1,14 @@
-package com.meokplaylist.api.dto.place;
+package com.meokplaylist.api.dto.roadmap;
 
-import com.meokplaylist.api.dto.KakaoSearchResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Map;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
 public class SaveRoadMapPlaceRequest {
     private Long feedId;
     private String title;
-    private Map<Long, Long> saveRoadMapPlaceInfor;
+    private List<SaveRoadMapPlaceItem> places;
 }

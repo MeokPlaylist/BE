@@ -1,21 +1,13 @@
 package com.meokplaylist.domain.service;
 
 import com.meokplaylist.api.dto.KakaoSearchResponse;
-import com.meokplaylist.api.dto.place.SaveRoadMapPlaceRequest;
 import com.meokplaylist.domain.repository.place.PlacesRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
 import com.meokplaylist.domain.repository.roadmap.RoadMapPlaceRepository;
-import com.meokplaylist.exception.BizExceptionHandler;
-import com.meokplaylist.exception.ErrorCode;
-import com.meokplaylist.infra.feed.Feed;
-import com.meokplaylist.infra.feed.FeedPhotos;
-import com.meokplaylist.infra.place.Places;
-import com.meokplaylist.infra.roadmap.RoadMapPlace;
 import com.meokplaylist.security.KakaoLocalClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 

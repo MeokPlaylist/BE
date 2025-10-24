@@ -1,7 +1,8 @@
 package com.meokplaylist.domain.service;
 
 import com.meokplaylist.api.dto.KakaoSearchResponse;
-import com.meokplaylist.api.dto.place.SaveRoadMapPlaceRequest;
+import com.meokplaylist.api.dto.roadmap.SaveRoadMapPlaceItem;
+import com.meokplaylist.api.dto.roadmap.SaveRoadMapPlaceRequest;
 import com.meokplaylist.api.dto.roadmap.RoadMapCandidateDto;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
@@ -142,7 +143,7 @@ public class RoadMapService {
         return candidateDtos;
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void saveRoadMapPlace(SaveRoadMapPlaceRequest request) {
 
         // 1) feedId로 로드맵 찾기
@@ -156,27 +157,45 @@ public class RoadMapService {
         roadMap.setTitle(request.getTitle());
         roadMapRepository.save(roadMap);
 
-        // 3) 요청된 매핑 정보 검증
-        Map<Long, Long> payload = request.getSaveRoadMapPlaceInfor(); // roadMapPlaceId → placeId
-
-        if (payload == null || payload.isEmpty()) {
+        // 3) 요청 검증
+        List<SaveRoadMapPlaceItem> places = request.getPlaces();
+        if (places == null || places.isEmpty()) {
             throw new BizExceptionHandler(ErrorCode.INVALID_PLACE_PAYLOAD);
         }
 
-        // 4) 각 로드맵플레이스 수정
+        // 4) 로드맵에 포함된 기존 place 목록 조회
         List<RoadMapPlace> roadMapPlaces = roadMapPlaceRepository.findAllByRoadMap(roadMap);
 
-        for (RoadMapPlace rmp : roadMapPlaces) {
-            Long newPlaceId = payload.get(rmp.getId());
-            if (newPlaceId == null) continue; // 매핑 없는 경우 스킵
+        // 5) 요청 데이터 순회 처리
+        for (SaveRoadMapPlaceItem dto : places) {
+            RoadMapPlace rmp = roadMapPlaces.stream()
+                    .filter(p -> p.getId().equals(dto.getRoadMapPlaceId()))
+                    .findFirst()
+                    .orElse(null);
 
-            Places newPlace = placesRepository.findById(newPlaceId)
-                    .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE));
+            if (rmp == null) continue;
 
-            rmp.setPlace(newPlace);
+            // 🔹 후보 선택한 경우
+            if (dto.getSelectedPlaceId() != null) {
+                Places newPlace = placesRepository.findById(dto.getSelectedPlaceId())
+                        .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE));
+                rmp.setPlace(newPlace);
+                rmp.setCustomPlaceName(null);
+                rmp.setCustomAddress(null);
+            }
+            // 🔹 직접 입력한 경우
+            else if (dto.getCustomPlaceName() != null && !dto.getCustomPlaceName().isBlank()) {
+                rmp.setPlace(null);
+                rmp.setCustomPlaceName(dto.getCustomPlaceName());
+                rmp.setCustomAddress(dto.getCustomAddress());
+            }
+            // 🔹 둘 다 없는 경우 스킵
+            else {
+                continue;
+            }
         }
 
+        // 6) 일괄 저장
         roadMapPlaceRepository.saveAll(roadMapPlaces);
     }
-
 }

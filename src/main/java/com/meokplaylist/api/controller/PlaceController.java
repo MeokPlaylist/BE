@@ -2,8 +2,6 @@ package com.meokplaylist.api.controller;
 
 import com.meokplaylist.api.dto.*;
 import com.meokplaylist.api.dto.place.PlaceSearchRequest;
-import com.meokplaylist.api.dto.place.CallInRoadMapResponse;
-import com.meokplaylist.api.dto.place.SaveRoadMapPlaceRequest;
 import com.meokplaylist.api.dto.socialInteraction.GetFavoritePlaceResponse;
 import com.meokplaylist.api.dto.socialInteraction.RemoveFavoritePlaceDto;
 import com.meokplaylist.api.dto.socialInteraction.SaveFavoritePlaceDto;
