@@ -59,7 +59,6 @@ public class RoadMapService {
                 .user(user)
                 .title(null)
                 .build();
-        roadMapRepository.save(roadMap);
 
         List<RoadMapCandidateDto> candidateDtos = new ArrayList<>();
         // FeedPhotos를 dayAndTime 기준으로 정렬
@@ -89,6 +88,9 @@ public class RoadMapService {
             } else {
                 dateTime = LocalDateTime.parse(photo.getDayAndTime().toString(), formatter);
             }
+            roadMap.setFirstPlaceDayAndTime(dateTime);
+            roadMapRepository.save(roadMap);
+
             LocalDate currentDate = dateTime.toLocalDate();
 
             // 첫날 설정 (정렬된 리스트의 첫 번째 날짜)
