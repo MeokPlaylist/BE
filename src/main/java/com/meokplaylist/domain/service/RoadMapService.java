@@ -77,9 +77,15 @@ public class RoadMapService {
 
         int orderIndex = 1;
         for (FeedPhotos photo : photos) {
-            if (photo.getLatitude() == null || photo.getLongitude() == null) continue;
-            double lat = photo.getLatitude();
-            double lng = photo.getLongitude();
+            double lat;
+            double lng;
+            if (photo.getLatitude() == null || photo.getLongitude() == null) {
+                lat=0;
+                lng=0;
+            }else{
+                lat = photo.getLatitude();
+                lng = photo.getLongitude();
+            }
             System.out.println("lat:"+lat+" lng:"+lng);
             //현재 사진의 날짜 구하기
             LocalDateTime dateTime;
@@ -98,30 +104,31 @@ public class RoadMapService {
 
             // 일차 계산
             int dayIndex = (int) ChronoUnit.DAYS.between(firstDay, currentDate) + 1;
-
+            
             // Kakao에서 장소 후보 전부 가져오기
-            List<KakaoSearchResponse.Document> docs = placeService.findAllPlaceByCategory(lat, lng);
-
-            // Places 캐싱
             List<Places> candidatePlaces = new ArrayList<>();
-            for (KakaoSearchResponse.Document doc : docs) {
-                Long kakaoId = Long.parseLong(doc.id());
-                Places place = placesRepository.findById(kakaoId)
-                        .orElseGet(() -> placesRepository.save(new Places(
-                                kakaoId,
-                                doc.placeName(),
-                                doc.addressName(),
-                                doc.roadAddressName(),
-                                doc.placeUrl(),
-                                lat,
-                                lng,
-                                doc.phone(),
-                                doc.categoryGroupCode(),
-                                doc.categoryGroupName()
-                        )));
-                candidatePlaces.add(place);
-            }
+            if(lat!=0&lng!=0) {
+                List<KakaoSearchResponse.Document> docs = placeService.findAllPlaceByCategory(lat, lng);
 
+                // Places 캐싱
+                for (KakaoSearchResponse.Document doc : docs) {
+                    Long kakaoId = Long.parseLong(doc.id());
+                    Places place = placesRepository.findById(kakaoId)
+                            .orElseGet(() -> placesRepository.save(new Places(
+                                    kakaoId,
+                                    doc.placeName(),
+                                    doc.addressName(),
+                                    doc.roadAddressName(),
+                                    doc.placeUrl(),
+                                    lat,
+                                    lng,
+                                    doc.phone(),
+                                    doc.categoryGroupCode(),
+                                    doc.categoryGroupName()
+                            )));
+                    candidatePlaces.add(place);
+                }
+            }
             // 순서대로 RoadMapPlace 생성
             RoadMapPlace rmp = RoadMapPlace.of(roadMap, null, photo, dayIndex, orderIndex++);
             roadMapPlaceRepository.save(rmp);
