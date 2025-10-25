@@ -11,6 +11,6 @@ import java.util.List;
 public class LoadRoadMapInfor {
     private String title;
     private Boolean isMine;
-    private LocalDateTime firstDayAndTime;
+    private String firstDayAndTime;
     private List<LoadRoadMapPlaces> loadRoadMapPlacesList;
 }

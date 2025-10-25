@@ -220,7 +220,7 @@ public class RoadMapService {
                 .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_ROADMAP));
 
         String roadMaptitle=roadMap.getTitle();
-        LocalDateTime firstDayAndTime =roadMap.getFirstPlaceDayAndTime();
+        String firstDayAndTime =roadMap.getFirstPlaceDayAndTime().toString();
         Boolean isMine=false;
         if(userId.equals(feed.getUser().getUserId())){
             isMine=true;
