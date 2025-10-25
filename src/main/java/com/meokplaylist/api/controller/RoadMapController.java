@@ -1,5 +1,6 @@
 package com.meokplaylist.api.controller;
 
+import com.meokplaylist.api.dto.roadmap.LoadRoadMapInfor;
 import com.meokplaylist.api.dto.roadmap.SaveRoadMapPlaceRequest;
 import com.meokplaylist.api.dto.roadmap.RoadMapCandidateDto;
 import com.meokplaylist.domain.service.RoadMapService;
@@ -26,6 +27,11 @@ public class RoadMapController {
     public ResponseEntity<?> saveRoadMap (@RequestBody SaveRoadMapPlaceRequest request){
         roadMapService.saveRoadMapPlace(request);
         return ResponseEntity.ok().build();
+    }
+    @GetMapping("/load")
+    public ResponseEntity<?> loacRoadMap(@RequestParam("feedId")Long feedId, @AuthenticationPrincipal Long userId){
+        LoadRoadMapInfor response = roadMapService.LoadRoadMapPlace(feedId, userId);
+        return ResponseEntity.ok().body(response);
     }
 
 }

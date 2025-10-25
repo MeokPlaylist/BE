@@ -5,6 +5,7 @@ import com.meokplaylist.infra.place.Places;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -42,7 +43,6 @@ public class RoadMapPlace {
     // 순서 관련 (예: 1일차 2번째 장소)
     private Integer dayIndex;
     private Integer orderIndex;
-
 
     // === 생성자 헬퍼 ===
     public static RoadMapPlace of(RoadMap roadMap, Places place, FeedPhotos feedPhoto, int dayIndex, int orderIndex) {

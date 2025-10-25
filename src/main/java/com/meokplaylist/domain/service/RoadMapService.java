@@ -1,9 +1,7 @@
 package com.meokplaylist.domain.service;
 
 import com.meokplaylist.api.dto.KakaoSearchResponse;
-import com.meokplaylist.api.dto.roadmap.SaveRoadMapPlaceItem;
-import com.meokplaylist.api.dto.roadmap.SaveRoadMapPlaceRequest;
-import com.meokplaylist.api.dto.roadmap.RoadMapCandidateDto;
+import com.meokplaylist.api.dto.roadmap.*;
 import com.meokplaylist.domain.repository.UsersRepository;
 import com.meokplaylist.domain.repository.feed.FeedPhotosRepository;
 import com.meokplaylist.domain.repository.feed.FeedRepository;
@@ -197,5 +195,53 @@ public class RoadMapService {
 
         // 6) 일괄 저장
         roadMapPlaceRepository.saveAll(roadMapPlaces);
+    }
+
+
+    @Transactional
+    public LoadRoadMapInfor LoadRoadMapPlace(Long feedId, Long userId){
+
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        Feed feed =feedRepository.findByFeedId(feedId)
+                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.NOT_FOUND_FEED));
+
+        RoadMap roadMap = roadMapRepository.findByFeed(feed)
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.NOT_FOUND_ROADMAP));
+
+        String roadMaptitle=roadMap.getTitle();
+        LocalDateTime firstDayAndTime =roadMap.getFirstPlaceDayAndTime();
+        Boolean isMine=false;
+        if(userId.equals(feed.getUser().getUserId())){
+            isMine=true;
+        }
+        List<LoadRoadMapPlaces> loadRoadMapPlaces=roadMap.getPlaces().stream()
+                .map(p-> {
+                    Places place=p.getPlace();
+                    String name;
+                    String address;
+                    String phone = null;
+                    if(place==null){
+                        name=p.getCustomPlaceName();
+                        address=p.getCustomAddress();
+                    }
+                    else {
+                        name=place.getName();
+                        address=place.getAddressName();
+                        phone= place.getPhone();
+                    }
+                    return new LoadRoadMapPlaces(
+                            p.getRoadMap().getId(),
+                            name,
+                            address,
+                            phone,
+                            s3Service.generateGetPresignedUrl(p.getFeedPhoto().getStorageKey()),
+                            p.getDayIndex(),
+                            p.getOrderIndex()
+                            );
+                }).toList();
+
+        return new LoadRoadMapInfor(roadMaptitle,isMine,firstDayAndTime,loadRoadMapPlaces);
     }
 }

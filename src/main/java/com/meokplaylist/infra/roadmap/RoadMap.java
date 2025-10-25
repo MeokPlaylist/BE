@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,8 @@ public class RoadMap {
     private Users user;
 
     private String title;
+
+    private LocalDateTime firstPlaceDayAndTime;
 
     @Builder.Default
     @OneToMany(mappedBy = "roadMap", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -12,3 +12,4 @@ public class SaveRoadMapPlaceRequest {
     private String title;
     private List<SaveRoadMapPlaceItem> places;
 }
+
