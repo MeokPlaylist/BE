@@ -122,8 +122,8 @@ public class RoadMapService {
                                     doc.addressName(),
                                     doc.roadAddressName(),
                                     doc.placeUrl(),
-                                    lat,
-                                    lng,
+                                    doc.latitude(),
+                                    doc.longitude(),
                                     doc.phone(),
                                     doc.categoryGroupCode(),
                                     doc.categoryGroupName()
