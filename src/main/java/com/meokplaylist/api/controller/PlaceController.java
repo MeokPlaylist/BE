@@ -44,12 +44,32 @@ public class PlaceController {
             return ResponseEntity.ok().build();
         }
 
+        @PostMapping("/saveFavoriteWithPlaceId")
+        public ResponseEntity<?> SaveFavoritePlaceWithPlaceId(
+                @AuthenticationPrincipal Long userId,
+                @RequestParam Long placeId
+        ){
+            socialInteractionService.SaveFavoritePlaceWithPlaceId(userId,placeId);
+            return ResponseEntity.ok().build();
+        }
+
+
+
         @PostMapping("/removeFavorite")
         public ResponseEntity<?> removeFavoritePlace(
                 @AuthenticationPrincipal Long userId,
                 @RequestBody RemoveFavoritePlaceDto request
         ){
             socialInteractionService.removePlace(userId,request);
+            return ResponseEntity.ok().build();
+        }
+
+        @PostMapping("/removeFavoriteWithPlaceId")
+        public ResponseEntity<?> removeFavoritePlaceWithPlaceId(
+                @AuthenticationPrincipal Long userId,
+                @RequestParam Long placeId
+        ){
+            socialInteractionService.removePlaceWithPlaceId(userId,placeId);
             return ResponseEntity.ok().build();
         }
 

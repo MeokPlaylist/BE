@@ -8,6 +8,7 @@ import com.meokplaylist.domain.repository.feed.FeedRepository;
 import com.meokplaylist.domain.repository.place.PlacesRepository;
 import com.meokplaylist.domain.repository.roadmap.RoadMapPlaceRepository;
 import com.meokplaylist.domain.repository.roadmap.RoadMapRepository;
+import com.meokplaylist.domain.repository.socialInteraction.FavoritePlaceRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.feed.Feed;
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +41,7 @@ public class RoadMapService {
     private final UsersRepository usersRepository;
     private final PlaceService placeService; // category 검색용
     private final S3Service s3Service;
-
+    private final FavoritePlaceRepository favoritePlaceRepository;
     /**
      * Feed ID로 로드맵 전체 생성 및 반환
      * - FeedPhotos의 위도/경도 기반으로 Kakao API에서 장소 목록 조회
@@ -120,8 +122,8 @@ public class RoadMapService {
                                     doc.addressName(),
                                     doc.roadAddressName(),
                                     doc.placeUrl(),
-                                    lat,
-                                    lng,
+                                    doc.latitude(),
+                                    doc.longitude(),
                                     doc.phone(),
                                     doc.categoryGroupCode(),
                                     doc.categoryGroupName()
@@ -173,6 +175,21 @@ public class RoadMapService {
         // 4) 로드맵에 포함된 기존 place 목록 조회
         List<RoadMapPlace> roadMapPlaces = roadMapPlaceRepository.findAllByRoadMap(roadMap);
 
+        // 5) Request에서 전달된 ID들만 남기기 위한 ID Set 생성
+        Set<Long> requestIds = places.stream()
+                .map(SaveRoadMapPlaceItem::getRoadMapPlaceId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        // 기존 DB 목록 중 Request에 없는 항목 삭제
+        List<RoadMapPlace> toDelete = roadMapPlaces.stream()
+                .filter(rmp -> !requestIds.contains(rmp.getId()))
+                .toList();
+
+        if (!toDelete.isEmpty()) {
+            roadMapPlaceRepository.deleteAll(toDelete);
+            roadMapPlaces.removeAll(toDelete);
+        }
         // 5) 요청 데이터 순회 처리
         for (SaveRoadMapPlaceItem dto : places) {
             RoadMapPlace rmp = roadMapPlaces.stream()
@@ -222,12 +239,15 @@ public class RoadMapService {
         String roadMaptitle=roadMap.getTitle();
         String firstDayAndTime =roadMap.getFirstPlaceDayAndTime().toString();
         Boolean isMine=false;
+
         if(userId.equals(feed.getUser().getUserId())){
             isMine=true;
         }
+
         List<LoadRoadMapPlaces> loadRoadMapPlaces=roadMap.getPlaces().stream()
                 .map(p-> {
                     Places place=p.getPlace();
+                    Boolean isFavorite= false;
                     String name;
                     String address;
                     String phone = null;
@@ -236,18 +256,23 @@ public class RoadMapService {
                         address=p.getCustomAddress();
                     }
                     else {
+                        if (favoritePlaceRepository.existsByUserUserIdAndPlaceId(user.getUserId(), place.getId())) {
+                            isFavorite=true;
+                        }
                         name=place.getName();
                         address=place.getAddressName();
                         phone= place.getPhone();
                     }
+                    Long placeId = (place != null) ? place.getId() : null;
                     return new LoadRoadMapPlaces(
-                            p.getRoadMap().getId(),
+                            placeId,
                             name,
                             address,
                             phone,
                             s3Service.generateGetPresignedUrl(p.getFeedPhoto().getStorageKey()),
                             p.getDayIndex(),
-                            p.getOrderIndex()
+                            p.getOrderIndex(),
+                            isFavorite
                             );
                 }).toList();
 

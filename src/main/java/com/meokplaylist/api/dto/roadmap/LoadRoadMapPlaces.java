@@ -8,12 +8,13 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class LoadRoadMapPlaces {
-    private Long roadMapPlacesId;
+    private Long placeId;
     private String name;
     private String address;
     private String phone;
     private String presignedGetPhotoUrl;
     private Integer dayIndex;
     private Integer orderIndex;
+    private Boolean isFavorite;
 
 }

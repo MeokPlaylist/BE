@@ -9,6 +9,6 @@ import java.util.Optional;
 public interface FavoritePlaceRepository extends JpaRepository<FavoritePlace, Long> {
     boolean existsByUserUserIdAndPlaceId(Long userId, Long placeId);
     List<FavoritePlace> findAllByUserUserId(Long userId);
-
+    Optional<FavoritePlace> findByUserUserIdAndPlaceId(Long userId,Long placeId);
     Optional<FavoritePlace> findByUserUserIdAndPlaceLatitudeAndPlaceLongitude(Long userId, double lat, double lng);
 }
