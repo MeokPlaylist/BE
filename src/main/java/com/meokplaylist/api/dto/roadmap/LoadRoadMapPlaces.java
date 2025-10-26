@@ -15,5 +15,6 @@ public class LoadRoadMapPlaces {
     private String presignedGetPhotoUrl;
     private Integer dayIndex;
     private Integer orderIndex;
+    private Boolean isFavorite;
 
 }

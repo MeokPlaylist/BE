@@ -8,6 +8,7 @@ import com.meokplaylist.domain.repository.feed.FeedRepository;
 import com.meokplaylist.domain.repository.place.PlacesRepository;
 import com.meokplaylist.domain.repository.roadmap.RoadMapPlaceRepository;
 import com.meokplaylist.domain.repository.roadmap.RoadMapRepository;
+import com.meokplaylist.domain.repository.socialInteraction.FavoritePlaceRepository;
 import com.meokplaylist.exception.BizExceptionHandler;
 import com.meokplaylist.exception.ErrorCode;
 import com.meokplaylist.infra.feed.Feed;
@@ -40,7 +41,7 @@ public class RoadMapService {
     private final UsersRepository usersRepository;
     private final PlaceService placeService; // category 검색용
     private final S3Service s3Service;
-
+    private final FavoritePlaceRepository favoritePlaceRepository;
     /**
      * Feed ID로 로드맵 전체 생성 및 반환
      * - FeedPhotos의 위도/경도 기반으로 Kakao API에서 장소 목록 조회
@@ -238,12 +239,18 @@ public class RoadMapService {
         String roadMaptitle=roadMap.getTitle();
         String firstDayAndTime =roadMap.getFirstPlaceDayAndTime().toString();
         Boolean isMine=false;
+
         if(userId.equals(feed.getUser().getUserId())){
             isMine=true;
         }
+
         List<LoadRoadMapPlaces> loadRoadMapPlaces=roadMap.getPlaces().stream()
                 .map(p-> {
                     Places place=p.getPlace();
+                    Boolean isFavorite= false;
+                    if (favoritePlaceRepository.existsByUserUserIdAndPlaceId(user.getUserId(), place.getId())) {
+                        isFavorite=true;
+                    }
                     String name;
                     String address;
                     String phone = null;
@@ -264,7 +271,8 @@ public class RoadMapService {
                             phone,
                             s3Service.generateGetPresignedUrl(p.getFeedPhoto().getStorageKey()),
                             p.getDayIndex(),
-                            p.getOrderIndex()
+                            p.getOrderIndex(),
+                            isFavorite
                             );
                 }).toList();
 
