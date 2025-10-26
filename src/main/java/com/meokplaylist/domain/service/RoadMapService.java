@@ -248,9 +248,6 @@ public class RoadMapService {
                 .map(p-> {
                     Places place=p.getPlace();
                     Boolean isFavorite= false;
-                    if (favoritePlaceRepository.existsByUserUserIdAndPlaceId(user.getUserId(), place.getId())) {
-                        isFavorite=true;
-                    }
                     String name;
                     String address;
                     String phone = null;
@@ -259,6 +256,9 @@ public class RoadMapService {
                         address=p.getCustomAddress();
                     }
                     else {
+                        if (favoritePlaceRepository.existsByUserUserIdAndPlaceId(user.getUserId(), place.getId())) {
+                            isFavorite=true;
+                        }
                         name=place.getName();
                         address=place.getAddressName();
                         phone= place.getPhone();
