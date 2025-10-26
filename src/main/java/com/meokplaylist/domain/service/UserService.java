@@ -429,4 +429,11 @@ public class UserService {
         // Slice → SlicedResponse 변환해서 반환
         return SlicedResponse.of(modifiedList);
     }
+
+    public String getMyNickname(Long userId) {
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        return user.getNickname();
+    }
 }

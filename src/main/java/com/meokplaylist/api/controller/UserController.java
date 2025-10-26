@@ -129,6 +129,12 @@ public class UserController {
         return ResponseEntity.ok().body(personalInfor);
     }
 
+    @GetMapping("/myNickname")
+    public ResponseEntity<?> getMyNickname(@AuthenticationPrincipal Long userId){
+        String nickname = userService.getMyNickname(userId);
+        return ResponseEntity.ok().body(nickname);
+    }
+
 
     @GetMapping("/search")
     public ResponseEntity<?> searchUser(@RequestParam("nickname") String nickname, @PageableDefault Pageable pageable){
