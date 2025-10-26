@@ -488,6 +488,7 @@ public class SocialInteractionService {
     }
 
 
+
     @Transactional
     public void removePlace(Long userId, RemoveFavoritePlaceDto dto) {
 
@@ -495,6 +496,15 @@ public class SocialInteractionService {
         double lng = dto.getLng();
 
         FavoritePlace favoritePlace =favoritePlaceRepository.findByUserUserIdAndPlaceLatitudeAndPlaceLongitude(userId,lat,lng)
+                .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE));
+
+        favoritePlaceRepository.delete(favoritePlace);
+    }
+    @Transactional
+    public void removePlaceWithPlaceId(Long userId, Long placeId) {
+
+
+        FavoritePlace favoritePlace =favoritePlaceRepository.findByUserUserIdAndPlaceId(userId,placeId)
                 .orElseThrow(()->new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE));
 
         favoritePlaceRepository.delete(favoritePlace);

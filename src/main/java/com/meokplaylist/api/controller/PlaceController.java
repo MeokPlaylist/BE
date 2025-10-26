@@ -64,6 +64,15 @@ public class PlaceController {
             return ResponseEntity.ok().build();
         }
 
+        @PostMapping("/removeFavoriteWithPlaceId")
+        public ResponseEntity<?> removeFavoritePlaceWithPlaceId(
+                @AuthenticationPrincipal Long userId,
+                @RequestParam Long placeId
+        ){
+            socialInteractionService.removePlaceWithPlaceId(userId,placeId);
+            return ResponseEntity.ok().build();
+        }
+
         @GetMapping("/getFavorite")
         public ResponseEntity<?> getFavoritePlaces(@AuthenticationPrincipal Long userId){
             GetFavoritePlaceResponse response =new GetFavoritePlaceResponse(socialInteractionService.getFavoritePlaces(userId));
