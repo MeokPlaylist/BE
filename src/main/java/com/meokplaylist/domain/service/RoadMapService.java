@@ -256,8 +256,9 @@ public class RoadMapService {
                         address=place.getAddressName();
                         phone= place.getPhone();
                     }
+                    Long placeId = (place != null) ? place.getId() : null;
                     return new LoadRoadMapPlaces(
-                            p.getRoadMap().getId(),
+                            placeId,
                             name,
                             address,
                             phone,
