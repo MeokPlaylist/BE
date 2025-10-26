@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -173,6 +174,21 @@ public class RoadMapService {
         // 4) 로드맵에 포함된 기존 place 목록 조회
         List<RoadMapPlace> roadMapPlaces = roadMapPlaceRepository.findAllByRoadMap(roadMap);
 
+        // 5) Request에서 전달된 ID들만 남기기 위한 ID Set 생성
+        Set<Long> requestIds = places.stream()
+                .map(SaveRoadMapPlaceItem::getRoadMapPlaceId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        // 기존 DB 목록 중 Request에 없는 항목 삭제
+        List<RoadMapPlace> toDelete = roadMapPlaces.stream()
+                .filter(rmp -> !requestIds.contains(rmp.getId()))
+                .toList();
+
+        if (!toDelete.isEmpty()) {
+            roadMapPlaceRepository.deleteAll(toDelete);
+            roadMapPlaces.removeAll(toDelete);
+        }
         // 5) 요청 데이터 순회 처리
         for (SaveRoadMapPlaceItem dto : places) {
             RoadMapPlace rmp = roadMapPlaces.stream()
