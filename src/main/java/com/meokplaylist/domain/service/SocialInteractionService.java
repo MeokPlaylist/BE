@@ -463,6 +463,30 @@ public class SocialInteractionService {
 
         favoritePlaceRepository.save(savedPlace);
     }
+    @Transactional
+    public void SaveFavoritePlaceWithPlaceId(Long userId, Long placeId) {
+
+        // 좌표로 DB에 이미 등록된 Place가 있는지 먼저 확인
+        Places place = placesRepository.findById(placeId)
+                .orElseThrow(()-> new BizExceptionHandler(ErrorCode.NOT_FOUND_PLACE));
+
+        // 사용자 조회
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new BizExceptionHandler(ErrorCode.USER_NOT_FOUND));
+
+        // 이미 찜한 장소인지 확인
+        if (favoritePlaceRepository.existsByUserUserIdAndPlaceId(user.getUserId(), place.getId())) {
+            throw new BizExceptionHandler(ErrorCode.EXIST_OBJECT);
+        }
+
+        // 즐겨찾기 등록
+        FavoritePlace savedPlace = new FavoritePlace();
+        savedPlace.setUser(user);
+        savedPlace.setPlace(place);
+
+        favoritePlaceRepository.save(savedPlace);
+    }
+
 
     @Transactional
     public void removePlace(Long userId, RemoveFavoritePlaceDto dto) {
