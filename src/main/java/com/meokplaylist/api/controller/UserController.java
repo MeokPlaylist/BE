@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -127,6 +128,12 @@ public class UserController {
         PersonalInforResponse personalInfor=userService.getPersonalInfor(userId);
 
         return ResponseEntity.ok().body(personalInfor);
+    }
+
+    @GetMapping("/myNickname")
+    public ResponseEntity<?> getMyNickname(@AuthenticationPrincipal Long userId){
+        String nickname = userService.getMyNickname(userId);
+        return ResponseEntity.ok().body(Map.of("nickname",nickname));
     }
 
 
