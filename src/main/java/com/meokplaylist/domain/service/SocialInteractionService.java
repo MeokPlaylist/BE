@@ -315,6 +315,9 @@ public class SocialInteractionService {
 
         Slice<GetFeedCommentsDto> commentsSlice =
                 commentsRepository.findCommentByFeedId(feed.getFeedId(), pageable);
+        commentsSlice.getContent().forEach(c ->
+                c.setProfileImgUrl(s3Service.generateGetPresignedUrl(c.getProfileImgUrl()))
+        );
 
         return SlicedResponse.of(commentsSlice);
     }
