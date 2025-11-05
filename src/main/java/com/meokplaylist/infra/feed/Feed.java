@@ -42,8 +42,7 @@ public class Feed {
             orphanRemoval = true)
     private List<FeedCategory> feedCategories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "photo", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RoadMapPlace> roadmapPlaces = new ArrayList<>();
+
 
     @OneToMany(mappedBy = "feed",
             cascade = CascadeType.ALL,

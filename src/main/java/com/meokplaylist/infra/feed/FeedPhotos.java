@@ -1,9 +1,12 @@
 package com.meokplaylist.infra.feed;
 
+import com.meokplaylist.infra.roadmap.RoadMapPlace;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -33,6 +36,9 @@ public class FeedPhotos {
     private LocalDateTime dayAndTime;
 
     private Integer sequence; // 피드 사진 순서
+
+    @OneToMany(mappedBy = "feedPhoto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RoadMapPlace> roadmapPlaces = new ArrayList<>();
 
     public FeedPhotos(Double longitude, Feed feed, String storageKey, Double latitude, LocalDateTime dayAndTime, Integer sequence) {
         this.longitude = longitude;
