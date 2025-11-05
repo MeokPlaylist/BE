@@ -41,8 +41,7 @@ public class RoadMap {
     @OneToMany(mappedBy = "roadMap", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RoadMapPlace> places = new ArrayList<>();
 
-    @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RoadMap> roadmaps = new ArrayList<>();
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
