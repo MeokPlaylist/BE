@@ -88,7 +88,6 @@ public class RoadMapService {
                 lat = photo.getLatitude();
                 lng = photo.getLongitude();
             }
-            System.out.println("lat:"+lat+" lng:"+lng);
             //현재 사진의 날짜 구하기
             LocalDateTime dateTime;
             if (photo.getDayAndTime() instanceof LocalDateTime) {

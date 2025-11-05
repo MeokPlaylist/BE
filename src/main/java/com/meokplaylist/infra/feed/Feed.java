@@ -1,5 +1,6 @@
 package com.meokplaylist.infra.feed;
 
+import com.meokplaylist.infra.roadmap.RoadMapPlace;
 import com.meokplaylist.infra.socialInteraction.Comments;
 import com.meokplaylist.infra.socialInteraction.Likes;
 import com.meokplaylist.infra.user.Users;
@@ -41,6 +42,8 @@ public class Feed {
             orphanRemoval = true)
     private List<FeedCategory> feedCategories = new ArrayList<>();
 
+    @OneToMany(mappedBy = "photo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RoadMapPlace> roadmapPlaces = new ArrayList<>();
 
     @OneToMany(mappedBy = "feed",
             cascade = CascadeType.ALL,
