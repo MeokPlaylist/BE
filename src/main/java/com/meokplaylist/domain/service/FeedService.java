@@ -310,8 +310,11 @@ public class FeedService {
             List<String> regions = dto.getRegions();
             feedCategorySetUp(categories, regions, feed.getFeedId());
         }
-        System.out.println(feed.getFeedCategories());
-        System.out.println(feed.getFeedLocalCategories());
+
+        for (FeedCategory category : feed.getFeedCategories()) {
+            System.out.println(category.getCategory());
+        }
+
     }
 
     @Transactional
