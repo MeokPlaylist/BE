@@ -293,6 +293,7 @@ public class FeedService {
         }
 
         feedCategoryRepository.deleteAll(feed.getFeedCategories());
+        feedLocalCategoryRepository.deleteAll(feed.getFeedLocalCategories());
         if (dto.getCategories() != null) {
             List<String> categories = dto.getCategories();
             List<String> regions = dto.getRegions();
