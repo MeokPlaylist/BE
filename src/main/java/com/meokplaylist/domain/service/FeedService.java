@@ -291,9 +291,20 @@ public class FeedService {
         if(!feed.getUser().getUserId().equals(userId)){
             throw new BizExceptionHandler(ErrorCode.DONT_HAVE_AUTHORITY);
         }
+        List<Long> feedCategoryIds = feed.getFeedCategories().stream()
+                .map(FeedCategory::getId)  // FeedCategory 엔티티의 PK getter
+                .toList();
+        if (!feedCategoryIds.isEmpty()) {
+            feedCategoryRepository.deleteAllById(feedCategoryIds);
+        }
 
-        feedCategoryRepository.deleteAll(feed.getFeedCategories());
-        feedLocalCategoryRepository.deleteAll(feed.getFeedLocalCategories());
+        // --- FeedLocalCategory 삭제 (ID 기반) ---
+        List<Long> feedLocalCategoryIds = feed.getFeedLocalCategories().stream()
+                .map(FeedLocalCategory::getId)
+                .toList();
+        if (!feedLocalCategoryIds.isEmpty()) {
+            feedLocalCategoryRepository.deleteAllById(feedLocalCategoryIds);
+        }
         if (dto.getCategories() != null) {
             List<String> categories = dto.getCategories();
             List<String> regions = dto.getRegions();
