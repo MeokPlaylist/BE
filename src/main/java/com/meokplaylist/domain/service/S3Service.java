@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class S3Service {
 
     private final S3Presigner s3Presigner;
-    private S3Client s3;
+    private final S3Client s3;
     private static final String BASE_PROFILE_FMG="https://kr.object.ncloudstorage.com/meokplaylist/%EA%B8%B0%EB%B3%B8%20%ED%94%84%EB%A1%9C%ED%95%84.png";
 
     @Value("${cloud.ncp.object-storage.bucket}")
