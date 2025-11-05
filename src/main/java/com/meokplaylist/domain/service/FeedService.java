@@ -312,7 +312,7 @@ public class FeedService {
         }
 
         for (FeedCategory category : feed.getFeedCategories()) {
-            System.out.println(category.getCategory());
+            System.out.println(category.getCategory().getCategoryId());
         }
 
     }
