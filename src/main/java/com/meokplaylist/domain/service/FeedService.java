@@ -294,17 +294,10 @@ public class FeedService {
         List<Long> feedCategoryIds = feed.getFeedCategories().stream()
                 .map(FeedCategory::getId)  // FeedCategory 엔티티의 PK getter
                 .toList();
-        if (!feedCategoryIds.isEmpty()) {
-            feedCategoryRepository.deleteAllById(feedCategoryIds);
-        }
 
-        // --- FeedLocalCategory 삭제 (ID 기반) ---
-        List<Long> feedLocalCategoryIds = feed.getFeedLocalCategories().stream()
-                .map(FeedLocalCategory::getId)
-                .toList();
-        if (!feedLocalCategoryIds.isEmpty()) {
-            feedLocalCategoryRepository.deleteAllById(feedLocalCategoryIds);
-        }
+        feed.getFeedCategories().clear();
+        feed.getFeedLocalCategories().clear();
+
         if (dto.getCategories() != null) {
             List<String> categories = dto.getCategories();
             List<String> regions = dto.getRegions();

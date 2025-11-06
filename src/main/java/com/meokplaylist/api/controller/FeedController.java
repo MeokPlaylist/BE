@@ -49,7 +49,8 @@ public class FeedController {
     @PostMapping("/modifyCategory")
     public ResponseEntity<?> modifyFeedCategory(
             @RequestBody ModifyFeedCategoryDto request,
-            @AuthenticationPrincipal Long userId
+          @AuthenticationPrincipal Long userId
+
     ){
 
         feedService.modifyFeedCategory(request,userId);

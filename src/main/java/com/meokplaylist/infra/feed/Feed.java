@@ -30,6 +30,7 @@ public class Feed {
     @JoinColumn(name = "user_id")
     private Users user;
 
+    @Column
     private String content;
 
     private List<String> hashTag;
